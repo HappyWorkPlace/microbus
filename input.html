@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>บันทึกการทำงาน</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f6f8fb 0%, #e9eef5 100%);
+        }
+        .custom-select {
+            position: relative;
+            width: 100%;
+        }
+        .custom-select select {
+            appearance: none;
+            width: 100%;
+        }
+        .custom-select::after {
+            content: "";
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+        .time-picker-dropdown {
+            position: fixed; /* Changed from absolute to fixed */
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            display: none;
+            max-height: 300px; /* Increased height */
+            overflow-y: auto;
+            width: 120px;
+        }
+        .time-picker-dropdown.show {
+            display: block;
+        }
+        .time-option {
+            padding: 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .time-option:hover {
+            background-color: #f3f4f6;
+        }
+        .time-option.selected {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .input-icon {
+            position: relative;
+        }
+        .input-icon input {
+            padding-right: 2.5rem;
+        }
+        .input-icon::after {
+            content: '';
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1.25rem;
+            height: 1.25rem;
+            background-size: contain;
+            pointer-events: none;
+        }
+        .date-icon::after {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' /%3E%3C/svg%3E");
+        }
+        .time-icon::after {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' /%3E%3C/svg%3E");
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-white rounded-xl shadow-lg">
+        <!-- Header -->
+        <div class="bg-blue-600 px-6 py-4 text-white">
+            <h1 class="text-xl font-bold mb-2">สวัสดีคุณ คาเดร็ด</h1>
+            <div class="space-y-1 text-sm">
+                <p>EmpNo : LC046</p>
+                <p>Name : คุณนนท์ สุขรัญ</p>
+                <p>Factory : ลพบุรี</p>
+            </div>
+        </div>
+
+        <!-- Form Content -->
+        <div class="p-6">
+            <form class="space-y-6 bg-gray-50 rounded-lg p-4">
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700">
+                        การทำงาน :
+                    </label>
+                    <div class="custom-select">
+                        <select class="block w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 text-sm focus:outline-none focus:border-blue-500">
+                            <option value="-">-</option>
+                            <option value="D">D</option>
+                            <option value="C">C</option>
+                            <option value="B">B</option>
+                            <option value="A">A</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700">
+                        เวลาเริ่มงาน :
+                    </label>
+                    <div class="flex gap-3">
+                        <div class="input-icon date-icon flex-1">
+                            <input 
+                                type="text"
+                                id="dateDisplay"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 text-sm focus:outline-none focus:border-blue-500"
+                                readonly
+                            >
+                            <input 
+                                type="date"
+                                id="dateInput"
+                                class="absolute opacity-0 w-full h-full cursor-pointer"
+                                onchange="updateDate(this)"
+                            >
+                        </div>
+                        <div class="input-icon time-icon relative">
+                            <input 
+                                type="text"
+                                id="timeDisplay"
+                                class="w-32 px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 text-sm focus:outline-none focus:border-blue-500 cursor-pointer"
+                                readonly
+                                onclick="toggleTimePicker(event)"
+                            >
+                            <div id="timePickerDropdown" class="time-picker-dropdown">
+                                <!-- Time options will be populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex flex-col space-y-3 pt-4">
+                    <button
+                        type="button"
+                        class="w-full px-6 py-3 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition duration-150 ease-in-out"
+                        style="background-color: #FF9F43;"
+                    >
+                        START
+                    </button>
+                    <button
+                        type="button"
+                        class="w-full px-6 py-3 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-150 ease-in-out"
+                    >
+                        BACK
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function generateTimeOptions() {
+            const times = [];
+            for (let hour = 0; hour < 24; hour++) {
+                for (let minute = 0; minute < 60; minute++) {
+                    times.push(`${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`);
+                }
+            }
+            return times;
+        }
+
+        function initTimePicker() {
+            const dropdown = document.getElementById('timePickerDropdown');
+            const times = generateTimeOptions();
+            
+            times.forEach(time => {
+                const div = document.createElement('div');
+                div.className = 'time-option';
+                div.textContent = `${time} น.`;
+                div.onclick = () => selectTime(time);
+                dropdown.appendChild(div);
+            });
+        }
+
+        function selectTime(time) {
+            document.getElementById('timeDisplay').value = `${time} น.`;
+            toggleTimePicker();
+            highlightSelectedTime(time);
+        }
+
+        function highlightSelectedTime(selectedTime) {
+            document.querySelectorAll('.time-option').forEach(option => {
+                const timeText = option.textContent.replace(' น.', '');
+                option.classList.toggle('selected', timeText === selectedTime + ' น.');
+            });
+        }
+
+        function toggleTimePicker(event) {
+            const dropdown = document.getElementById('timePickerDropdown');
+            const timeDisplay = document.getElementById('timeDisplay');
+            const rect = timeDisplay.getBoundingClientRect();
+            
+            dropdown.style.top = `${rect.bottom + window.scrollY + 5}px`;
+            dropdown.style.left = `${rect.left + window.scrollX}px`;
+            
+            dropdown.classList.toggle('show');
+            event.stopPropagation();
+        }
+
+        // Close time picker when clicking outside
+        document.addEventListener('click', (e) => {
+            const timeDisplay = document.getElementById('timeDisplay');
+            const dropdown = document.getElementById('timePickerDropdown');
+            if (!timeDisplay.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        function updateDate(input) {
+            const date = new Date(input.value);
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            document.getElementById('dateDisplay').value = `${day}/${month}/${year}`;
+        }
+
+        // Initialize with current date and time
+        window.onload = function() {
+            const now = new Date();
+            document.getElementById('dateInput').valueAsDate = now;
+            updateDate(document.getElementById('dateInput'));
+            
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('timeDisplay').value = `${hours}:${minutes} น.`;
+            
+            initTimePicker();
+        }
+    </script>
+</body>
+</html>
