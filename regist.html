@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ลงทะเบียนพนักงาน</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f6f8fb 0%, #e9eef5 100%);
+        }
+        .form-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .spinner {
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            margin-right: 0.5em;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+            <h1 class="text-xl font-bold text-white text-center">ลงทะเบียน</h1>
+        </div>
+
+        <!-- Form Content -->
+        <div class="p-6 space-y-6">
+            <form id="registrationForm" class="space-y-4">
+                <!-- Employee ID Section -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700" for="employeeId">
+                        รหัสพนักงาน
+                    </label>
+                    <div class="flex gap-3">
+                        <input
+                            type="text"
+                            id="employeeId"
+                            class="w-1/2 form-input block px-4 py-3 rounded-lg border border-gray-300 bg-gray-50 text-gray-900 text-sm transition duration-150 ease-in-out focus:outline-none focus:border-blue-500"
+                            placeholder="กรอกรหัสพนักงาน"
+                        >
+                        <button
+                            type="button"
+                            onclick="verifyEmployee()"
+                            id="verifyButton"
+                            class="w-1/2 px-6 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out flex items-center justify-center"
+                        >
+                            ตรวจสอบ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Error Message -->
+                <div id="errorMessage" class="hidden p-4 rounded-lg bg-red-50 text-red-600 text-sm">
+                </div>
+
+                <!-- Employee Details (Hidden initially) -->
+                <div id="employeeDetails" class="hidden space-y-4">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700" for="employeeName">
+                            ชื่อพนักงาน
+                        </label>
+                        <input
+                            type="text"
+                            id="employeeName"
+                            class="block w-full px-4 py-3 rounded-lg border border-gray-300 bg-gray-50 text-gray-700 text-sm"
+                            disabled
+                        >
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700" for="position">
+                            ตำแหน่ง
+                        </label>
+                        <input
+                            type="text"
+                            id="position"
+                            class="block w-full px-4 py-3 rounded-lg border border-gray-300 bg-gray-50 text-gray-700 text-sm"
+                            disabled
+                        >
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700" for="factory">
+                            โรงงาน
+                        </label>
+                        <input
+                            type="text"
+                            id="factory"
+                            class="block w-full px-4 py-3 rounded-lg border border-gray-300 bg-gray-50 text-gray-700 text-sm"
+                            disabled
+                        >
+                    </div>
+
+                    <button
+                        type="button"
+                        onclick="submitRegistration()"
+                        id="submitButton"
+                        class="w-full px-6 py-3 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out mt-4 flex items-center justify-center"
+                    >
+                        ลงทะเบียน
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Mock data - In real application, this would come from Google Sheets
+        const mockEmployeeData = {
+            'EMP001': {
+                name: 'นาย ABC HAHAHA',
+                position: 'Driver',
+                factory: 'BANGPA-IN'
+            }
+        };
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+            setTimeout(() => {
+                errorDiv.classList.add('hidden');
+            }, 3000);
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').classList.add('hidden');
+        }
+
+        function setLoadingState(button, isLoading, loadingText = 'กำลังตรวจสอบ...', defaultText = 'ตรวจสอบ') {
+            if (isLoading) {
+                button.innerHTML = `
+                    <svg class="spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    ${loadingText}
+                `;
+                button.disabled = true;
+            } else {
+                button.textContent = defaultText;
+                button.disabled = false;
+            }
+        }
+
+        let isLoading = false;
+
+        async function verifyEmployee() {
+            if (isLoading) return;
+            
+            hideError();
+            const employeeId = document.getElementById('employeeId').value;
+            const verifyButton = document.getElementById('verifyButton');
+            
+            if (!employeeId) {
+                showError('กรุณากรอกรหัสพนักงาน');
+                return;
+            }
+
+            // Show loading state
+            isLoading = true;
+            setLoadingState(verifyButton, true);
+
+            // Simulate API call
+            try {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                const employeeData = mockEmployeeData[employeeId];
+                
+                if (employeeData) {
+                    document.getElementById('employeeName').value = employeeData.name;
+                    document.getElementById('position').value = employeeData.position;
+                    document.getElementById('factory').value = employeeData.factory;
+                    document.getElementById('employeeDetails').classList.remove('hidden');
+                    document.getElementById('employeeId').disabled = true;
+                    document.getElementById('employeeId').classList.remove('w-1/2');
+                    document.getElementById('employeeId').classList.add('w-full');
+                    verifyButton.style.display = 'none';
+                } else {
+                    showError('ไม่พบข้อมูลพนักงาน');
+                    setLoadingState(verifyButton, false);
+                }
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        function submitRegistration() {
+            const submitButton = document.getElementById('submitButton');
+            setLoadingState(submitButton, true, 'กำลังดำเนินการ...', 'ลงทะเบียน');
+
+            // Simulate API call
+            setTimeout(() => {
+                alert('ลงทะเบียนสำเร็จ!');
+                // Reset form or redirect
+                window.location.reload();
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
