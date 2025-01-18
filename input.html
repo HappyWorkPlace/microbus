@@ -136,126 +136,144 @@
         </div>
     </div>
 
-    <script>
-        let map;
-        let marker;
-        let hasValidLocation = false;
-        const startButton = document.getElementById('startButton');
-        const shiftSelect = document.getElementById('shiftSelect');
-        const locationStatus = document.getElementById('locationStatus');
+<script>
+    let map;
+    let marker;
+    let hasValidLocation = false;
+    const startButton = document.getElementById('startButton');
+    const shiftSelect = document.getElementById('shiftSelect');
+    const locationStatus = document.getElementById('locationStatus');
 
-        // Custom alert function using Swal
-        function showAlert(message) {
-            Swal.fire({
-                text: message,
-                confirmButtonText: 'ตกลง',
-                customClass: {
-                    popup: 'rounded-xl'
-                }
-            });
-        }
-        
-        // Initialize map
-        function initMap() {
-            map = L.map('map', {
-                zoomControl: false,
-                dragging: false,
-                touchZoom: false,
-                doubleClickZoom: false,
-                scrollWheelZoom: false
-            }).setView([13.7563, 100.5018], 13);
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
-        }
-
-        // Update marker position
-        function updateMarkerPosition(lat, lng) {
-            if (marker) {
-                marker.setLatLng([lat, lng]);
-            } else {
-                marker = L.marker([lat, lng]).addTo(map);
-            }
-            map.setView([lat, lng], 15);
-        }
-
-        // Update location status UI
-        function updateLocationStatus(status) {
-            switch(status) {
-                case 'searching':
-                    locationStatus.textContent = 'กำลังค้นหาตำแหน่ง...';
-                    locationStatus.className = 'text-xs font-medium px-2 py-1 rounded-full bg-yellow-100 text-yellow-800';
-                    break;
-                case 'success':
-                    locationStatus.textContent = 'ได้รับตำแหน่งแล้ว';
-                    locationStatus.className = 'text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-800';
-                    break;
-                case 'error':
-                    locationStatus.textContent = 'ไม่สามารถระบุตำแหน่งได้';
-                    locationStatus.className = 'text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-800';
-                    break;
-            }
-        }
-
-        // Get current location
-        function requestLocation() {
-            updateLocationStatus('searching');
-            hasValidLocation = false;
-
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        updateMarkerPosition(lat, lng);
-                        updateLocationStatus('success');
-                        hasValidLocation = true;
-                    },
-                    (error) => {
-                        console.error("Error getting location:", error);
-                        updateLocationStatus('error');
-                        hasValidLocation = false;
-                        showAlert('กรุณาออกเข้าใหม่เพื่ออนุญาตเข้าถึงตำแหน่ง');
-                    },
-                    {
-                        enableHighAccuracy: true,
-                        timeout: 5000,
-                        maximumAge: 0
-                    }
-                );
-            } else {
-                updateLocationStatus('error');
-                showAlert('Browser ไม่รองรับการใช้งาน Geolocation');
-            }
-        }
-
-        // Set current date and time as default values
-        window.onload = function() {
-            const now = new Date();
-            
-            // Set current date and time (readonly)
-            const dateInput = document.getElementById('dateInput');
-            dateInput.valueAsDate = now;
-            
-            const timeInput = document.getElementById('timeInput');
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            timeInput.value = `${hours}:${minutes}`;
-
-            // Initialize map and request location
-            initMap();
-            requestLocation();
-        }
-
-        // Add click handler for start button
-        startButton.addEventListener('click', () => {
-            if (validateForm()) {
-                // Proceed with starting work
-                console.log('Starting work...');
-                // Add your logic here for what happens after successful validation
+    // Custom alert function using Swal
+    function showAlert(message) {
+        Swal.fire({
+            text: message,
+            confirmButtonText: 'ตกลง',
+            customClass: {
+                popup: 'rounded-xl'
             }
         });
-    </script>
+    }
+
+    // Form validation function
+    function validateForm() {
+        // Check if a shift is selected
+        if (!shiftSelect.value) {
+            showAlert('กรุณาเลือกกะการทำงาน');
+            return false;
+        }
+
+        // Check if location is valid
+        if (!hasValidLocation) {
+            showAlert('กรุณาระบุตำแหน่งก่อนเริ่มงาน');
+            return false;
+        }
+
+        return true;
+    }
+
+    // Initialize map
+    function initMap() {
+        map = L.map('map', {
+            zoomControl: false,
+            dragging: false,
+            touchZoom: false,
+            doubleClickZoom: false,
+            scrollWheelZoom: false
+        }).setView([13.7563, 100.5018], 13);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+    }
+
+    // Update marker position
+    function updateMarkerPosition(lat, lng) {
+        if (marker) {
+            marker.setLatLng([lat, lng]);
+        } else {
+            marker = L.marker([lat, lng]).addTo(map);
+        }
+        map.setView([lat, lng], 15);
+    }
+
+    // Update location status UI
+    function updateLocationStatus(status) {
+        switch(status) {
+            case 'searching':
+                locationStatus.textContent = 'กำลังค้นหาตำแหน่ง...';
+                locationStatus.className = 'text-xs font-medium px-2 py-1 rounded-full bg-yellow-100 text-yellow-800';
+                break;
+            case 'success':
+                locationStatus.textContent = 'ได้รับตำแหน่งแล้ว';
+                locationStatus.className = 'text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-800';
+                break;
+            case 'error':
+                locationStatus.textContent = 'ไม่สามารถระบุตำแหน่งได้';
+                locationStatus.className = 'text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-800';
+                break;
+        }
+    }
+
+    // Get current location
+    function requestLocation() {
+        updateLocationStatus('searching');
+        hasValidLocation = false;
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    updateMarkerPosition(lat, lng);
+                    updateLocationStatus('success');
+                    hasValidLocation = true;
+                },
+                (error) => {
+                    console.error("Error getting location:", error);
+                    updateLocationStatus('error');
+                    hasValidLocation = false;
+                    showAlert('กรุณาออกเข้าใหม่เพื่ออนุญาตเข้าถึงตำแหน่ง');
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                }
+            );
+        } else {
+            updateLocationStatus('error');
+            showAlert('Browser ไม่รองรับการใช้งาน Geolocation');
+        }
+    }
+
+    // Set current date and time as default values
+    window.onload = function() {
+        const now = new Date();
+        
+        // Set current date and time (readonly)
+        const dateInput = document.getElementById('dateInput');
+        dateInput.valueAsDate = now;
+        
+        const timeInput = document.getElementById('timeInput');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        timeInput.value = `${hours}:${minutes}`;
+
+        // Initialize map and request location
+        initMap();
+        requestLocation();
+    }
+
+    // Add click handler for start button
+    startButton.addEventListener('click', () => {
+        if (validateForm()) {
+            // Proceed with starting work
+            console.log('Starting work...');
+            // Add your logic here for what happens after successful validation
+        }
+    });
+</script>
+
 </body>
 </html>
