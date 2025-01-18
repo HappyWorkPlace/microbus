@@ -5,167 +5,171 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>บันทึกการทำงาน</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
     <style>
-        body {
-            background: #ffffff;
-            font-family: 'Kanit', sans-serif;
+        .vehicle-image {
+            width: 200px;
+            height: 100px;
+            object-fit: contain;
         }
-
-        .custom-select {
-            position: relative;
+        #map {
+            height: 200px;
             width: 100%;
-        }
-
-        .custom-select select {
-            appearance: none;
-            width: 100%;
-        }
-
-        .custom-select::after {
-            content: "";
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 12px;
-            height: 12px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-            pointer-events: none;
-        }
-
-        .time-input::-webkit-calendar-picker-indicator {
-            background: transparent;
-            bottom: 0;
-            color: transparent;
-            cursor: pointer;
-            height: auto;
-            left: 0;
-            position: absolute;
-            right: 0;
-            top: 0;
-            width: auto;
-        }
-
-        .input-icon {
-            position: relative;
-        }
-
-        .input-icon input {
-            padding-right: 3rem;
-        }
-
-        .input-icon::after {
-            content: '';
-            position: absolute;
-            right: 0.75rem;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 1.5rem;
-            height: 1.5rem;
-            background-size: contain;
-            pointer-events: none;
-        }
-
-        .date-icon input::-webkit-calendar-picker-indicator {
-            opacity: 0;
-            position: absolute;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            width: 3rem;
-            height: 100%;
-            cursor: pointer;
-        }
-
-        .date-icon::after {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' /%3E%3C/svg%3E");
-        }
-
-        .time-icon::after {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' /%3E%3C/svg%3E");
-        }
-
-        .bg-primary {
-            background-color: #1a56db;
-        }
-
-        .hover\:bg-primary-dark:hover {
-            background-color: #1e429f;
+            border-radius: 0.5rem;
         }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-white rounded-xl shadow-xl">
-        <!-- Header -->
-        <div class="px-6 py-4">
-            <h1 class="text-xl font-bold mb-2">สวัสดีคุณ คาเดร็ด</h1>
+    <div class="w-full max-w-md">
+        <!-- Employee Info Outside Card -->
+        <div class="mb-6 text-left">
+            <h1 class="text-xl font-bold mb-2">สวัสดีคุณ กาเติร์ก</h1>
             <div class="space-y-1 text-sm text-gray-600">
                 <p>EmpNo : LC046</p>
-                <p>Name : คุณนนท์ สุขรัญ</p>
+                <p>Name : คุณนนต์ สุขเจริญ</p>
                 <p>Factory : ลพบุรี</p>
             </div>
         </div>
 
-        <!-- Form Content -->
-        <div class="p-6">
-            <form class="space-y-6 bg-gray-50 rounded-lg p-4">
-                <div class="space-y-2">
-                    <label class="block text-sm font-medium text-gray-700">
-                        กะการทำงาน :
-                    </label>
-                    <div class="custom-select">
-                        <select class="block w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="-">-</option>
-                            <option value="D">D</option>
-                            <option value="C">C</option>
-                            <option value="B">B</option>
-                            <option value="A">A</option>
-                        </select>
-                    </div>
-                </div>
+        <!-- Main Card -->
+        <div class="bg-white rounded-xl shadow-xl">
+            <!-- Vehicle Image -->
+            <div class="w-full flex items-center justify-center p-4">
+                <img src="https://happyworkplace.github.io/microbus/picture/microbus.gif" alt="Vehicle" class="vehicle-image">
+            </div>
 
-                <div class="space-y-2">
-                    <label class="block text-sm font-medium text-gray-700">
-                        เวลาเริ่มงาน :
-                    </label>
-                    <div class="flex gap-3">
-                        <div class="input-icon date-icon flex-1">
-                            <input 
-                                type="date" 
-                                id="dateInput"
-                                class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                        </div>
-                        <div class="input-icon time-icon">
-                            <input 
-                                type="time" 
-                                id="timeInput"
-                                class="time-input w-32 px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
+            <!-- Form Content -->
+            <div class="p-6">
+                <form class="space-y-6 bg-gray-50 rounded-lg p-4">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            การทำงาน :
+                        </label>
+                        <div class="custom-select">
+                            <select class="block w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="-">-</option>
+                                <option value="D">D</option>
+                                <option value="C">C</option>
+                                <option value="B">B</option>
+                                <option value="A">A</option>
+                            </select>
                         </div>
                     </div>
-                </div>
 
-                <!-- Buttons -->
-                <div class="flex flex-col space-y-3 pt-4">
-                    <button
-                        type="button"
-                        class="w-full px-6 py-3 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out"
-                    >
-                        START
-                    </button>
-                    <button
-                        type="button"
-                        class="w-full px-6 py-3 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-150 ease-in-out"
-                    >
-                        BACK
-                    </button>
-                </div>
-            </form>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            เวลาเริ่มงาน :
+                        </label>
+                        <div class="flex gap-3">
+                            <div class="input-icon date-icon flex-1">
+                                <input 
+                                    type="date" 
+                                    id="dateInput"
+                                    class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                            </div>
+                            <div class="input-icon time-icon">
+                                <input 
+                                    type="time" 
+                                    id="timeInput"
+                                    class="time-input w-32 px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Location Fields -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-sm font-medium text-gray-700">
+                                ตำแหน่งปัจจุบัน :
+                            </label>
+                            <button
+                                type="button"
+                                id="refreshLocation"
+                                class="px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out"
+                            >
+                                ตรวจสอบตำแหน่ง
+                            </button>
+                        </div>
+                        <div id="map" class="mb-3"></div>
+                        <div class="flex gap-3">
+
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex flex-col space-y-3 pt-4">
+                        <button
+                            type="button"
+                            id="startButton"
+                            class="w-full px-6 py-3 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out"
+                        >
+                            START
+                        </button>
+                        <button
+                            type="button"
+                            class="w-full px-6 py-3 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-150 ease-in-out"
+                        >
+                            BACK
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
     <script>
+        let map;
+        let marker;
+        
+        // Initialize map
+        function initMap() {
+            map = L.map('map').setView([13.7563, 100.5018], 13); // Default center at Bangkok
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+        }
+
+        // Update marker position
+        function updateMarkerPosition(lat, lng) {
+            if (marker) {
+                marker.setLatLng([lat, lng]);
+            } else {
+                marker = L.marker([lat, lng]).addTo(map);
+            }
+            map.setView([lat, lng], 15);
+        }
+
+        // Get current location
+        function requestLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
+                        document.getElementById('latitudeInput').value = lat.toFixed(6);
+                        document.getElementById('longitudeInput').value = lng.toFixed(6);
+                        
+                        updateMarkerPosition(lat, lng);
+                    },
+                    (error) => {
+                        console.error("Error getting location:", error);
+                        alert("ไม่สามารถระบุตำแหน่งได้ กรุณาเปิดการใช้งาน Location");
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 5000,
+                        maximumAge: 0
+                    }
+                );
+            } else {
+                alert("Browser ไม่รองรับการใช้งาน Geolocation");
+            }
+        }
+
         // Set current date and time as default values
         window.onload = function() {
             const now = new Date();
@@ -179,7 +183,15 @@
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             timeInput.value = `${hours}:${minutes}`;
+
+            // Initialize map and request location
+            initMap();
+            requestLocation();
         }
+
+        // Add click handlers
+        document.getElementById('startButton').addEventListener('click', requestLocation);
+        document.getElementById('refreshLocation').addEventListener('click', requestLocation);
     </script>
 </body>
 </html>
