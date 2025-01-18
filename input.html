@@ -94,9 +94,7 @@
                             </button>
                         </div>
                         <div id="map" class="mb-3"></div>
-                        <div class="flex gap-3">
 
-                        </div>
                     </div>
 
                     <!-- Buttons -->
@@ -150,8 +148,7 @@
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
                         
-                        document.getElementById('latitudeInput').value = lat.toFixed(6);
-                        document.getElementById('longitudeInput').value = lng.toFixed(6);
+
                         
                         updateMarkerPosition(lat, lng);
                     },
