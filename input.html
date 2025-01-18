@@ -120,7 +120,6 @@
                         <button
                             type="button"
                             id="startButton"
-                            disabled
                             class="w-full px-6 py-2.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             START
@@ -137,7 +136,7 @@
         </div>
     </div>
 
-     <script>
+    <script>
         let map;
         let marker;
         let hasValidLocation = false;
@@ -181,31 +180,6 @@
             map.setView([lat, lng], 15);
         }
 
-        // Check if form is valid and show appropriate message
-        function checkFormValidity() {
-            const isShiftSelected = shiftSelect.value !== '';
-            const isValid = isShiftSelected && hasValidLocation;
-            startButton.disabled = !isValid;
-
-            // Return validation status and appropriate message
-            if (!isShiftSelected) {
-                return {
-                    valid: false,
-                    message: 'กรุณาเลือกกะการทำงาน'
-                };
-            }
-            if (!hasValidLocation) {
-                return {
-                    valid: false,
-                    message: 'กรุณาออกเข้าใหม่เพื่ออนุญาตเข้าถึงตำแหน่ง'
-                };
-            }
-            return {
-                valid: true,
-                message: ''
-            };
-        }
-
         // Update location status UI
         function updateLocationStatus(status) {
             switch(status) {
@@ -228,7 +202,6 @@
         function requestLocation() {
             updateLocationStatus('searching');
             hasValidLocation = false;
-            checkFormValidity();
 
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
@@ -238,14 +211,12 @@
                         updateMarkerPosition(lat, lng);
                         updateLocationStatus('success');
                         hasValidLocation = true;
-                        checkFormValidity();
                     },
                     (error) => {
                         console.error("Error getting location:", error);
                         updateLocationStatus('error');
                         hasValidLocation = false;
-                        const validation = checkFormValidity();
-                        showAlert(validation.message);
+                        showAlert('กรุณาออกเข้าใหม่เพื่ออนุญาตเข้าถึงตำแหน่ง');
                     },
                     {
                         enableHighAccuracy: true,
@@ -277,21 +248,12 @@
             requestLocation();
         }
 
-        // Handle shift selection
-        shiftSelect.addEventListener('change', () => {
-            const validation = checkFormValidity();
-            if (!validation.valid) {
-                showAlert(validation.message);
-            }
-        });
-
         // Add click handler for start button
         startButton.addEventListener('click', () => {
-            const validation = checkFormValidity();
-            if (!validation.valid) {
-                showAlert(validation.message);
-            } else {
-                requestLocation(); // Verify location again when starting
+            if (validateForm()) {
+                // Proceed with starting work
+                console.log('Starting work...');
+                // Add your logic here for what happens after successful validation
             }
         });
     </script>
