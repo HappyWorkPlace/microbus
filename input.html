@@ -7,25 +7,44 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.min.css" rel="stylesheet">
     <style>
         .vehicle-image {
-            width: 200px;
-            height: 100px;
+            width: 180px;
+            height: 90px;
             object-fit: contain;
         }
         #map {
-            height: 200px;
+            height: 180px;
             width: 100%;
             border-radius: 0.5rem;
         }
+        @media (max-width: 640px) {
+            .vehicle-image {
+                width: 160px;
+                height: 80px;
+            }
+            #map {
+                height: 160px;
+            }
+        }
+        /* Customize Swal */
+        .swal2-popup {
+            font-size: 14px !important;
+        }
+        .swal2-styled.swal2-confirm {
+            background-color: #3b82f6 !important;
+            font-size: 14px !important;
+        }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body class="min-h-screen flex items-center justify-center p-4 bg-gray-50">
     <div class="w-full max-w-md">
         <!-- Employee Info Outside Card -->
-        <div class="mb-6 text-left">
+        <div class="mb-4 text-left">
             <h1 class="text-xl font-bold mb-2">สวัสดีคุณ กาเติร์ก</h1>
-            <div class="space-y-1 text-sm text-gray-600">
+            <div class="space-y-0.5 text-sm text-gray-600">
                 <p>EmpNo : LC046</p>
                 <p>Name : คุณนนต์ สุขเจริญ</p>
                 <p>Factory : ลพบุรี</p>
@@ -33,22 +52,26 @@
         </div>
 
         <!-- Main Card -->
-        <div class="bg-white rounded-xl shadow-xl">
+        <div class="bg-white rounded-xl shadow-lg">
             <!-- Vehicle Image -->
-            <div class="w-full flex items-center justify-center p-4">
+            <div class="w-full flex items-center justify-center p-3">
                 <img src="https://happyworkplace.github.io/microbus/picture/microbus.gif" alt="Vehicle" class="vehicle-image">
             </div>
 
             <!-- Form Content -->
-            <div class="p-6">
-                <form class="space-y-6 bg-gray-50 rounded-lg p-4">
+            <div class="p-4">
+                <form id="workForm" class="space-y-4 bg-gray-50 rounded-lg p-4">
                     <div class="space-y-2">
                         <label class="block text-sm font-medium text-gray-700">
                             การทำงาน :
                         </label>
                         <div class="custom-select">
-                            <select class="block w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="-">-</option>
+                            <select 
+                                id="shiftSelect"
+                                class="block w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                required
+                            >
+                                <option value="">กรุณาเลือกกะการทำงาน</option>
                                 <option value="D">D</option>
                                 <option value="C">C</option>
                                 <option value="B">B</option>
@@ -61,19 +84,21 @@
                         <label class="block text-sm font-medium text-gray-700">
                             เวลาเริ่มงาน :
                         </label>
-                        <div class="flex gap-3">
+                        <div class="flex gap-2">
                             <div class="input-icon date-icon flex-1">
                                 <input 
                                     type="date" 
                                     id="dateInput"
-                                    class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    class="w-full px-3 py-2.5 rounded-lg border border-gray-300 bg-gray-100 text-gray-900 text-sm focus:outline-none"
+                                    readonly
                                 >
                             </div>
                             <div class="input-icon time-icon">
                                 <input 
                                     type="time" 
                                     id="timeInput"
-                                    class="time-input w-32 px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    class="time-input w-28 px-3 py-2.5 rounded-lg border border-gray-300 bg-gray-100 text-gray-900 text-sm focus:outline-none"
+                                    readonly
                                 >
                             </div>
                         </div>
@@ -81,34 +106,28 @@
 
                     <!-- Location Fields -->
                     <div class="space-y-2">
-                        <div class="flex justify-between items-center mb-2">
+                        <div class="flex justify-between items-center">
                             <label class="block text-sm font-medium text-gray-700">
                                 ตำแหน่งปัจจุบัน :
                             </label>
-                            <button
-                                type="button"
-                                id="refreshLocation"
-                                class="px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out"
-                            >
-                                ตรวจสอบตำแหน่ง
-                            </button>
+                            <span id="locationStatus" class="text-xs font-medium px-2 py-1 rounded-full"></span>
                         </div>
-                        <div id="map" class="mb-3"></div>
-
+                        <div id="map" class="shadow-sm"></div>
                     </div>
 
                     <!-- Buttons -->
-                    <div class="flex flex-col space-y-3 pt-4">
+                    <div class="flex flex-col space-y-2 pt-2">
                         <button
                             type="button"
                             id="startButton"
-                            class="w-full px-6 py-3 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out"
+                            disabled
+                            class="w-full px-6 py-2.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             START
                         </button>
                         <button
                             type="button"
-                            class="w-full px-6 py-3 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-150 ease-in-out"
+                            class="w-full px-6 py-2.5 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-150 ease-in-out"
                         >
                             BACK
                         </button>
@@ -118,13 +137,35 @@
         </div>
     </div>
 
-    <script>
+     <script>
         let map;
         let marker;
+        let hasValidLocation = false;
+        const startButton = document.getElementById('startButton');
+        const shiftSelect = document.getElementById('shiftSelect');
+        const locationStatus = document.getElementById('locationStatus');
+
+        // Custom alert function using Swal
+        function showAlert(message) {
+            Swal.fire({
+                text: message,
+                confirmButtonText: 'ตกลง',
+                customClass: {
+                    popup: 'rounded-xl'
+                }
+            });
+        }
         
         // Initialize map
         function initMap() {
-            map = L.map('map').setView([13.7563, 100.5018], 13); // Default center at Bangkok
+            map = L.map('map', {
+                zoomControl: false,
+                dragging: false,
+                touchZoom: false,
+                doubleClickZoom: false,
+                scrollWheelZoom: false
+            }).setView([13.7563, 100.5018], 13);
+            
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
@@ -140,21 +181,71 @@
             map.setView([lat, lng], 15);
         }
 
+        // Check if form is valid and show appropriate message
+        function checkFormValidity() {
+            const isShiftSelected = shiftSelect.value !== '';
+            const isValid = isShiftSelected && hasValidLocation;
+            startButton.disabled = !isValid;
+
+            // Return validation status and appropriate message
+            if (!isShiftSelected) {
+                return {
+                    valid: false,
+                    message: 'กรุณาเลือกกะการทำงาน'
+                };
+            }
+            if (!hasValidLocation) {
+                return {
+                    valid: false,
+                    message: 'กรุณาออกเข้าใหม่เพื่ออนุญาตเข้าถึงตำแหน่ง'
+                };
+            }
+            return {
+                valid: true,
+                message: ''
+            };
+        }
+
+        // Update location status UI
+        function updateLocationStatus(status) {
+            switch(status) {
+                case 'searching':
+                    locationStatus.textContent = 'กำลังค้นหาตำแหน่ง...';
+                    locationStatus.className = 'text-xs font-medium px-2 py-1 rounded-full bg-yellow-100 text-yellow-800';
+                    break;
+                case 'success':
+                    locationStatus.textContent = 'ได้รับตำแหน่งแล้ว';
+                    locationStatus.className = 'text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-800';
+                    break;
+                case 'error':
+                    locationStatus.textContent = 'ไม่สามารถระบุตำแหน่งได้';
+                    locationStatus.className = 'text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-800';
+                    break;
+            }
+        }
+
         // Get current location
         function requestLocation() {
+            updateLocationStatus('searching');
+            hasValidLocation = false;
+            checkFormValidity();
+
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
-                        
-
-                        
                         updateMarkerPosition(lat, lng);
+                        updateLocationStatus('success');
+                        hasValidLocation = true;
+                        checkFormValidity();
                     },
                     (error) => {
                         console.error("Error getting location:", error);
-                        alert("ไม่สามารถระบุตำแหน่งได้ กรุณาเปิดการใช้งาน Location");
+                        updateLocationStatus('error');
+                        hasValidLocation = false;
+                        const validation = checkFormValidity();
+                        showAlert(validation.message);
                     },
                     {
                         enableHighAccuracy: true,
@@ -163,7 +254,8 @@
                     }
                 );
             } else {
-                alert("Browser ไม่รองรับการใช้งาน Geolocation");
+                updateLocationStatus('error');
+                showAlert('Browser ไม่รองรับการใช้งาน Geolocation');
             }
         }
 
@@ -171,11 +263,10 @@
         window.onload = function() {
             const now = new Date();
             
-            // Set current date
+            // Set current date and time (readonly)
             const dateInput = document.getElementById('dateInput');
             dateInput.valueAsDate = now;
             
-            // Set current time
             const timeInput = document.getElementById('timeInput');
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
@@ -186,9 +277,23 @@
             requestLocation();
         }
 
-        // Add click handlers
-        document.getElementById('startButton').addEventListener('click', requestLocation);
-        document.getElementById('refreshLocation').addEventListener('click', requestLocation);
+        // Handle shift selection
+        shiftSelect.addEventListener('change', () => {
+            const validation = checkFormValidity();
+            if (!validation.valid) {
+                showAlert(validation.message);
+            }
+        });
+
+        // Add click handler for start button
+        startButton.addEventListener('click', () => {
+            const validation = checkFormValidity();
+            if (!validation.valid) {
+                showAlert(validation.message);
+            } else {
+                requestLocation(); // Verify location again when starting
+            }
+        });
     </script>
 </body>
 </html>
