@@ -139,23 +139,21 @@
 <script>
     let map;
     let marker;
-    let hasValidLocation = false;
+    window.hasValidLocation = false; // Ensure global scope for location validity
     const startButton = document.getElementById('startButton');
     const shiftSelect = document.getElementById('shiftSelect');
     const locationStatus = document.getElementById('locationStatus');
 
-    // Custom alert function using Swal
+    // Custom alert function using SweetAlert2
     function showAlert(message) {
         Swal.fire({
             text: message,
             confirmButtonText: 'ตกลง',
-            customClass: {
-                popup: 'rounded-xl'
-            }
+            customClass: { popup: 'rounded-xl' }
         });
     }
 
-    // Form validation function
+    // Form validation function (globally scoped)
     function validateForm() {
         // Check if a shift is selected
         if (!shiftSelect.value) {
@@ -164,7 +162,7 @@
         }
 
         // Check if location is valid
-        if (!hasValidLocation) {
+        if (!window.hasValidLocation) {
             showAlert('กรุณาระบุตำแหน่งก่อนเริ่มงาน');
             return false;
         }
@@ -172,7 +170,7 @@
         return true;
     }
 
-    // Initialize map
+    // Initialize the map
     function initMap() {
         map = L.map('map', {
             zoomControl: false,
@@ -181,13 +179,13 @@
             doubleClickZoom: false,
             scrollWheelZoom: false
         }).setView([13.7563, 100.5018], 13);
-        
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
     }
 
-    // Update marker position
+    // Update the marker position
     function updateMarkerPosition(lat, lng) {
         if (marker) {
             marker.setLatLng([lat, lng]);
@@ -197,9 +195,9 @@
         map.setView([lat, lng], 15);
     }
 
-    // Update location status UI
+    // Update location status in the UI
     function updateLocationStatus(status) {
-        switch(status) {
+        switch (status) {
             case 'searching':
                 locationStatus.textContent = 'กำลังค้นหาตำแหน่ง...';
                 locationStatus.className = 'text-xs font-medium px-2 py-1 rounded-full bg-yellow-100 text-yellow-800';
@@ -215,10 +213,10 @@
         }
     }
 
-    // Get current location
+    // Request the user's current location
     function requestLocation() {
         updateLocationStatus('searching');
-        hasValidLocation = false;
+        window.hasValidLocation = false;
 
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -227,12 +225,12 @@
                     const lng = position.coords.longitude;
                     updateMarkerPosition(lat, lng);
                     updateLocationStatus('success');
-                    hasValidLocation = true;
+                    window.hasValidLocation = true;
                 },
                 (error) => {
                     console.error("Error getting location:", error);
                     updateLocationStatus('error');
-                    hasValidLocation = false;
+                    window.hasValidLocation = false;
                     showAlert('กรุณาออกเข้าใหม่เพื่ออนุญาตเข้าถึงตำแหน่ง');
                 },
                 {
@@ -247,33 +245,37 @@
         }
     }
 
-    // Set current date and time as default values
-    window.onload = function() {
+    // Set the current date and time as default values
+    function setDefaultDateTime() {
         const now = new Date();
-        
-        // Set current date and time (readonly)
         const dateInput = document.getElementById('dateInput');
-        dateInput.valueAsDate = now;
-        
         const timeInput = document.getElementById('timeInput');
+
+        // Set current date
+        dateInput.valueAsDate = now;
+
+        // Set current time
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
         timeInput.value = `${hours}:${minutes}`;
-
-        // Initialize map and request location
-        initMap();
-        requestLocation();
     }
 
-    // Add click handler for start button
+    // Initialize everything on page load
+    window.onload = function () {
+        setDefaultDateTime(); // Set the default date and time
+        initMap();           // Initialize the map
+        requestLocation();   // Request user's location
+    };
+
+    // Add click handler for the start button
     startButton.addEventListener('click', () => {
         if (validateForm()) {
-            // Proceed with starting work
             console.log('Starting work...');
-            // Add your logic here for what happens after successful validation
+            // Add logic for successful validation
         }
     });
 </script>
+
 
 </body>
 </html>
