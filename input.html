@@ -163,7 +163,7 @@
 
         // Check if location is valid
         if (!window.hasValidLocation) {
-            showAlert('กรุณาระบุตำแหน่งก่อนเริ่มงาน');
+            showAlert('กรุณาออกเข้าใหม่เพื่ออนุญาตเข้าถึงตำแหน่ง');
             return false;
         }
 
@@ -268,12 +268,33 @@
     };
 
     // Add click handler for the start button
-   startButton.addEventListener('click', () => {
-    if (validateForm()) {
-        console.log('ทำงานได้ปกติ'); // Message indicating successful validation
-        // Add further logic here if needed
-    }
-});
+    startButton.addEventListener('click', () => {
+        if (validateForm()) {
+            // อัพเดทวันที่และเวลาให้เป็นปัจจุบัน
+            setDefaultDateTime();
+    
+            // ขอตำแหน่งใหม่
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    updateMarkerPosition(lat, lng);
+                    updateLocationStatus('success');
+                    console.log('ทำงานได้ปกติ');
+                },
+                (error) => {
+                    console.error("Error getting location:", error);
+                    updateLocationStatus('error');
+                    showAlert('ไม่สามารถระบุตำแหน่งได้');
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                }
+            );
+        }
+    });
 </script>
 
 
