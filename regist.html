@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ลงทะเบียนพนักงาน</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
-    <?!= include('CSS'); ?>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
     <div class="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
@@ -38,117 +37,134 @@
 
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
-        // JavaScript.html
+// Initialize variables
 let isLoading = false;
+const API_URL = "https://script.google.com/macros/s/AKfycbxXekWmewemj9UWCGJ_3v2bjTE9DfjI5Wwmi_FAt1CPcaau-WMB_bG2fdStdxM35_xq/exec";
 
+// LIFF initialization
 async function initializeLIFF() {
-  try {
-    await liff.init({ liffId: "2006809014-zqJWBVbA" });
-    if (!liff.isLoggedIn()) {
-      liff.login();
-    }
-  } catch (err) {
-    showError('LIFF initialization failed');
-  }
+ try {
+   await liff.init({ liffId: "2006809014-zqJWBVbA" });
+   if (!liff.isLoggedIn()) {
+     liff.login();
+   }
+ } catch (err) {
+   showError('LIFF initialization failed');
+ }
 }
 
 window.onload = initializeLIFF;
 
+// UI Helper Functions
 function showError(message) {
-  const errorDiv = document.getElementById('errorMessage');
-  errorDiv.textContent = message;
-  errorDiv.classList.remove('hidden');
-  setTimeout(() => errorDiv.classList.add('hidden'), 3000);
+ const errorDiv = document.getElementById('errorMessage');
+ errorDiv.textContent = message;
+ errorDiv.classList.remove('hidden');
+ setTimeout(() => errorDiv.classList.add('hidden'), 3000);
 }
 
 function setLoadingState(button, isLoading, loadingText = 'กำลังตรวจสอบ...', defaultText = 'ตรวจสอบ') {
-  button.innerHTML = isLoading ? 
-    `<div class="spinner"></div>${loadingText}` : 
-    defaultText;
-  button.disabled = isLoading;
+ if (isLoading) {
+   button.innerHTML = `
+     <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+     </svg>
+     ${loadingText}
+   `;
+   button.disabled = true;
+ } else {
+   button.innerHTML = defaultText;
+   button.disabled = false;
+ }
 }
 
+// Main Functions
 async function verifyEmployee() {
-  if (isLoading) return;
-  
-  const employeeId = document.getElementById('employeeId').value;
-  const verifyButton = document.getElementById('verifyButton');
-  
-  if (!employeeId) {
-    showError('กรุณากรอกรหัสพนักงาน');
-    return;
-  }
+ if (isLoading) return;
+ 
+ const employeeId = document.getElementById('employeeId').value;
+ const verifyButton = document.getElementById('verifyButton');
+ 
+ if (!employeeId) {
+   showError('กรุณากรอกรหัสพนักงาน');
+   return;
+ }
 
-  isLoading = true;
-  setLoadingState(verifyButton, true);
+ isLoading = true;
+ setLoadingState(verifyButton, true);
 
-  try {
-    const result = await google.script.run.verifyEmployee(employeeId);
-    if (result.found) {
-      displayEmployeeDetails(result.data);
-    } else {
-      showError('ไม่พบข้อมูลพนักงาน');
-    }
-  } catch (error) {
-    showError('เกิดข้อผิดพลาดในการตรวจสอบ');
-  } finally {
-    isLoading = false;
-    setLoadingState(verifyButton, false);
-  }
+ try {
+   const response = await fetch(`${API_URL}?action=verify&empId=${employeeId}`);
+   const result = await response.json();
+   
+   if (result.found) {
+     displayEmployeeDetails(result.data);
+   } else {
+     showError('ไม่พบข้อมูลพนักงาน');
+   }
+ } catch (error) {
+   showError('เกิดข้อผิดพลาดในการตรวจสอบ');
+ } finally {
+   isLoading = false;
+   setLoadingState(verifyButton, false);
+ }
 }
 
 async function submitRegistration() {
-  if (!liff.isLoggedIn()) {
-    showError('กรุณาเข้าสู่ระบบ LINE');
-    return;
-  }
+ if (!liff.isLoggedIn()) {
+   showError('กรุณาเข้าสู่ระบบ LINE');
+   return;
+ }
 
-  const submitButton = document.getElementById('submitButton');
-  setLoadingState(submitButton, true, 'กำลังดำเนินการ...', 'ลงทะเบียน');
+ const submitButton = document.getElementById('submitButton');
+ const employeeId = document.getElementById('employeeId').value;
+ 
+ setLoadingState(submitButton, true, 'กำลังดำเนินการ...', 'ลงทะเบียน');
 
-  try {
-    const profile = await liff.getProfile();
-    const employeeId = document.getElementById('employeeId').value;
-    const result = await google.script.run.registerEmployee(employeeId, profile.userId);
-    
-    if (result) {
-      alert('ลงทะเบียนสำเร็จ!');
-      liff.closeWindow();
-    } else {
-      showError('เกิดข้อผิดพลาดในการลงทะเบียน');
-    }
-  } catch (error) {
-    showError('เกิดข้อผิดพลาดในการลงทะเบียน');
-  } finally {
-    setLoadingState(submitButton, false);
-  }
+ try {
+   const profile = await liff.getProfile();
+   const response = await fetch(`${API_URL}?action=register&empId=${employeeId}&uid=${profile.userId}`);
+   const result = await response.json();
+   
+   if (result.success) {
+     alert('ลงทะเบียนสำเร็จ!');
+     liff.closeWindow();
+   } else {
+     showError('เกิดข้อผิดพลาดในการลงทะเบียน');
+   }
+ } catch (error) {
+   showError('เกิดข้อผิดพลาดในการลงทะเบียน');
+ } finally {
+   setLoadingState(submitButton, false);
+ }
 }
 
 function displayEmployeeDetails(data) {
-  const detailsDiv = document.getElementById('employeeDetails');
-  detailsDiv.innerHTML = `
-    <div class="space-y-2">
-      <label class="block text-sm font-medium text-gray-700">ชื่อพนักงาน</label>
-      <input type="text" value="${data.name} ${data.lastName}" class="block w-full px-4 py-3 rounded-lg border border-gray-300" disabled>
-    </div>
-    <div class="space-y-2">
-      <label class="block text-sm font-medium text-gray-700">ตำแหน่ง</label>
-      <input type="text" value="${data.position}" class="block w-full px-4 py-3 rounded-lg border border-gray-300" disabled>
-    </div>
-    <div class="space-y-2">
-      <label class="block text-sm font-medium text-gray-700">โรงงาน</label>
-      <input type="text" value="${data.factory}" class="block w-full px-4 py-3 rounded-lg border border-gray-300" disabled>
-    </div>
-    <button type="button" onclick="submitRegistration()" id="submitButton" 
-      class="w-full px-6 py-3 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700">
-      ลงทะเบียน
-    </button>
-  `;
-  
-  detailsDiv.classList.remove('hidden');
-  document.getElementById('employeeId').disabled = true;
-  document.getElementById('verifyButton').style.display = 'none';
+ const detailsDiv = document.getElementById('employeeDetails');
+ detailsDiv.innerHTML = `
+   <div class="space-y-2">
+     <label class="block text-sm font-medium text-gray-700">ชื่อพนักงาน</label>
+     <input type="text" value="${data.name} ${data.lastName}" class="block w-full px-4 py-3 rounded-lg border border-gray-300 bg-gray-50" disabled>
+   </div>
+   <div class="space-y-2">
+     <label class="block text-sm font-medium text-gray-700">ตำแหน่ง</label>
+     <input type="text" value="${data.position}" class="block w-full px-4 py-3 rounded-lg border border-gray-300 bg-gray-50" disabled>
+   </div>
+   <div class="space-y-2">
+     <label class="block text-sm font-medium text-gray-700">โรงงาน</label>
+     <input type="text" value="${data.factory}" class="block w-full px-4 py-3 rounded-lg border border-gray-300 bg-gray-50" disabled>
+   </div>
+   <button type="button" onclick="submitRegistration()" id="submitButton" 
+     class="w-full px-6 py-3 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out mt-4">
+     ลงทะเบียน
+   </button>
+ `;
+ 
+ detailsDiv.classList.remove('hidden');
+ document.getElementById('employeeId').disabled = true;
+ document.getElementById('verifyButton').style.display = 'none';
 }
-        </script>
+</script>
 </body>
 </html>
