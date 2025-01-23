@@ -104,7 +104,7 @@
             try {
                 // เช็คสถานะการลงทะเบียนก่อน
                 const profile = await liff.getProfile();
-                const checkResponse = await fetch(`${API_URL}?action=check_registration&empId=${employeeId}&uid=${profile.userId}`);
+                const checkResponse = await fetch(`${API_URL}?action=check_registration&uid=${profile.userId}`);
                 const checkResult = await checkResponse.json();
 
                 if (checkResult.registered) {
