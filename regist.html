@@ -65,6 +65,7 @@
     <script>
         let isLoading = false;
         const API_URL = "https://script.google.com/macros/s/AKfycbxXekWmewemj9UWCGJ_3v2bjTE9DfjI5Wwmi_FAt1CPcaau-WMB_bG2fdStdxM35_xq/exec";
+        window.onload = initializeLIFF;
         function showError(message) {
             const errorDiv = document.getElementById('errorMessage');
             errorDiv.textContent = message;
