@@ -6,6 +6,7 @@
     <title>ลงทะเบียนพนักงาน</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             background-color: #f0f2f5;
@@ -175,8 +176,15 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    alert('ลงทะเบียนสำเร็จ!');
-                    liff.closeWindow();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'ลงทะเบียนสำเร็จ!',
+                        text: 'ระบบกำลังปิดหน้าต่าง...',
+                        showConfirmButton: false,
+                        timer: 2000
+                    }).then(() => {
+                        liff.closeWindow();
+                    });
                 } else {
                     showError('เกิดข้อผิดพลาดในการลงทะเบียน');
                 }
