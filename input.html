@@ -9,183 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.min.css" rel="stylesheet">
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0sUp9IJILTAV4Qx7AHK6dugESDF5NWHA&libraries=places&callback=initMap"></script>
-    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <style>
-        .vehicle-image {
-            width: 180px;
-            height: 90px;
-            object-fit: contain;
-        }
-        #map {
-            height: 180px;
-            width: 100%;
-            border-radius: 0.5rem;
-        }
-        @media (max-width: 640px) {
-            .vehicle-image {
-                width: 160px;
-                height: 80px;
-            }
-            #map {
-                height: 160px;
-            }
-        }
-        /* Customize Swal */
-        .swal2-popup {
-            font-size: 14px !important;
-        }
-        .swal2-styled.swal2-confirm {
-            background-color: #3b82f6 !important;
-            font-size: 14px !important;
-        }
-    </style>
-</head>
-<body class="min-h-screen flex items-center justify-center p-4 bg-gray-50">
-    <div class="w-full max-w-md">
-        <!-- Employee Info Outside Card -->
-        <div class="mb-4 text-left">
-            <h1 class="text-xl font-bold mb-2">สวัสดีคุณ กาเติร์ก</h1>
-            <div class="space-y-0.5 text-sm text-gray-600">
-                <p>EmpNo : LC046</p>
-                <p>Name : คุณนนต์ สุขเจริญ</p>
-                <p>Factory : ลพบุรี</p>
-            </div>
-        </div>
-
-        <!-- Main Card -->
-        <div class="bg-white rounded-xl shadow-lg">
-            <!-- Vehicle Image -->
-            <div class="w-full flex items-center justify-center p-3">
-                <img src="https://happyworkplace.github.io/microbus/picture/microbus.gif" alt="Vehicle" class="vehicle-image">
-            </div>
-
-            <!-- Form Content -->
-            <div class="p-4">
-                <form id="workForm" class="space-y-4 bg-gray-50 rounded-lg p-4">
-                    <div class="space-y-2">
-                        <label class="block text-sm font-bold text-gray-700">
-                            1.กะการทำงาน :
-                        </label>
-                        <div class="custom-select">
-                            <select 
-                                id="shiftSelect"
-                                class="block w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required
-                            >
-                                <option value="">กรุณาเลือกกะการทำงาน</option>
-                                <option value="D">D</option>
-                                <option value="A">A</option>
-                                <option value="B">B</option>
-                                <option value="C">C</option>
-                            </select>
-                        </div>
-                    </div>
-                    <!-- Work day type radio buttons -->
-                    <div class="space-y-2">
-                        <label class="block text-sm font-bold text-gray-700">
-                            2.ประเภทวันทำงาน :
-                        </label>
-                        <div class="space-y-2">
-                            <div class="flex items-center">
-                                <input 
-                                    type="radio" 
-                                    id="workingDay" 
-                                    name="workDayType" 
-                                    value="1"
-                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                                    required
-                                >
-                                <label for="workingDay" class="ml-2 text-sm text-gray-700">
-                                    ทำงานวันปกติ
-                                </label>
-                            </div>
-                            <div class="flex items-center">
-                                <input 
-                                    type="radio" 
-                                    id="holiday" 
-                                    name="workDayType" 
-                                    value="2"
-                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                                    required
-                                >
-                                <label for="holiday" class="ml-2 text-sm text-gray-700">
-                                    ทำงานวันหยุด
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="block text-sm font-bold text-gray-700">
-                            3.วันที่และเวลาเริ่มงาน :
-                        </label>
-                        <div class="flex gap-3">
-                            <div class="input-icon date-icon flex-1">
-                                <input 
-                                type="text" 
-                                id="dateInput"
-                                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 bg-gray-100 text-gray-900 text-sm focus:outline-none"
-                                readonly
-                            >
-                            </div>
-                            <div class="input-icon time-icon">
-                                <input 
-                                type="text" 
-                                id="timeInput"
-                                class="time-input w-36 px-3 py-2.5 rounded-lg border border-gray-300 bg-gray-100 text-gray-900 text-sm focus:outline-none"
-                                readonly
-                            >
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Location Fields -->
-                    <div class="space-y-2">
-                        <div class="flex justify-between items-center">
-                            <label class="block text-sm font-bold text-gray-700">
-                                4.ตำแหน่งปัจจุบัน :
-                            </label>
-                            <span id="locationStatus" class="text-xs font-medium px-2 py-1 rounded-full"></span>
-                        </div>
-                        <div id="map" class="shadow-sm"></div>
-                        <!-- Add location details text below map -->
-                        <p id="locationDetails" class="text-xs text-gray-500 mt-1 italic"></p>
-                    </div>
-
-                    <!-- Buttons -->
-                    <div class="flex flex-col space-y-2 pt-2">
-                        <button
-                            type="button"
-                            id="startButton"
-                            class="w-full px-6 py-2.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            START
-                        </button>
-                        <button
-                            type="button"
-                            class="w-full px-6 py-2.5 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-150 ease-in-out"
-                        >
-                            BACK
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <script>
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>บันทึกการทำงาน</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.min.css" rel="stylesheet">
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0sUp9IJILTAV4Qx7AHK6dugESDF5NWHA&libraries=places&callback=initMap"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0sUp9IJILTAV4Qx7AHK6dugESDF5NWHA&libraries=places"></script>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         .vehicle-image {
@@ -364,7 +188,15 @@ async function initializeLIFF() {
         showAlert('LIFF initialization failed');
     }
 }
-
+async function initMap() {
+    return new Promise((resolve) => {
+        if (window.google && window.google.maps) {
+            resolve();
+        } else {
+            window.initMap = resolve;
+        }
+    });
+}
 const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXekWmewemj9UWCGJ_3v2bjTE9DfjI5Wwmi_FAt1CPcaau-WMB_bG2fdStdxM35_xq/exec";
 
 async function checkUserRegistration(profile) {
@@ -656,9 +488,10 @@ function setDefaultDateTime() {
 //// Event Handlers ////
 window.onload = async function() {
     try {
-        await initializeLIFF();
-        setDefaultDateTime();
-        await initializeMap();
+        await initializeLIFF();  // รอให้ LIFF เสร็จก่อน
+        setDefaultDateTime(); 
+        await initMap();  // จากนั้นค่อย init map
+        await initializeMap();  // แล้วค่อย initialize leaflet map
     } catch (error) {
         console.error('Initialization error:', error);
         showAlert('เกิดข้อผิดพลาดในการโหลดแอป กรุณาลองใหม่อีกครั้ง');
@@ -730,9 +563,6 @@ startButton.addEventListener('click', async () => {
         });
     }
 });
-    </script>
-    </body>
-    </html>
     </script>
     </body>
     </html>
