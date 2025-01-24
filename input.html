@@ -213,7 +213,15 @@
 
            return true;
        }
-
+async function initMaps() {
+    await new Promise(resolve => {
+        if (window.google) resolve();
+        else window.initMap = resolve;
+    });
+    
+    placesService = new google.maps.places.PlacesService(document.createElement('div'));
+    initMap(); // เรียก Leaflet map
+}
        // Map Functions
        function initMap() {
            map = L.map('map', {
@@ -382,17 +390,17 @@
        }
 
        // Initialize
-       window.onload = async function() {
-           try {
-               await initializeLIFF();
-               setDefaultDateTime();
-               initMap();
-               requestLocation();
-           } catch (error) {
-               console.error('Initialization error:', error);
-               showAlert('เกิดข้อผิดพลาดในการโหลดแอป กรุณาลองใหม่อีกครั้ง');
-           }
-       };
+window.onload = async function() {
+    try {
+        await initializeLIFF();
+        setDefaultDateTime();
+        await initMaps();
+        requestLocation();
+    } catch (error) {
+        console.error('Initialization error:', error);
+        showAlert('เกิดข้อผิดพลาดในการโหลดแอป กรุณาลองใหม่อีกครั้ง');
+    }
+};
 
        // Event Handlers
        startButton.addEventListener('click', async () => {
