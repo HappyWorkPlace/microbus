@@ -274,14 +274,14 @@ function updateUserInfo(displayName, employeeData) {
     
         // Get location details using Google Geocoding API
  // แก้ไขฟังก์ชัน getGoogleLocationDetails
-async function getGoogleLocationDetails(lat, lng) {
+ async function getGoogleLocationDetails(lat, lng) {
     try {
         const geocoder = new google.maps.Geocoder();
         const latlng = { lat: parseFloat(lat), lng: parseFloat(lng) };
         
         const response = await new Promise((resolve, reject) => {
             geocoder.geocode({ location: latlng, language: 'th' }, (results, status) => {
-                if (status === 'OK') {
+                if (status === 'OK' && results && results.length > 0) {
                     resolve(results);
                 } else {
                     reject(new Error('Geocoder failed: ' + status));
@@ -290,18 +290,22 @@ async function getGoogleLocationDetails(lat, lng) {
         });
 
         const result = response[0];
-        const addressComponents = {};
+        if (!result) {
+            throw new Error('No results found');
+        }
 
-        // แยกประเภทข้อมูลที่ละเอียดขึ้น
-        result.address_components.forEach(component => {
-            const types = component.types;
+        const addressComponents = {};
+        
+        // Extract address components safely
+        result.address_components?.forEach(component => {
+            const types = component?.types || [];
             if (types.includes('sublocality_level_1') || types.includes('sublocality')) {
                 addressComponents.subdistrict = component.long_name;
             }
-            if (types.includes('administrative_area_level_2') || types.includes('district')) {
+            if (types.includes('administrative_area_level_2')) {
                 addressComponents.district = component.long_name;
             }
-            if (types.includes('administrative_area_level_1') || types.includes('province')) {
+            if (types.includes('administrative_area_level_1')) {
                 addressComponents.province = component.long_name;
             }
             if (types.includes('route')) {
@@ -309,8 +313,9 @@ async function getGoogleLocationDetails(lat, lng) {
             }
         });
 
-        // สร้าง div สำหรับ Places Service
+        // Create Places Service with a valid DOM element
         const placesDiv = document.createElement('div');
+        document.body.appendChild(placesDiv);
         const placesService = new google.maps.places.PlacesService(placesDiv);
 
         try {
@@ -320,10 +325,11 @@ async function getGoogleLocationDetails(lat, lng) {
                     radius: 500,
                     type: ['point_of_interest']
                 }, (results, status) => {
+                    document.body.removeChild(placesDiv);
                     if (status === 'OK' && results && results.length > 0) {
                         resolve(results);
                     } else {
-                        resolve([]); // ส่งค่า empty array ถ้าไม่พบข้อมูล
+                        resolve([]);
                     }
                 });
             });
@@ -333,32 +339,28 @@ async function getGoogleLocationDetails(lat, lng) {
                 district: addressComponents.district || '',
                 province: addressComponents.province || '',
                 road: addressComponents.road || '',
-                formatted_address: result.formatted_address,
-                nearby: nearbySearch[0]?.name || '',
+                formatted_address: result.formatted_address || '',
+                nearby: nearbySearch?.[0]?.name || '',
                 raw_data: result
             };
         } catch (placeError) {
-            console.error('Error in Places Service:', placeError);
-            // ถ้า Places Service มีปัญหา ยังคงส่งข้อมูลที่ได้จาก Geocoder
+            console.error('Places Service error:', placeError);
+            document.body.removeChild(placesDiv);
             return {
-                subdistrict: addressComponents.subdistrict || '',
-                district: addressComponents.district || '',
-                province: addressComponents.province || '',
-                road: addressComponents.road || '',
-                formatted_address: result.formatted_address,
+                ...addressComponents,
+                formatted_address: result.formatted_address || '',
                 nearby: '',
                 raw_data: result
             };
         }
-
     } catch (error) {
-        console.error('Error getting Google location details:', error);
+        console.error('Geocoding error:', error);
         return {
-            subdistrict: 'ไม่พบข้อมูล',
-            district: 'ไม่พบข้อมูล',
-            province: 'ไม่พบข้อมูล',
+            subdistrict: '',
+            district: '',
+            province: '',
             road: '',
-            formatted_address: '',
+            formatted_address: 'ไม่พบข้อมูล',
             nearby: '',
             raw_data: null
         };
