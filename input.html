@@ -9,6 +9,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0sUp9IJILTAV4Qx7AHK6dugESDF5NWHA&libraries=places&callback=initMap"></script>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         .vehicle-image {
             width: 180px;
@@ -62,8 +64,8 @@
             <div class="p-4">
                 <form id="workForm" class="space-y-4 bg-gray-50 rounded-lg p-4">
                     <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">
-                            การทำงาน :
+                        <label class="block text-sm font-bold text-gray-700">
+                            1.กะการทำงาน :
                         </label>
                         <div class="custom-select">
                             <select 
@@ -73,33 +75,66 @@
                             >
                                 <option value="">กรุณาเลือกกะการทำงาน</option>
                                 <option value="D">D</option>
-                                <option value="C">C</option>
-                                <option value="B">B</option>
                                 <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
                             </select>
                         </div>
                     </div>
-
+                    <!-- Work day type radio buttons -->
                     <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">
-                            เวลาเริ่มงาน :
+                        <label class="block text-sm font-bold text-gray-700">
+                            2.ประเภทวันทำงาน :
                         </label>
-                        <div class="flex gap-2">
+                        <div class="space-y-2">
+                            <div class="flex items-center">
+                                <input 
+                                    type="radio" 
+                                    id="workingDay" 
+                                    name="workDayType" 
+                                    value="1"
+                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                    required
+                                >
+                                <label for="workingDay" class="ml-2 text-sm text-gray-700">
+                                    ทำงานวันปกติ
+                                </label>
+                            </div>
+                            <div class="flex items-center">
+                                <input 
+                                    type="radio" 
+                                    id="holiday" 
+                                    name="workDayType" 
+                                    value="2"
+                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                    required
+                                >
+                                <label for="holiday" class="ml-2 text-sm text-gray-700">
+                                    ทำงานวันหยุด
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-gray-700">
+                            3.วันที่และเวลาเริ่มงาน :
+                        </label>
+                        <div class="flex gap-3">
                             <div class="input-icon date-icon flex-1">
                                 <input 
-                                    type="date" 
-                                    id="dateInput"
-                                    class="w-full px-3 py-2.5 rounded-lg border border-gray-300 bg-gray-100 text-gray-900 text-sm focus:outline-none"
-                                    readonly
-                                >
+                                type="text" 
+                                id="dateInput"
+                                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 bg-gray-100 text-gray-900 text-sm focus:outline-none"
+                                readonly
+                            >
                             </div>
                             <div class="input-icon time-icon">
                                 <input 
-                                    type="time" 
-                                    id="timeInput"
-                                    class="time-input w-28 px-3 py-2.5 rounded-lg border border-gray-300 bg-gray-100 text-gray-900 text-sm focus:outline-none"
-                                    readonly
-                                >
+                                type="text" 
+                                id="timeInput"
+                                class="time-input w-36 px-3 py-2.5 rounded-lg border border-gray-300 bg-gray-100 text-gray-900 text-sm focus:outline-none"
+                                readonly
+                            >
                             </div>
                         </div>
                     </div>
@@ -107,12 +142,14 @@
                     <!-- Location Fields -->
                     <div class="space-y-2">
                         <div class="flex justify-between items-center">
-                            <label class="block text-sm font-medium text-gray-700">
-                                ตำแหน่งปัจจุบัน :
+                            <label class="block text-sm font-bold text-gray-700">
+                                4.ตำแหน่งปัจจุบัน :
                             </label>
                             <span id="locationStatus" class="text-xs font-medium px-2 py-1 rounded-full"></span>
                         </div>
                         <div id="map" class="shadow-sm"></div>
+                        <!-- Add location details text below map -->
+                        <p id="locationDetails" class="text-xs text-gray-500 mt-1 italic"></p>
                     </div>
 
                     <!-- Buttons -->
@@ -136,167 +173,384 @@
         </div>
     </div>
 
-<script>
-    let map;
-    let marker;
-    window.hasValidLocation = false; // Ensure global scope for location validity
-    const startButton = document.getElementById('startButton');
-    const shiftSelect = document.getElementById('shiftSelect');
-    const locationStatus = document.getElementById('locationStatus');
-
-    // Custom alert function using SweetAlert2
-    function showAlert(message) {
-        Swal.fire({
-            text: message,
-            confirmButtonText: 'ตกลง',
-            customClass: { popup: 'rounded-xl' }
-        });
-    }
-
-    // Form validation function (globally scoped)
-    function validateForm() {
-        // Check if a shift is selected
-        if (!shiftSelect.value) {
-            showAlert('กรุณาเลือกกะการทำงาน');
-            return false;
+    <script>
+        // Add at the start of your script section///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+async function initializeLIFF() {
+    try {
+        await liff.init({ liffId: '2006809014-elbWam3R' });
+        if (!liff.isLoggedIn()) {
+            liff.login();
+            return;
         }
-
-        // Check if location is valid
-        if (!window.hasValidLocation) {
-            showAlert('กรุณาออกเข้าใหม่เพื่ออนุญาตเข้าถึงตำแหน่ง');
-            return false;
-        }
-
-        return true;
+        const profile = await liff.getProfile();
+        checkUserRegistration(profile);
+    } catch (err) {
+        showAlert('LIFF initialization failed');
     }
+}
+const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXekWmewemj9UWCGJ_3v2bjTE9DfjI5Wwmi_FAt1CPcaau-WMB_bG2fdStdxM35_xq/exec";
+async function checkUserRegistration(profile) {
+    try {
+        const response = await fetch(`${APP_SCRIPT_URL}?action=check_registration&uid=${profile.userId}`);
+        const data = await response.json();
 
-    // Initialize the map
-    function initMap() {
-        map = L.map('map', {
-            zoomControl: false,
-            dragging: false,
-            touchZoom: false,
-            doubleClickZoom: false,
-            scrollWheelZoom: false
-        }).setView([13.7563, 100.5018], 13);
+        if (data.registered) {
+            const workingCheck = await fetch(`${APP_SCRIPT_URL}?action=check_working_status&uid=${profile.userId}`);
+            const workingStatus = await workingCheck.json();
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-    }
-
-    // Update the marker position
-    function updateMarkerPosition(lat, lng) {
-        if (marker) {
-            marker.setLatLng([lat, lng]);
+            if (workingStatus.isWorking) {
+                window.location.href = 'working.html';
+                return;
+            }
+            
+            updateUserInfo(profile.displayName, data.employeeData);
         } else {
-            marker = L.marker([lat, lng]).addTo(map);
+            window.location.href = 'register.html';
         }
-        map.setView([lat, lng], 15);
+    } catch (err) {
+        showAlert('Failed to check registration');
     }
+}
 
-    // Update location status in the UI
-    function updateLocationStatus(status) {
-        switch (status) {
-            case 'searching':
-                locationStatus.textContent = 'กำลังค้นหาตำแหน่ง...';
-                locationStatus.className = 'text-xs font-medium px-2 py-1 rounded-full bg-yellow-100 text-yellow-800';
-                break;
-            case 'success':
-                locationStatus.textContent = 'ได้รับตำแหน่งแล้ว';
-                locationStatus.className = 'text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-800';
-                break;
-            case 'error':
-                locationStatus.textContent = 'ไม่สามารถระบุตำแหน่งได้';
-                locationStatus.className = 'text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-800';
-                break;
-        }
-    }
-
-    // Request the user's current location
-    function requestLocation() {
-        updateLocationStatus('searching');
+function updateUserInfo(displayName, employeeData) {
+    document.querySelector('h1').textContent = `สวัสดีคุณ ${displayName}`;
+    document.querySelector('p:nth-child(1)').textContent = `EmpNo : ${employeeData.empNo}`;
+    document.querySelector('p:nth-child(2)').textContent = `Name : ${employeeData.name}`;
+    document.querySelector('p:nth-child(3)').textContent = `Factory : ${employeeData.factory}`;
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        let map;
+        let marker;
         window.hasValidLocation = false;
-
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    updateMarkerPosition(lat, lng);
-                    updateLocationStatus('success');
-                    window.hasValidLocation = true;
-                },
-                (error) => {
-                    console.error("Error getting location:", error);
-                    updateLocationStatus('error');
-                    window.hasValidLocation = false;
-                    showAlert('กรุณาออกเข้าใหม่เพื่ออนุญาตเข้าถึงตำแหน่ง');
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 5000,
-                    maximumAge: 0
-                }
-            );
-        } else {
-            updateLocationStatus('error');
-            showAlert('Browser ไม่รองรับการใช้งาน Geolocation');
-        }
-    }
-
-    // Set the current date and time as default values
-    function setDefaultDateTime() {
-        const now = new Date();
-        const dateInput = document.getElementById('dateInput');
-        const timeInput = document.getElementById('timeInput');
-
-        // Set current date
-        dateInput.valueAsDate = now;
-
-        // Set current time
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        timeInput.value = `${hours}:${minutes}`;
-    }
-
-    // Initialize everything on page load
-    window.onload = function () {
-        setDefaultDateTime(); // Set the default date and time
-        initMap();           // Initialize the map
-        requestLocation();   // Request user's location
-    };
-
-    // Add click handler for the start button
-    startButton.addEventListener('click', () => {
-        if (validateForm()) {
-            // อัพเดทวันที่และเวลาให้เป็นปัจจุบัน
-            setDefaultDateTime();
+        const startButton = document.getElementById('startButton');
+        const shiftSelect = document.getElementById('shiftSelect');
+        const locationStatus = document.getElementById('locationStatus');
+        const locationDetails = document.getElementById('locationDetails');
     
-            // ขอตำแหน่งใหม่
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    updateMarkerPosition(lat, lng);
-                    updateLocationStatus('success');
-                    console.log('ทำงานได้ปกติ');
-                },
-                (error) => {
-                    console.error("Error getting location:", error);
-                    updateLocationStatus('error');
-                    showAlert('ไม่สามารถระบุตำแหน่งได้');
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 5000,
-                    maximumAge: 0
-                }
-            );
+        // Helper function to show alerts
+        function showAlert(message) {
+            Swal.fire({
+                text: message,
+                confirmButtonText: 'ตกลง',
+                customClass: { popup: 'rounded-xl' }
+            });
         }
-    });
-</script>
+    
+        // Form validation
+        function validateForm() {
+            if (!shiftSelect.value) {
+                showAlert('กรุณาเลือกกะการทำงาน');
+                return false;
+            }
+    
+            const workDayTypeSelected = document.querySelector('input[name="workDayType"]:checked');
+            if (!workDayTypeSelected) {
+                showAlert('กรุณาเลือกประเภทวันทำงาน');
+                return false;
+            }
+    
+            if (!window.hasValidLocation) {
+                showAlert('กรุณาออกเข้าใหม่เพื่ออนุญาตเข้าถึงตำแหน่ง');
+                return false;
+            }
+    
+            return true;
+        }
+    
+        // Initialize map
+        function initMap() {
+            map = L.map('map', {
+                zoomControl: false,
+                dragging: false,
+                touchZoom: false,
+                doubleClickZoom: false,
+                scrollWheelZoom: false
+            }).setView([13.7563, 100.5018], 13);
+    
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+        }
+    
+        // Get location details using Google Geocoding API
+ // แก้ไขฟังก์ชัน getGoogleLocationDetails
+async function getGoogleLocationDetails(lat, lng) {
+    try {
+        const geocoder = new google.maps.Geocoder();
+        const latlng = { lat: parseFloat(lat), lng: parseFloat(lng) };
+        
+        const response = await new Promise((resolve, reject) => {
+            geocoder.geocode({ location: latlng, language: 'th' }, (results, status) => {
+                if (status === 'OK') {
+                    resolve(results);
+                } else {
+                    reject(new Error('Geocoder failed: ' + status));
+                }
+            });
+        });
 
+        const result = response[0];
+        const addressComponents = {};
 
-</body>
-</html>
+        // แยกประเภทข้อมูลที่ละเอียดขึ้น
+        result.address_components.forEach(component => {
+            const types = component.types;
+            if (types.includes('sublocality_level_1') || types.includes('sublocality')) {
+                addressComponents.subdistrict = component.long_name;
+            }
+            if (types.includes('administrative_area_level_2') || types.includes('district')) {
+                addressComponents.district = component.long_name;
+            }
+            if (types.includes('administrative_area_level_1') || types.includes('province')) {
+                addressComponents.province = component.long_name;
+            }
+            if (types.includes('route')) {
+                addressComponents.road = component.long_name;
+            }
+        });
+
+        // สร้าง div สำหรับ Places Service
+        const placesDiv = document.createElement('div');
+        const placesService = new google.maps.places.PlacesService(placesDiv);
+
+        try {
+            const nearbySearch = await new Promise((resolve) => {
+                placesService.nearbySearch({
+                    location: latlng,
+                    radius: 500,
+                    type: ['point_of_interest']
+                }, (results, status) => {
+                    if (status === 'OK' && results && results.length > 0) {
+                        resolve(results);
+                    } else {
+                        resolve([]); // ส่งค่า empty array ถ้าไม่พบข้อมูล
+                    }
+                });
+            });
+
+            return {
+                subdistrict: addressComponents.subdistrict || '',
+                district: addressComponents.district || '',
+                province: addressComponents.province || '',
+                road: addressComponents.road || '',
+                formatted_address: result.formatted_address,
+                nearby: nearbySearch[0]?.name || '',
+                raw_data: result
+            };
+        } catch (placeError) {
+            console.error('Error in Places Service:', placeError);
+            // ถ้า Places Service มีปัญหา ยังคงส่งข้อมูลที่ได้จาก Geocoder
+            return {
+                subdistrict: addressComponents.subdistrict || '',
+                district: addressComponents.district || '',
+                province: addressComponents.province || '',
+                road: addressComponents.road || '',
+                formatted_address: result.formatted_address,
+                nearby: '',
+                raw_data: result
+            };
+        }
+
+    } catch (error) {
+        console.error('Error getting Google location details:', error);
+        return {
+            subdistrict: 'ไม่พบข้อมูล',
+            district: 'ไม่พบข้อมูล',
+            province: 'ไม่พบข้อมูล',
+            road: '',
+            formatted_address: '',
+            nearby: '',
+            raw_data: null
+        };
+    }
+}
+        // Update marker position and location details
+        async function updateMarkerPosition(lat, lng) {
+            if (marker) {
+                marker.setLatLng([lat, lng]);
+            } else {
+                marker = L.marker([lat, lng]).addTo(map);
+            }
+            map.setView([lat, lng], 15);
+    
+            const locationInfo = await getGoogleLocationDetails(lat, lng);
+            if (locationInfo) {
+                window.locationDetails = locationInfo;
+                
+                let displayParts = [];
+                
+                if (locationInfo.nearby) {
+                    displayParts.push(`ใกล้ ${locationInfo.nearby}`);
+                }
+                
+                if (locationInfo.road) {
+                    displayParts.push(`ถนน${locationInfo.road}`);
+                }
+                
+                if (locationInfo.subdistrict) {
+                    displayParts.push(`ตำบล${locationInfo.subdistrict}`);
+                }
+                if (locationInfo.district) {
+                    displayParts.push(`อำเภอ${locationInfo.district}`);
+                }
+                if (locationInfo.province) {
+                    displayParts.push(`จังหวัด${locationInfo.province}`);
+                }
+    
+                const displayText = displayParts.length > 0 
+                    ? displayParts.join(' ') 
+                    : locationInfo.formatted_address;
+    
+                locationDetails.textContent = displayText || 'ไม่พบข้อมูลสถานที่';
+                marker.bindPopup(displayText || 'ไม่พบข้อมูลสถานที่').openPopup();
+            }
+        }
+    
+        // Update location status indicator
+        function updateLocationStatus(status) {
+            switch (status) {
+                case 'searching':
+                    locationStatus.textContent = 'กำลังค้นหาตำแหน่ง...';
+                    locationStatus.className = 'text-xs font-medium px-2 py-1 rounded-full bg-yellow-100 text-yellow-800';
+                    locationDetails.textContent = '';
+                    break;
+                case 'success':
+                    locationStatus.textContent = 'พบตำแหน่งแล้ว';
+                    locationStatus.className = 'text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-800';
+                    break;
+                case 'error':
+                    locationStatus.textContent = 'ไม่สามารถระบุตำแหน่งได้';
+                    locationStatus.className = 'text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-800';
+                    locationDetails.textContent = '';
+                    break;
+            }
+        }
+    
+        // Request location access
+        function requestLocation() {
+            updateLocationStatus('searching');
+            window.hasValidLocation = false;
+    
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        await updateMarkerPosition(lat, lng);
+                        updateLocationStatus('success');
+                        window.hasValidLocation = true;
+                    },
+                    (error) => {
+                        console.error("Error getting location:", error);
+                        updateLocationStatus('error');
+                        window.hasValidLocation = false;
+                        showAlert('กรุณาออกเข้าใหม่เพื่ออนุญาตเข้าถึงตำแหน่ง');
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 5000,
+                        maximumAge: 0
+                    }
+                );
+            } else {
+                updateLocationStatus('error');
+                showAlert('Browser ไม่รองรับการใช้งาน Geolocation');
+            }
+        }
+    
+        // Set default date and time
+        function setDefaultDateTime() {
+            const now = new Date();
+            const dateInput = document.getElementById('dateInput');
+            const timeInput = document.getElementById('timeInput');
+            
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            const formattedDate = `${day}/${month}/${year}`;
+            
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const formattedTime = `${hours}:${minutes}น.`;
+            
+            dateInput.value = formattedDate;
+            timeInput.value = formattedTime;
+        }
+    
+        // Initialize when page loads
+        window.onload = function () {
+        initializeLIFF();
+        setDefaultDateTime();
+        initMap();
+        requestLocation();
+        };
+    
+        // Start button click handler
+        startButton.addEventListener('click', async () => {
+   if (validateForm()) {
+       const profile = await liff.getProfile();
+       const formData = {
+           uid: profile.userId,
+           shift: shiftSelect.value,
+           workDayType: document.querySelector('input[name="workDayType"]:checked').value,
+           date: document.getElementById('dateInput').value,
+           time: document.getElementById('timeInput').value,
+           location: window.locationDetails
+       };
+
+       const locationInfo = window.locationDetails || {};
+       const workDayTypeText = formData.workDayType === "1" ? "ทำงานวันปกติ" : "ทำงานวันหยุด";
+
+       Swal.fire({
+           title: 'ตรวจสอบข้อมูล',
+           html: `
+               <div class="text-left">
+                   <div class="mb-2">
+                       <span class="font-semibold">กะการทำงาน:</span> ${formData.shift}
+                   </div>
+                   <div class="mb-2">
+                       <span class="font-semibold">ประเภทวันทำงาน:</span> ${workDayTypeText}
+                   </div>
+                   <div class="mb-2">
+                       <span class="font-semibold">วันที่:</span> ${formData.date}
+                   </div>
+                   <div class="mb-2">
+                       <span class="font-semibold">เวลา:</span> ${formData.time}
+                   </div>
+                   <div class="mb-2">
+                       <span class="font-semibold">สถานที่:</span><br>
+                       ${locationInfo.formatted_address || 'ไม่พบข้อมูลสถานที่'}
+                   </div>
+               </div>
+               <div class="mt-4 text-sm">
+                   กรุณาตรวจสอบข้อมูลให้ถูกต้อง
+               </div>
+           `,
+           icon: 'question',
+           showCancelButton: true,
+           confirmButtonText: 'ยืนยัน',
+           cancelButtonText: 'ยกเลิก',
+           customClass: {
+               popup: 'rounded-xl'
+           }
+       }).then(async (result) => {
+           if (result.isConfirmed) {
+               try {
+                   const response = await fetch(`${APP_SCRIPT_URL}?action=record_start`, {
+                       method: 'POST',
+                       body: JSON.stringify(formData)
+                   });
+                   const result = await response.json();
+                   if (result.success) {
+                       window.location.href = 'working.html';
+                   }
+               } catch (err) {
+                   showAlert('Failed to record start time');
+               }
+           }
+       });
+   }
+});
+    </script>
+    </body>
+    </html>
