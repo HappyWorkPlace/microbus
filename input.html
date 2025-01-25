@@ -352,13 +352,13 @@ async function checkRegistration(uid, profile) {
                 let displayText = `ใกล้กับ ${nearbyPlace}`;
 
                 if (addressComponents.subdistrict) {
-                    displayText += , ตำบล${addressComponents.subdistrict};
+                    displayText += `, ตำบล${addressComponents.subdistrict}`;
                 }
                 if (addressComponents.district) {
-                    displayText += , อำเภอ${addressComponents.district};
+                    displayText += `, อำเภอ${addressComponents.district}`;
                 }
                 if (addressComponents.province) {
-                    displayText += , จังหวัด${addressComponents.province};
+                    displayText += `, จังหวัด${addressComponents.province}`;
                 }
 
                 return displayText;
@@ -404,8 +404,8 @@ async function checkRegistration(uid, profile) {
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
 
-            dateElement.textContent = ${day}/${month}/${year};
-            timeElement.textContent = ${hours}:${minutes}:${seconds};
+            dateElement.textContent = `${day}/${month}/${year}`;
+            timeElement.textContent = `${hours}:${minutes}:${seconds}`;
         }
 
         // Update time every second
@@ -415,7 +415,7 @@ async function checkRegistration(uid, profile) {
 
         // Check-in functionality
         function checkIn() {
-            alert(Checked in at location: (${userLocation.lat}, ${userLocation.lng}));
+            alert(`Checked in at location: (${userLocation.lat}, ${userLocation.lng})`);
         }
 
     </script>
