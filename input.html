@@ -183,8 +183,6 @@
         // ตั้งค่ารูปโปรไฟล์จาก LIFF (ตรวจสอบว่า `profile` มีข้อมูล)
         if (profile && profile.pictureUrl) {
             document.querySelector('.profile-image img').src = profile.pictureUrl;
-        } else {
-            document.querySelector('.profile-image img').src = "https://via.placeholder.com/80"; // รูปภาพเริ่มต้น
         }
     } catch (error) {
         console.error("Error fetching employee details:", error);
