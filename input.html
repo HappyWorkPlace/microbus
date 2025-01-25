@@ -251,7 +251,7 @@ async function initializeLiff() {
 // ตรวจสอบการลงทะเบียน
 async function checkRegistration(uid, profile) {
     try {
-        const response = await fetch(${SCRIPT_URL}?action=check_registration&uid=${uid});
+        const response = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
         const result = await response.json();
 
         if (result.registered) {
@@ -423,14 +423,8 @@ async function checkRegistration(uid, profile) {
             alert(Checked in at location: (${userLocation.lat}, ${userLocation.lng}));
         }
 
-        // Initialize on page load
-        window.onload = function () {
-            initializeLiff();
-            const checkInButton = document.querySelector('.checkin-button');
-            checkInButton.addEventListener('click', checkIn);
-        };
     </script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0sUp9IJILTAV4Qx7AHK6dugESDF5NWHA&libraries=places"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0sUp9IJILTAV4Qx7AHK6dugESDF5NWHA&libraries=places" async defer></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
