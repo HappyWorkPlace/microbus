@@ -164,30 +164,36 @@
     </style>
     <script>
         const SCRIPT_URL ="https://script.google.com/macros/s/AKfycbxpZT-A8mlg5E0IgQkmvdkzqBm8TEqw0NQw0n4dK9FkpvDQlakCLISxc1TCyWzGo006/exec";
-        async function fetchEmployeeDetails(uid) {
-            try {
-                const response = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
-                const result = await response.json();
+ async function fetchEmployeeDetails(uid, profile) {
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
+        const result = await response.json();
 
-              if (result.registered) {
-                            // แสดงรหัสพนักงานและชื่อ
-                            document.querySelector('.name').textContent = `${result.employee_no} ${result.name}`;
-                            // แสดงโรงงาน
-                            document.querySelector('.id').textContent = `${result.factory}`;
-                        } else {
-                            document.querySelector('.name').textContent = "ไม่พบข้อมูล";
-                            document.querySelector('.id').textContent = "กรุณาลงทะเบียน";
-                        }
-            
-                        // ตั้งค่ารูปโปรไฟล์จาก LIFF
-                        document.querySelector('.profile-image img').src = profile.pictureUrl;
-                    } else {
-                        liff.login();
-                    }
-                } catch (error) {
-                    console.error("LIFF initialization failed", error);
-                }
-            }
+        if (result.registered) {
+            // แสดงรหัสพนักงานและชื่อ
+            document.querySelector('.name').textContent = `${result.employee_no} ${result.name}`;
+            // แสดงโรงงาน
+            document.querySelector('.id').textContent = `${result.factory}`;
+        } else {
+            // หากไม่พบข้อมูล
+            document.querySelector('.name').textContent = "ไม่พบข้อมูล";
+            document.querySelector('.id').textContent = "กรุณาลงทะเบียน";
+        }
+
+        // ตั้งค่ารูปโปรไฟล์จาก LIFF (ตรวจสอบว่า `profile` มีข้อมูล)
+        if (profile && profile.pictureUrl) {
+            document.querySelector('.profile-image img').src = profile.pictureUrl;
+        } else {
+            document.querySelector('.profile-image img').src = "https://via.placeholder.com/80"; // รูปภาพเริ่มต้น
+        }
+    } catch (error) {
+        console.error("Error fetching employee details:", error);
+        // กรณีเกิดข้อผิดพลาด แสดงข้อความเริ่มต้น
+        document.querySelector('.name').textContent = "เกิดข้อผิดพลาด";
+        document.querySelector('.id').textContent = "กรุณาลองใหม่อีกครั้ง";
+    }
+}
+
 
         async function initializeLiff() {
             try {
