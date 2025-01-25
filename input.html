@@ -263,14 +263,12 @@ async function checkRegistration(uid, profile) {
             }
             return true;
         } else {
-            document.querySelector('.name').textContent = "ไม่พบข้อมูล";
-            document.querySelector('.id').textContent = "กรุณาลงทะเบียน";
-            alert("ไม่พบข้อมูล กรุณาลงทะเบียนก่อนใช้งาน");
+            window.location.href = "https://liff.line.me/2006809014-zqJWBVbA";
             return false;
         }
     } catch (error) {
         console.error("Error checking registration:", error);
-        alert("เกิดข้อผิดพลาดในการตรวจสอบข้อมูล กรุณาลองใหม่");
+        window.location.href = "https://liff.line.me/2006809014-zqJWBVbA";
         return false;
     }
 }
