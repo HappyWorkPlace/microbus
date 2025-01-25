@@ -169,10 +169,19 @@
                 const response = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
                 const result = await response.json();
 
-                if (result.registered) {
-                    document.querySelector('.name').textContent = result.name;
-                    document.querySelector('.id').textContent = result.employeeNo;
-                } else {
+            if (result.registered) {
+                // แสดงรหัสพนักงานและชื่อ
+                document.querySelector('.name').textContent = `${result.employee_no} ${result.name}`;
+                // แสดงโรงงาน
+                document.querySelector('.id').textContent = `${result.factory}`;
+            } else {
+                document.querySelector('.name').textContent = "ไม่พบข้อมูล";
+                document.querySelector('.id').textContent = "กรุณาลงทะเบียน";
+            }
+
+            // ตั้งค่ารูปโปรไฟล์จาก LIFF
+            document.querySelector('.profile-image img').src = profile.pictureUrl;
+        } else {
                     document.querySelector('.name').textContent = "ไม่พบข้อมูล";
                     document.querySelector('.id').textContent = `UID: ${uid}`;
                 }
