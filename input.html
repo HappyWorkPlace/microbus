@@ -255,23 +255,17 @@ async function checkRegistration(uid, profile) {
         const result = await response.json();
 
         if (result.registered) {
-            // แสดงรหัสพนักงานและชื่อ
-            document.querySelector('.name').textContent = ${result.employee_no} ${result.name};
-            // แสดงโรงงาน
-            document.querySelector('.id').textContent = ${result.factory};
+            document.querySelector('.name').textContent = `${result.employee_no} ${result.name}`;
+            document.querySelector('.id').textContent = `${result.factory}`;
 
-            // ตั้งค่ารูปโปรไฟล์จาก LIFF
             if (profile && profile.pictureUrl) {
                 document.querySelector('.profile-image img').src = profile.pictureUrl;
             }
-
             return true;
         } else {
-            // หากไม่พบข้อมูล
             document.querySelector('.name').textContent = "ไม่พบข้อมูล";
             document.querySelector('.id').textContent = "กรุณาลงทะเบียน";
             alert("ไม่พบข้อมูล กรุณาลงทะเบียนก่อนใช้งาน");
-
             return false;
         }
     } catch (error) {
@@ -280,6 +274,7 @@ async function checkRegistration(uid, profile) {
         return false;
     }
 }
+
         let map;
         let marker;
         let userLocation = { lat: 0, lng: 0 };
@@ -437,7 +432,7 @@ async function checkRegistration(uid, profile) {
     <div class="container">
         <div class="header">
             <div class="profile-image">
-                <img src="https://via.placeholder.com/80" alt="Profile">
+                <img src="/api/placeholder/80/80" alt="placeholder">
             </div>
             <div class="name">กำลังโหลด...</div>
             <div class="id">กำลังโหลด...</div>
