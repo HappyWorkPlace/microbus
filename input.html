@@ -5,7 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Check-In Layout</title>
     <style>
-        * {
+        /* Loading overlay styles */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-overlay.hidden {
+            display: none;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #ddd;
+            border-top: 5px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+         {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -163,11 +198,20 @@
         }
     </style>
     <script>
-
-const SCRIPT_URL ="https://script.google.com/macros/s/AKfycbxpZT-A8mlg5E0IgQkmvdkzqBm8TEqw0NQw0n4dK9FkpvDQlakCLISxc1TCyWzGo006/exec";
+        const SCRIPT_URL ="https://script.google.com/macros/s/AKfycbxpZT-A8mlg5E0IgQkmvdkzqBm8TEqw0NQw0n4dK9FkpvDQlakCLISxc1TCyWzGo006/exec";
  // Initialize on page load
-window.onload = initializeLiff;
+window.onload = function () {
+    initializeLiff();
+};
+        // Show loading overlay
+        function showLoading() {
+            document.querySelector('.loading-overlay').classList.remove('hidden');
+        }
 
+        // Hide loading overlay
+        function hideLoading() {
+            document.querySelector('.loading-overlay').classList.add('hidden');
+        }
 // ปรับ initializeLiff
 async function initializeLiff() {
     try {
@@ -181,7 +225,7 @@ async function initializeLiff() {
 
             if (isRegistered) {
                 // เริ่มต้นฟังก์ชันอื่น ๆ หลังตรวจสอบสำเร็จ
-                showCheckInLayout();
+                hideLoading();
                 setDefaultDateTime();
                 startRealTimeClock();
                 initMap();
@@ -190,30 +234,31 @@ async function initializeLiff() {
                 // Event listener สำหรับปุ่ม Check In
                 const checkInButton = document.querySelector('.checkin-button');
                 checkInButton.addEventListener('click', checkIn);
-            }
+            } else {
+                        alert("UID not registered. Please register.");
+                        hideLoading();
+                    }
         } else {
             liff.login();
         }
     } catch (error) {
-        console.error("LIFF initialization failed", error);
-    }
-    function showCheckInLayout() {
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('checkInLayout').style.display = 'block';
+                console.error("LIFF initialization failed", error);
+                alert("Error initializing LIFF.");
+                hideLoading();
     }
 }
 
 // ตรวจสอบการลงทะเบียน
 async function checkRegistration(uid, profile) {
     try {
-        const response = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
+        const response = await fetch(${SCRIPT_URL}?action=check_registration&uid=${uid});
         const result = await response.json();
 
         if (result.registered) {
             // แสดงรหัสพนักงานและชื่อ
-            document.querySelector('.name').textContent = `${result.employee_no} ${result.name}`;
+            document.querySelector('.name').textContent = ${result.employee_no} ${result.name};
             // แสดงโรงงาน
-            document.querySelector('.id').textContent = `${result.factory}`;
+            document.querySelector('.id').textContent = ${result.factory};
 
             // ตั้งค่ารูปโปรไฟล์จาก LIFF
             if (profile && profile.pictureUrl) {
@@ -309,16 +354,16 @@ async function checkRegistration(uid, profile) {
 
                 const nearbyPlace = await getNearbyPlaces(lat, lng);
 
-                let displayText = `ใกล้กับ ${nearbyPlace}`;
+                let displayText = ใกล้กับ ${nearbyPlace};
 
                 if (addressComponents.subdistrict) {
-                    displayText += `, ตำบล${addressComponents.subdistrict}`;
+                    displayText += , ตำบล${addressComponents.subdistrict};
                 }
                 if (addressComponents.district) {
-                    displayText += `, อำเภอ${addressComponents.district}`;
+                    displayText += , อำเภอ${addressComponents.district};
                 }
                 if (addressComponents.province) {
-                    displayText += `, จังหวัด${addressComponents.province}`;
+                    displayText += , จังหวัด${addressComponents.province};
                 }
 
                 return displayText;
@@ -364,8 +409,8 @@ async function checkRegistration(uid, profile) {
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
 
-            dateElement.textContent = `${day}/${month}/${year}`;
-            timeElement.textContent = `${hours}:${minutes}:${seconds}`;
+            dateElement.textContent = ${day}/${month}/${year};
+            timeElement.textContent = ${hours}:${minutes}:${seconds};
         }
 
         // Update time every second
@@ -375,11 +420,12 @@ async function checkRegistration(uid, profile) {
 
         // Check-in functionality
         function checkIn() {
-            alert(`Checked in at location: (${userLocation.lat}, ${userLocation.lng})`);
+            alert(Checked in at location: (${userLocation.lat}, ${userLocation.lng}));
         }
 
         // Initialize on page load
         window.onload = function () {
+            initializeLiff();
             const checkInButton = document.querySelector('.checkin-button');
             checkInButton.addEventListener('click', checkIn);
         };
@@ -391,58 +437,52 @@ async function checkRegistration(uid, profile) {
 
 </head>
 <body>
-    <!-- Loader Section -->
-    <div id="loader" class="loader-wrapper">
-        <div class="loader"></div>
-        <div class="loader"></div>
-        <div class="loader"></div>
+    <div class="loading-overlay">
+        <div class="spinner"></div>
     </div>
-    <!-- Hidden Check-In Layout -->
-    <div id="checkInLayout" style="display: none;">
-        <div class="container">
-            <div class="header">
-                <div class="profile-image">
-                    <img src="https://via.placeholder.com/80" alt="Profile">
-                </div>
-                <div class="name">กำลังโหลด...</div>
-                <div class="id">กำลังโหลด...</div>
+    <div class="container">
+        <div class="header">
+            <div class="profile-image">
+                <img src="https://via.placeholder.com/80" alt="Profile">
             </div>
-    
-            <div class="datetime">
-                <div class="date">03 Apr, 2020</div>
-                <div class="time">05:23:24</div>
-            </div>
-    
-            <div class="shift-container">
-                <label for="shift">Shift</label>
-                <select id="shift">
-                    <option value="">Select</option>
-                    <option value="D">D</option>
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="C">C</option>
-                </select>
-            </div>
-    
-            <div class="map-container">
-                <div id="map"></div>
-            </div>
-    
-            <div class="location-details">กำลังโหลดข้อมูลตำแหน่ง...</div>
-    
-            <div class="info">
-                <div class="info-item">
-                    <span>In Time</span>
-                    <div class="value">00:00</div>
-                </div>
-                <div class="info-item">
-                    <span>Out Time</span>
-                    <div class="value">00:00</div>
-                </div>
-            </div>
-    
-            <a href="#" class="checkin-button">Check In</a>
+            <div class="name">กำลังโหลด...</div>
+            <div class="id">กำลังโหลด...</div>
         </div>
+
+        <div class="datetime">
+            <div class="date">03 Apr, 2020</div>
+            <div class="time">05:23:24</div>
+        </div>
+
+        <div class="shift-container">
+            <label for="shift">Shift</label>
+            <select id="shift">
+                <option value="">Select</option>
+                <option value="D">D</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+            </select>
+        </div>
+
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+
+        <div class="location-details">กำลังโหลดข้อมูลตำแหน่ง...</div>
+
+        <div class="info">
+            <div class="info-item">
+                <span>In Time</span>
+                <div class="value">00:00</div>
+            </div>
+            <div class="info-item">
+                <span>Out Time</span>
+                <div class="value">00:00</div>
+            </div>
+        </div>
+
+        <a href="#" class="checkin-button">Check In</a>
     </div>
 </body>
 </html>
