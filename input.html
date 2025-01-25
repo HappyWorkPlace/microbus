@@ -164,7 +164,43 @@
     </style>
     <script>
         const SCRIPT_URL ="https://script.google.com/macros/s/AKfycbxpZT-A8mlg5E0IgQkmvdkzqBm8TEqw0NQw0n4dK9FkpvDQlakCLISxc1TCyWzGo006/exec";
- async function fetchEmployeeDetails(uid, profile) {
+ // Initialize on page load
+window.onload = function () {
+    initializeLiff();
+};
+
+// ปรับ initializeLiff
+async function initializeLiff() {
+    try {
+        await liff.init({ liffId: "2006809014-elbWam3R" });
+        if (liff.isLoggedIn()) {
+            const profile = await liff.getProfile();
+            const uid = liff.getContext().userId;
+
+            // ตรวจสอบการลงทะเบียนก่อน
+            const isRegistered = await checkRegistration(uid, profile);
+
+            if (isRegistered) {
+                // เริ่มต้นฟังก์ชันอื่น ๆ หลังตรวจสอบสำเร็จ
+                setDefaultDateTime();
+                startRealTimeClock();
+                initMap();
+                updateLocation();
+
+                // Event listener สำหรับปุ่ม Check In
+                const checkInButton = document.querySelector('.checkin-button');
+                checkInButton.addEventListener('click', checkIn);
+            }
+        } else {
+            liff.login();
+        }
+    } catch (error) {
+        console.error("LIFF initialization failed", error);
+    }
+}
+
+// ตรวจสอบการลงทะเบียน
+async function checkRegistration(uid, profile) {
     try {
         const response = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
         const result = await response.json();
@@ -174,43 +210,27 @@
             document.querySelector('.name').textContent = `${result.employee_no} ${result.name}`;
             // แสดงโรงงาน
             document.querySelector('.id').textContent = `${result.factory}`;
+
+            // ตั้งค่ารูปโปรไฟล์จาก LIFF
+            if (profile && profile.pictureUrl) {
+                document.querySelector('.profile-image img').src = profile.pictureUrl;
+            }
+
+            return true;
         } else {
             // หากไม่พบข้อมูล
             document.querySelector('.name').textContent = "ไม่พบข้อมูล";
             document.querySelector('.id').textContent = "กรุณาลงทะเบียน";
-        }
+            alert("ไม่พบข้อมูล กรุณาลงทะเบียนก่อนใช้งาน");
 
-        // ตั้งค่ารูปโปรไฟล์จาก LIFF (ตรวจสอบว่า `profile` มีข้อมูล)
-        if (profile && profile.pictureUrl) {
-            document.querySelector('.profile-image img').src = profile.pictureUrl;
+            return false;
         }
     } catch (error) {
-        console.error("Error fetching employee details:", error);
-        // กรณีเกิดข้อผิดพลาด แสดงข้อความเริ่มต้น
-        document.querySelector('.name').textContent = "เกิดข้อผิดพลาด";
-        document.querySelector('.id').textContent = "กรุณาลองใหม่อีกครั้ง";
+        console.error("Error checking registration:", error);
+        alert("เกิดข้อผิดพลาดในการตรวจสอบข้อมูล กรุณาลองใหม่");
+        return false;
     }
 }
-
-
-        async function initializeLiff() {
-            try {
-                await liff.init({ liffId: "2006809014-elbWam3R" });
-                if (liff.isLoggedIn()) {
-                    const profile = await liff.getProfile();
-                    const uid = liff.getContext().userId;
-
-                    document.querySelector('.profile-image img').src = profile.pictureUrl;
-                    await fetchEmployeeDetails(uid);
-                } else {
-                    liff.login();
-                }
-            } catch (error) {
-                console.error("LIFF initialization failed", error);
-            }
-        }
-
-
         let map;
         let marker;
         let userLocation = { lat: 0, lng: 0 };
@@ -357,11 +377,6 @@
         // Initialize on page load
         window.onload = function () {
             initializeLiff();
-            setDefaultDateTime();
-            startRealTimeClock();
-            initMap();
-            updateLocation();
-
             const checkInButton = document.querySelector('.checkin-button');
             checkInButton.addEventListener('click', checkIn);
         };
