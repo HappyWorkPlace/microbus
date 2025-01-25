@@ -163,21 +163,40 @@
         }
     </style>
     <script>
+        async function fetchEmployeeDetails(uid) {
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
+                const result = await response.json();
+
+                if (result.registered) {
+                    document.querySelector('.name').textContent = result.name;
+                    document.querySelector('.id').textContent = result.employeeNo;
+                } else {
+                    document.querySelector('.name').textContent = "ไม่พบข้อมูล";
+                    document.querySelector('.id').textContent = `UID: ${uid}`;
+                }
+            } catch (error) {
+                console.error("Error fetching employee details:", error);
+            }
+        }
+
         async function initializeLiff() {
             try {
-                await liff.init({ liffId: "2006809014-elbWam3R" }); // Replace with your LIFF ID
+                await liff.init({ liffId: "2006809014-elbWam3R" });
                 if (liff.isLoggedIn()) {
                     const profile = await liff.getProfile();
-                    document.querySelector('.name').textContent = profile.displayName;
+                    const uid = liff.getContext().userId;
+
                     document.querySelector('.profile-image img').src = profile.pictureUrl;
-                    document.querySelector('.id').textContent = `UID: ${profile.userId}`;
+                    await fetchEmployeeDetails(uid);
                 } else {
                     liff.login();
                 }
             } catch (error) {
-                console.error('LIFF initialization failed', error);
+                console.error("LIFF initialization failed", error);
             }
         }
+
 
         let map;
         let marker;
@@ -346,8 +365,8 @@
             <div class="profile-image">
                 <img src="https://via.placeholder.com/80" alt="Profile">
             </div>
-            <div class="name">Vijay Rathod</div>
-            <div class="id">MN000477</div>
+            <div class="name">กำลังโหลด...</div>
+            <div class="id">กำลังโหลด...</div>
         </div>
 
         <div class="datetime">
