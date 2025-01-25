@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Apps Script Integration</title>
+</head>
+<body>
+  <h1>Google Apps Script Example</h1>
+  <input type="text" id="inputBox" placeholder="Enter a value">
+  <button id="checkButton">Check</button>
+  <button id="recordButton">Record</button>
+  <p id="output"></p>
+
+  <script>
+    const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXekWmewemj9UWCGJ_3v2bjTE9DfjI5Wwmi_FAt1CPcaau-WMB_bG2fdStdxM35_xq/exec"; // ใส่ URL ที่ได้จากการ Deploy
+
+    document.getElementById("checkButton").addEventListener("click", async () => {
+      const input = document.getElementById("inputBox").value;
+      const response = await fetch(`${APP_SCRIPT_URL}?action=check&input=${input}`);
+      const result = await response.json();
+
+      if (result.exists) {
+        document.getElementById("output").textContent = `Value "${input}" exists in the sheet.`;
+      } else {
+        document.getElementById("output").textContent = `Value "${input}" does not exist in the sheet.`;
+      }
+    });
+
+    document.getElementById("recordButton").addEventListener("click", async () => {
+      const input = document.getElementById("inputBox").value;
+
+      const response = await fetch(APP_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        document.getElementById("output").textContent = `Value "${input}" has been recorded successfully.`;
+      } else {
+        document.getElementById("output").textContent = `Failed to record data: ${result.message}`;
+      }
+    });
+  </script>
+</body>
+</html>
