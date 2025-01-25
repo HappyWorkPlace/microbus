@@ -169,26 +169,25 @@
                 const response = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
                 const result = await response.json();
 
-            if (result.registered) {
-                // แสดงรหัสพนักงานและชื่อ
-                document.querySelector('.name').textContent = `${result.employee_no} ${result.name}`;
-                // แสดงโรงงาน
-                document.querySelector('.id').textContent = `${result.factory}`;
-            } else {
-                document.querySelector('.name').textContent = "ไม่พบข้อมูล";
-                document.querySelector('.id').textContent = "กรุณาลงทะเบียน";
-            }
-
-            // ตั้งค่ารูปโปรไฟล์จาก LIFF
-            document.querySelector('.profile-image img').src = profile.pictureUrl;
-        } else {
-                    document.querySelector('.name').textContent = "ไม่พบข้อมูล";
-                    document.querySelector('.id').textContent = `UID: ${uid}`;
+              if (result.registered) {
+                            // แสดงรหัสพนักงานและชื่อ
+                            document.querySelector('.name').textContent = `${result.employee_no} ${result.name}`;
+                            // แสดงโรงงาน
+                            document.querySelector('.id').textContent = `${result.factory}`;
+                        } else {
+                            document.querySelector('.name').textContent = "ไม่พบข้อมูล";
+                            document.querySelector('.id').textContent = "กรุณาลงทะเบียน";
+                        }
+            
+                        // ตั้งค่ารูปโปรไฟล์จาก LIFF
+                        document.querySelector('.profile-image img').src = profile.pictureUrl;
+                    } else {
+                        liff.login();
+                    }
+                } catch (error) {
+                    console.error("LIFF initialization failed", error);
                 }
-            } catch (error) {
-                console.error("Error fetching employee details:", error);
             }
-        }
 
         async function initializeLiff() {
             try {
