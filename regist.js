@@ -1,5 +1,5 @@
         let isLoading = false;
-        const API_URL = "https://script.google.com/macros/s/AKfycbxXekWmewemj9UWCGJ_3v2bjTE9DfjI5Wwmi_FAt1CPcaau-WMB_bG2fdStdxM35_xq/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxpZT-A8mlg5E0IgQkmvdkzqBm8TEqw0NQw0n4dK9FkpvDQlakCLISxc1TCyWzGo006/exec";
         window.onload = initializeLIFF;
         function showError(message) {
             const errorDiv = document.getElementById('errorMessage');
