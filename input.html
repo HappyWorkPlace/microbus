@@ -163,11 +163,10 @@
         }
     </style>
     <script>
-        const SCRIPT_URL ="https://script.google.com/macros/s/AKfycbxpZT-A8mlg5E0IgQkmvdkzqBm8TEqw0NQw0n4dK9FkpvDQlakCLISxc1TCyWzGo006/exec";
+
+const SCRIPT_URL ="https://script.google.com/macros/s/AKfycbxpZT-A8mlg5E0IgQkmvdkzqBm8TEqw0NQw0n4dK9FkpvDQlakCLISxc1TCyWzGo006/exec";
  // Initialize on page load
-window.onload = function () {
-    initializeLiff();
-};
+window.onload = initializeLiff;
 
 // ปรับ initializeLiff
 async function initializeLiff() {
@@ -182,6 +181,7 @@ async function initializeLiff() {
 
             if (isRegistered) {
                 // เริ่มต้นฟังก์ชันอื่น ๆ หลังตรวจสอบสำเร็จ
+                showCheckInLayout();
                 setDefaultDateTime();
                 startRealTimeClock();
                 initMap();
@@ -196,6 +196,10 @@ async function initializeLiff() {
         }
     } catch (error) {
         console.error("LIFF initialization failed", error);
+    }
+    function showCheckInLayout() {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('checkInLayout').style.display = 'block';
     }
 }
 
@@ -376,7 +380,6 @@ async function checkRegistration(uid, profile) {
 
         // Initialize on page load
         window.onload = function () {
-            initializeLiff();
             const checkInButton = document.querySelector('.checkin-button');
             checkInButton.addEventListener('click', checkIn);
         };
@@ -388,49 +391,58 @@ async function checkRegistration(uid, profile) {
 
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="profile-image">
-                <img src="https://via.placeholder.com/80" alt="Profile">
+    <!-- Loader Section -->
+    <div id="loader" class="loader-wrapper">
+        <div class="loader"></div>
+        <div class="loader"></div>
+        <div class="loader"></div>
+    </div>
+    <!-- Hidden Check-In Layout -->
+    <div id="checkInLayout" style="display: none;">
+        <div class="container">
+            <div class="header">
+                <div class="profile-image">
+                    <img src="https://via.placeholder.com/80" alt="Profile">
+                </div>
+                <div class="name">กำลังโหลด...</div>
+                <div class="id">กำลังโหลด...</div>
             </div>
-            <div class="name">กำลังโหลด...</div>
-            <div class="id">กำลังโหลด...</div>
-        </div>
-
-        <div class="datetime">
-            <div class="date">03 Apr, 2020</div>
-            <div class="time">05:23:24</div>
-        </div>
-
-        <div class="shift-container">
-            <label for="shift">Shift</label>
-            <select id="shift">
-                <option value="">Select</option>
-                <option value="D">D</option>
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
-            </select>
-        </div>
-
-        <div class="map-container">
-            <div id="map"></div>
-        </div>
-
-        <div class="location-details">กำลังโหลดข้อมูลตำแหน่ง...</div>
-
-        <div class="info">
-            <div class="info-item">
-                <span>In Time</span>
-                <div class="value">00:00</div>
+    
+            <div class="datetime">
+                <div class="date">03 Apr, 2020</div>
+                <div class="time">05:23:24</div>
             </div>
-            <div class="info-item">
-                <span>Out Time</span>
-                <div class="value">00:00</div>
+    
+            <div class="shift-container">
+                <label for="shift">Shift</label>
+                <select id="shift">
+                    <option value="">Select</option>
+                    <option value="D">D</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                </select>
             </div>
+    
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+    
+            <div class="location-details">กำลังโหลดข้อมูลตำแหน่ง...</div>
+    
+            <div class="info">
+                <div class="info-item">
+                    <span>In Time</span>
+                    <div class="value">00:00</div>
+                </div>
+                <div class="info-item">
+                    <span>Out Time</span>
+                    <div class="value">00:00</div>
+                </div>
+            </div>
+    
+            <a href="#" class="checkin-button">Check In</a>
         </div>
-
-        <a href="#" class="checkin-button">Check In</a>
     </div>
 </body>
 </html>
