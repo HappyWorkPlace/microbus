@@ -282,7 +282,20 @@ async function checkRegistration(uid, profile) {
 
             // อัพเดทสถานะการ Check-in
             if (workingResult.isWorking) {
-                document.querySelector('.info .value').textContent = workingResult.checkInTime;
+                const startDateTime = new Date(workingResult.checkInTime);
+                const date = startDateTime.toLocaleDateString('th-TH', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+                const time = startDateTime.toLocaleTimeString('th-TH', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                
+                document.querySelector('.info-item .in-date').textContent = date;
+                document.querySelector('.info-item .in-time').textContent = time;
                 document.querySelector('.checkin-button').textContent = 'Check Out';
             }
 
@@ -491,11 +504,17 @@ async function checkRegistration(uid, profile) {
         <div class="info">
             <div class="info-item">
                 <span>In Time</span>
-                <div class="value">00:00</div>
+                <div class="value">
+                    <div class="in-date">--/--/----</div>
+                    <div class="in-time">--:--:--</div>
+                </div>
             </div>
             <div class="info-item">
                 <span>Out Time</span>
-                <div class="value">00:00</div>
+                <div class="value">
+                    <div class="out-date">--/--/----</div>
+                    <div class="out-time">--:--:--</div>
+                </div>
             </div>
         </div>
 
