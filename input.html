@@ -282,8 +282,12 @@ async function checkRegistration(uid, profile) {
 
             // อัพเดทสถานะการ Check-in
             if (workingResult.isWorking) {
-                document.querySelector('.info .value').textContent = workingResult.checkInTime;
+                // แก้ไขการแสดงเวลา In Time
+                document.querySelector('.info .info-item:first-child .value').textContent = workingResult.startTime;
                 document.querySelector('.checkin-button').textContent = 'Check Out';
+                // เซ็ต Shift
+                document.getElementById('shift').value = workingResult.shift;
+                document.getElementById('shift').disabled = true;
             }
 
             return true;
