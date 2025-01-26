@@ -282,20 +282,7 @@ async function checkRegistration(uid, profile) {
 
             // อัพเดทสถานะการ Check-in
             if (workingResult.isWorking) {
-                const startDateTime = new Date(workingResult.checkInTime);
-                const date = startDateTime.toLocaleDateString('th-TH', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric'
-                });
-                const time = startDateTime.toLocaleTimeString('th-TH', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
-                });
-                
-                document.querySelector('.info-item .in-date').textContent = date;
-                document.querySelector('.info-item .in-time').textContent = time;
+                document.querySelector('.info .value').textContent = workingResult.checkInTime;
                 document.querySelector('.checkin-button').textContent = 'Check Out';
             }
 
