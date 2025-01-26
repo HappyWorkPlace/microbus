@@ -264,16 +264,28 @@ async function initializeLiff() {
 // ตรวจสอบการลงทะเบียน
 async function checkRegistration(uid, profile) {
     try {
-        const response = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
-        const result = await response.json();
+        // เช็คการลงทะเบียนตามเดิม
+        const regResponse = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
+        const regResult = await regResponse.json();
 
-        if (result.registered) {
-            document.querySelector('.name').textContent = `${result.employee_no} ${result.name}`;
-            document.querySelector('.id').textContent = `${result.factory}`;
+        if (regResult.registered) {
+            // เพิ่มการเช็คสถานะ Working
+            const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
+            const workingResult = await workingResponse.json();
+
+            document.querySelector('.name').textContent = `${regResult.employee_no} ${regResult.name}`;
+            document.querySelector('.id').textContent = `${regResult.factory}`;
 
             if (profile && profile.pictureUrl) {
                 document.querySelector('.profile-image img').src = profile.pictureUrl;
             }
+
+            // อัพเดทสถานะการ Check-in
+            if (workingResult.isWorking) {
+                document.querySelector('.info .value').textContent = workingResult.checkInTime;
+                document.querySelector('.checkin-button').textContent = 'Check Out';
+            }
+
             return true;
         } else {
             window.location.href = "https://liff.line.me/2006809014-zqJWBVbA";
