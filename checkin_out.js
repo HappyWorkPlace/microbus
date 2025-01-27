@@ -121,6 +121,7 @@ async function checkIn() {
                 );
 
                 if (recordResult.success) {
+                    hideLoading();
                     await Swal.fire({
                         title: 'Check-in สำเร็จ',
                         text: `Job No: ${jobNo}`,
@@ -154,6 +155,7 @@ async function checkIn() {
 
                 if (recordResult.success) {
                     await Swal.fire({
+                        hideLoading();
                         title: 'Check-out สำเร็จ',
                         text: `Job No: ${jobNo}`,
                         icon: 'success',
@@ -167,6 +169,7 @@ async function checkIn() {
         } catch (error) {
             console.error('Error during check-in/out:', error);
             await Swal.fire({
+                hideLoading();
                 title: 'เกิดข้อผิดพลาด',
                 text: 'กรุณาลองใหม่อีกครั้ง',
                 icon: 'error',
