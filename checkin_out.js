@@ -13,13 +13,18 @@ function generateJobNo(empNo) {
 }
 
 // ฟังก์ชันสำหรับฟอร์แมตเวลาเป็น YYYY-MM-DD,HH:mm:ss
-function formatTimestamp(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
+function formatTimestamp(dateString) {
+    const date = new Date(dateString || new Date());
+    
+    // แปลงเป็น timezone ของประเทศไทย (UTC+7)
+    const bangkokDate = new Date(date.getTime() + (7 * 60 * 60 * 1000));
+    
+    const year = bangkokDate.getUTCFullYear();
+    const month = String(bangkokDate.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(bangkokDate.getUTCDate()).padStart(2, '0');
+    const hours = String(bangkokDate.getUTCHours()).padStart(2, '0');
+    const minutes = String(bangkokDate.getUTCMinutes()).padStart(2, '0');
+    const seconds = String(bangkokDate.getUTCSeconds()).padStart(2, '0');
     
     return `${year}-${month}-${day},${hours}:${minutes}:${seconds}`;
 }
