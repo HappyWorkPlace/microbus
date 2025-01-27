@@ -358,84 +358,80 @@
     }
 
 async function checkRegistration(uid, profile) {
-  try {
-    const regResponse = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
-    const regResult = await regResponse.json();
+ try {
+   const regResponse = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
+   const regResult = await regResponse.json();
 
-    // ถ้าลงทะเบียนแล้ว
-    if (regResult.registered) {
-      // ตรวจสอบสถานะการทำงานก่อน
-      try {
-        const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
-        const workingResult = await workingResponse.json();
+   if (regResult.registered) {
+     try {
+       const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
+       const workingResult = await workingResponse.json();
 
-        if (workingResult.isWorking) {
-          // แสดงหน้า Check-out พิเศษ
-          document.body.innerHTML = `
-            <div class="checkout-page">
-                <img src="https://happyworkplace.github.io/microbus/picture/microbus.gif" 
-                     alt="Vehicle" class="vehicle-image">
-                <div class="checkout-info">
-                    คุณได้ Check-in ไว้เมื่อ<br>
-                    ${workingResult.startTime}<br>
-                    ${workingResult.nearPlace || ''}
-                </div>
-                <button class="special-checkout-button" onclick="showNormalCheckout()">
-                    Check Out
-                </button>
-            </div>
-          `;
-          return regResult;
-        }
-      } catch (workingError) {
-        console.error("Error checking working status:", workingError);
-      }
+       if (workingResult.isWorking) {
+         // แสดงหน้า Check-out พิเศษแทนการแทนที่ innerHTML
+         showSpecialCheckout(workingResult.startTime, workingResult.nearPlace);
+         return regResult;
+       } else {
+         // ถ้าไม่ได้ทำงานอยู่ ให้แสดงหน้าปกติ
+         document.getElementById('special-checkout').style.display = 'none';
+         document.getElementById('main-page').style.display = 'block';
+       }
+     } catch (workingError) {
+       console.error("Error checking working status:", workingError);
+     }
 
-      // อัพเดทข้อมูลผู้ใช้บนหน้าเว็บ
-      document.querySelector('.user-id').textContent = `${regResult.employee_no} ${regResult.name}`;
-      document.querySelector('.location').textContent = `${regResult.factory}`;
-      document.querySelector('.position').textContent = `${regResult.position}`;
+     // อัพเดทข้อมูลผู้ใช้บนหน้าเว็บ
+     document.querySelector('.user-id').textContent = `${regResult.employee_no} ${regResult.name}`;
+     document.querySelector('.location').textContent = `${regResult.factory}`;
+     document.querySelector('.position').textContent = `${regResult.position}`;
 
-      // ตั้งค่ารูปโปรไฟล์
-      if (profile && profile.pictureUrl) {
-        document.querySelector('.avatar img').src = profile.pictureUrl;
-      }
+     // ตั้งค่ารูปโปรไฟล์
+     if (profile && profile.pictureUrl) {
+       document.querySelector('.avatar img').src = profile.pictureUrl;
+     }
 
-      // ตรวจสอบสถานะการทำงาน
-      try {
-        const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
-        const workingResult = await workingResponse.json();
+     // ตรวจสอบสถานะการทำงาน
+     try {
+       const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
+       const workingResult = await workingResponse.json();
 
-        if (workingResult.isWorking) {
-          document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime;
-          const checkButton = document.querySelector('.checkin-button');
-          checkButton.textContent = 'Check Out';
-          checkButton.classList.add('checkout-button');
-          document.getElementById('shift').value = workingResult.shift;
-          document.getElementById('shift').disabled = true;
-        }
-      } catch (workingError) {
-        console.error("Error checking working status:", workingError);
-        // ถึงแม้จะมี error ในการเช็คสถานะการทำงาน แต่ยังให้ผู้ใช้ใช้งานต่อได้
-      }
+       if (workingResult.isWorking) {
+         document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime;
+         const checkButton = document.querySelector('.checkin-button');
+         checkButton.textContent = 'Check Out';
+         checkButton.classList.add('checkout-button');
+         document.getElementById('shift').value = workingResult.shift;
+         document.getElementById('shift').disabled = true;
+       }
+     } catch (workingError) {
+       console.error("Error checking working status:", workingError);
+       // ถึงแม้จะมี error ในการเช็คสถานะการทำงาน แต่ยังให้ผู้ใช้ใช้งานต่อได้
+     }
 
-      return regResult; // ส่งคืนผลการตรวจสอบทั้งหมด
-    } else {
-      // ถ้ายังไม่ได้ลงทะเบียน
-      window.location.href = "https://liff.line.me/2006809014-zqJWBVbA";
-      return false;
-    }
-  } catch (error) {
-    console.error("Error checking registration:", error);
-    // ในกรณีที่มี error ให้แสดง error message แทนการ redirect ทันที
-    alert("เกิดข้อผิดพลาดในการตรวจสอบการลงทะเบียน กรุณาลองใหม่อีกครั้ง");
-    return false;
-  }
+     return regResult; // ส่งคืนผลการตรวจสอบทั้งหมด
+   } else {
+     // ถ้ายังไม่ได้ลงทะเบียน
+     window.location.href = "https://liff.line.me/2006809014-zqJWBVbA";
+     return false;
+   }
+ } catch (error) {
+   console.error("Error checking registration:", error);
+   // ในกรณีที่มี error ให้แสดง error message แทนการ redirect ทันที
+   alert("เกิดข้อผิดพลาดในการตรวจสอบการลงทะเบียน กรุณาลองใหม่อีกครั้ง");
+   return false;
+ }
 }
 
-// เพิ่มฟังก์ชันใหม่
-function showNormalCheckout() {
-  location.reload();
+function switchToNormalPage() {
+  document.getElementById('special-checkout').style.display = 'none';
+  document.getElementById('main-page').style.display = 'block';
+}
+
+function showSpecialCheckout(startTime, nearPlace) {
+  document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${startTime}`;
+  document.getElementById('checkout-place').textContent = nearPlace || '';
+  document.getElementById('special-checkout').style.display = 'flex';
+  document.getElementById('main-page').style.display = 'none';
 }
 
     let map;
@@ -580,6 +576,21 @@ function showNormalCheckout() {
   </script>
 </head>
 <body>
+  <!-- เพิ่มหน้า Checkout พิเศษ -->
+<div id="special-checkout" class="checkout-page" style="display: none;">
+  <img src="https://happyworkplace.github.io/microbus/picture/microbus.gif" 
+       alt="Vehicle" class="vehicle-image">
+  <div class="checkout-info">
+    <span id="checkout-time"></span><br>
+    <span id="checkout-place"></span>
+  </div>
+  <button class="special-checkout-button" onclick="switchToNormalPage()">
+    Check Out
+  </button>
+</div>
+
+<!-- หน้าปกติ -->
+<div id="main-page">
   <div class="loading-overlay">
     <img src="https://happyworkplace.github.io/microbus/picture/microbus.gif" alt="Vehicle" class="vehicle-image">
     <div class="spinner">
@@ -588,7 +599,6 @@ function showNormalCheckout() {
       <div class="dot"></div>
     </div>
   </div>
-
   <div class="container">
     <div class="current-datetime"> - -  - -</div>
     <!-- Profile Card -->
@@ -635,5 +645,6 @@ function showNormalCheckout() {
     
     <a href="#" class="checkin-button">Check In</a>
   </div>
+</div>
 </body>
 </html>
