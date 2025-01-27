@@ -139,7 +139,7 @@
       color: white;
     }
 
-    .profile-card .user-info .location {
+    .profile-card .user-info .location .position {
       font-size: 0.9rem;
       color: rgba(255, 255, 255, 0.9);
     }
@@ -319,6 +319,7 @@
 
           document.querySelector('.user-id').textContent = `${regResult.employee_no} ${regResult.name}`;
           document.querySelector('.location').textContent = `${regResult.factory}`;
+          document.querySelector('.position').textContent = `${regResult.position}`;
 
           if (profile && profile.pictureUrl) {
             document.querySelector('.avatar img').src = profile.pictureUrl;
@@ -508,6 +509,7 @@
       <div class="user-info">
         <div class="user-id">กำลังโหลด...</div>
         <div class="location">กำลังโหลด...</div>
+        <div class="position">กำลังโหลด...</div>
       </div>
       <!-- Shift Selector -->
       <div class="shift-wrapper">
