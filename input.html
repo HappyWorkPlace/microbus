@@ -335,7 +335,7 @@ async function initializeLiff() {
       const isRegistered = await checkRegistration(uid, profile);
 
       if (isRegistered.registered) {
-        hideLoading();
+        
         setDefaultDateTime();
         startRealTimeClock();
         initMap();
@@ -371,8 +371,10 @@ async function initializeLiff() {
               document.getElementById('checkout-place').textContent = location;
             }
           }
+          hideLoading();
         } else {
           // ถ้าไม่ได้ทำงานอยู่ แสดงหน้าปกติ
+          hideLoading();
           document.getElementById('special-checkout').style.display = 'none';
           document.getElementById('main-page').style.display = 'block';
         }
@@ -588,18 +590,7 @@ function switchToNormalPage() {
   </script>
 </head>
 <body>
-  <!-- เพิ่มหน้า Checkout พิเศษ -->
-<div id="special-checkout" class="checkout-page" style="display: none;">
-  <img src="https://happyworkplace.github.io/microbus/picture/microbus.gif" 
-       alt="Vehicle" class="vehicle-image">
-  <div class="checkout-info">
-    <span id="checkout-time"></span><br>
-    <span id="checkout-place"></span>
-  </div>
-  <button class="special-checkout-button" onclick="switchToNormalPage()">
-    Check Out
-  </button>
-</div>
+
 
 <!-- หน้าปกติ -->
 <div id="main-page">
@@ -610,6 +601,18 @@ function switchToNormalPage() {
       <div class="dot"></div>
       <div class="dot"></div>
     </div>
+  </div>
+    <!-- เพิ่มหน้า Checkout พิเศษ -->
+  <div id="special-checkout" class="checkout-page" style="display: none;">
+    <img src="https://happyworkplace.github.io/microbus/picture/microbus.gif" 
+         alt="Vehicle" class="vehicle-image">
+    <div class="checkout-info">
+      <span id="checkout-time"></span><br>
+      <span id="checkout-place"></span>
+    </div>
+    <button class="special-checkout-button" onclick="switchToNormalPage()">
+      Check Out
+    </button>
   </div>
   <div class="container">
     <div class="current-datetime"> - -  - -</div>
