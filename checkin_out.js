@@ -21,7 +21,7 @@ async function recordStart(uid, jobNo, shift, lat, lng, nearPlace) {
         day_type: '', // เว้นว่างให้หลังบ้านจัดการ
         shift: shift,
         start_datetime: new Date().toISOString(),
-        location: `${lat},${lng}`,
+        location: `https://www.google.com/maps?q=${lat},${lng}`,
         near_place: nearPlace
     };
 
@@ -40,7 +40,7 @@ async function recordFinish(uid, jobNo, lat, lng, nearPlace) {
         uid: uid,
         job_no: jobNo,
         end_datetime: new Date().toISOString(),
-        location: `${lat},${lng}`,
+        location: `https://www.google.com/maps?q=${lat},${lng}`,
         near_place: nearPlace
     };
 
