@@ -328,6 +328,7 @@
 async function initializeLiff() {
   try {
     await liff.init({ liffId: "2006809014-elbWam3R" });
+
     if (liff.isLoggedIn()) {
       const profile = await liff.getProfile();
       const uid = liff.getContext().userId;
@@ -335,35 +336,30 @@ async function initializeLiff() {
       const isRegistered = await checkRegistration(uid, profile);
 
       if (isRegistered.registered) {
-        
         setDefaultDateTime();
         startRealTimeClock();
         initMap();
         updateLocation();
 
-        // ตรวจสอบสถานะการทำงานและอัพเดท UI
+        // ตรวจสอบสถานะการทำงาน
         const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
         const workingResult = await workingResponse.json();
 
         if (workingResult.isWorking) {
-          // แสดงหน้า Special Checkout ก่อน
-          
           document.getElementById('special-checkout').style.display = 'flex';
           document.getElementById('main-page').style.display = 'none';
-          hideLoading();
+
           const checkButton = document.querySelector('.checkin-button');
           checkButton.textContent = 'Check Out';
           checkButton.classList.add('checkout-button');
-          
+
           if (workingResult.jobNo) {
             checkButton.dataset.jobNo = workingResult.jobNo;
           }
-          
           if (workingResult.shift) {
             document.getElementById('shift').value = workingResult.shift;
             document.getElementById('shift').disabled = true;
           }
-
           if (workingResult.startTime) {
             document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime;
             const location = workingResult.location || workingResult.nearPlace;
@@ -372,10 +368,7 @@ async function initializeLiff() {
               document.getElementById('checkout-place').textContent = location;
             }
           }
-          
         } else {
-          // ถ้าไม่ได้ทำงานอยู่ แสดงหน้าปกติ
-          hideLoading();
           document.getElementById('special-checkout').style.display = 'none';
           document.getElementById('main-page').style.display = 'block';
         }
@@ -385,7 +378,6 @@ async function initializeLiff() {
         checkInButton.addEventListener('click', checkIn);
       } else {
         alert("UID not registered. Please register.");
-        hideLoading();
       }
     } else {
       liff.login();
@@ -398,9 +390,12 @@ async function initializeLiff() {
       icon: 'error',
       confirmButtonText: 'ตกลง'
     });
+  } finally {
+    // ซ่อน loading overlay ไม่ว่าจะสำเร็จหรือล้มเหลว
     hideLoading();
   }
 }
+
 
 
 
