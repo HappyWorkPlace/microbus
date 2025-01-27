@@ -292,7 +292,8 @@
 
           const isRegistered = await checkRegistration(uid, profile);
 
-          if (isRegistered) {
+          if (isRegistered.registered) {
+            hideLoading();
             setDefaultDateTime();
             startRealTimeClock();
             initMap();
