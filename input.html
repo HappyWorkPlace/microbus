@@ -325,37 +325,72 @@
       document.querySelector('.loading-overlay').classList.add('hidden');
     }
 
-    async function initializeLiff() {
-      try {
-        await liff.init({ liffId: "2006809014-elbWam3R" });
-        if (liff.isLoggedIn()) {
-          const profile = await liff.getProfile();
-          const uid = liff.getContext().userId;
+async function initializeLiff() {
+  try {
+    await liff.init({ liffId: "2006809014-elbWam3R" });
+    if (liff.isLoggedIn()) {
+      const profile = await liff.getProfile();
+      const uid = liff.getContext().userId;
 
-          const isRegistered = await checkRegistration(uid, profile);
+      const isRegistered = await checkRegistration(uid, profile);
 
-          if (isRegistered.registered) {
-            hideLoading();
-            setDefaultDateTime();
-            startRealTimeClock();
-            initMap();
-            updateLocation();
+      if (isRegistered.registered) {
+        hideLoading();
+        setDefaultDateTime();
+        startRealTimeClock();
+        initMap();
+        updateLocation();
 
-            const checkInButton = document.querySelector('.checkin-button');
-            checkInButton.addEventListener('click', checkIn);
-          } else {
-            alert("UID not registered. Please register.");
-            hideLoading();
+        // ตรวจสอบสถานะการทำงานและอัพเดท UI
+        const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
+        const workingResult = await workingResponse.json();
+
+        if (workingResult.isWorking) {
+          // อัพเดทปุ่มและ UI สำหรับสถานะ Check-out
+          const checkButton = document.querySelector('.checkin-button');
+          checkButton.textContent = 'Check Out';
+          checkButton.classList.add('checkout-button');
+          
+          if (workingResult.jobNo) {
+            checkButton.dataset.jobNo = workingResult.jobNo; // เก็บ Job_No สำหรับ Check-out
           }
-        } else {
-          liff.login();
+          
+          if (workingResult.shift) {
+            document.getElementById('shift').value = workingResult.shift;
+            document.getElementById('shift').disabled = true;
+          }
+
+          if (workingResult.startTime) {
+            document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime;
+          }
+
+          // แสดงหน้า Special Checkout ถ้ามีข้อมูลครบ
+          if (workingResult.startTime && workingResult.nearPlace) {
+            showSpecialCheckout(workingResult.startTime, workingResult.nearPlace);
+          }
         }
-      } catch (error) {
-        console.error("LIFF initialization failed", error);
-        alert("Error initializing LIFF.");
+
+        // ผูก event listener กับปุ่ม check-in/out
+        const checkInButton = document.querySelector('.checkin-button');
+        checkInButton.addEventListener('click', checkIn);
+      } else {
+        alert("UID not registered. Please register.");
         hideLoading();
       }
+    } else {
+      liff.login();
     }
+  } catch (error) {
+    console.error("LIFF initialization failed", error);
+    await Swal.fire({
+      title: 'เกิดข้อผิดพลาด',
+      text: 'ไม่สามารถเริ่มต้นระบบได้ กรุณาลองใหม่อีกครั้ง',
+      icon: 'error',
+      confirmButtonText: 'ตกลง'
+    });
+    hideLoading();
+  }
+}
 
 async function checkRegistration(uid, profile) {
   try {
@@ -414,16 +449,18 @@ async function checkRegistration(uid, profile) {
 }
 
 
+function showSpecialCheckout(startTime, nearPlace) {
+  if (startTime && nearPlace) {
+    document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${startTime}`;
+    document.getElementById('checkout-place').textContent = nearPlace;
+    document.getElementById('special-checkout').style.display = 'flex';
+    document.getElementById('main-page').style.display = 'none';
+  }
+}
+
 function switchToNormalPage() {
   document.getElementById('special-checkout').style.display = 'none';
   document.getElementById('main-page').style.display = 'block';
-}
-
-function showSpecialCheckout(startTime, nearPlace) {
-  document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${startTime}`;
-  document.getElementById('checkout-place').textContent = nearPlace || '';
-  document.getElementById('special-checkout').style.display = 'flex';
-  document.getElementById('main-page').style.display = 'none';
 }
 
     let map;
