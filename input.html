@@ -271,6 +271,44 @@
       background: #E65100;  /* สีส้มเข้มเมื่อ hover */
     }
   </style>
+  <style>
+.checkout-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.checkout-info {
+    text-align: center;
+    color: #666;
+    font-size: 0.9rem;
+    margin: 20px 0;
+}
+
+.special-checkout-button {
+    background: #FF6B00;
+    color: white;
+    padding: 12px 40px;
+    border-radius: 12px;
+    border: none;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.special-checkout-button:hover {
+    background: #E65100;
+}
+</style>
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpZT-A8mlg5E0IgQkmvdkzqBm8TEqw0NQw0n4dK9FkpvDQlakCLISxc1TCyWzGo006/exec";
@@ -326,6 +364,33 @@ async function checkRegistration(uid, profile) {
 
     // ถ้าลงทะเบียนแล้ว
     if (regResult.registered) {
+      // ตรวจสอบสถานะการทำงานก่อน
+      try {
+        const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
+        const workingResult = await workingResponse.json();
+
+        if (workingResult.isWorking) {
+          // แสดงหน้า Check-out พิเศษ
+          document.body.innerHTML = `
+            <div class="checkout-page">
+                <img src="https://happyworkplace.github.io/microbus/picture/microbus.gif" 
+                     alt="Vehicle" class="vehicle-image">
+                <div class="checkout-info">
+                    คุณได้ Check-in ไว้เมื่อ<br>
+                    ${workingResult.startTime}<br>
+                    ${workingResult.nearPlace || ''}
+                </div>
+                <button class="special-checkout-button" onclick="showNormalCheckout()">
+                    Check Out
+                </button>
+            </div>
+          `;
+          return regResult;
+        }
+      } catch (workingError) {
+        console.error("Error checking working status:", workingError);
+      }
+
       // อัพเดทข้อมูลผู้ใช้บนหน้าเว็บ
       document.querySelector('.user-id').textContent = `${regResult.employee_no} ${regResult.name}`;
       document.querySelector('.location').textContent = `${regResult.factory}`;
@@ -366,6 +431,11 @@ async function checkRegistration(uid, profile) {
     alert("เกิดข้อผิดพลาดในการตรวจสอบการลงทะเบียน กรุณาลองใหม่อีกครั้ง");
     return false;
   }
+}
+
+// เพิ่มฟังก์ชันใหม่
+function showNormalCheckout() {
+  location.reload();
 }
 
     let map;
