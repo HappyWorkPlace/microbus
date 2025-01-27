@@ -345,32 +345,37 @@ async function initializeLiff() {
         const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
         const workingResult = await workingResponse.json();
 
-// ในส่วนของ workingResult check ใน initializeLiff
-if (workingResult.isWorking) {
-  const checkButton = document.querySelector('.checkin-button');
-  checkButton.textContent = 'Check Out';
-  checkButton.classList.add('checkout-button');
-  
-  if (workingResult.jobNo) {
-    checkButton.dataset.jobNo = workingResult.jobNo;
-  }
-  
-  if (workingResult.shift) {
-    document.getElementById('shift').value = workingResult.shift;
-    document.getElementById('shift').disabled = true;
-  }
+        if (workingResult.isWorking) {
+          // แสดงหน้า Special Checkout ก่อน
+          document.getElementById('special-checkout').style.display = 'flex';
+          document.getElementById('main-page').style.display = 'none';
 
-  if (workingResult.startTime) {
-    document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime;
-    
-    // ใช้ workingResult.location แทน workingResult.nearPlace
-    const location = workingResult.location || workingResult.nearPlace;
-    if (location) {
-      console.log('Showing special checkout page'); // Debug log
-      showSpecialCheckout(workingResult.startTime, location);
-    }
-  }
-}
+          const checkButton = document.querySelector('.checkin-button');
+          checkButton.textContent = 'Check Out';
+          checkButton.classList.add('checkout-button');
+          
+          if (workingResult.jobNo) {
+            checkButton.dataset.jobNo = workingResult.jobNo;
+          }
+          
+          if (workingResult.shift) {
+            document.getElementById('shift').value = workingResult.shift;
+            document.getElementById('shift').disabled = true;
+          }
+
+          if (workingResult.startTime) {
+            document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime;
+            const location = workingResult.location || workingResult.nearPlace;
+            if (location) {
+              document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${workingResult.startTime}`;
+              document.getElementById('checkout-place').textContent = location;
+            }
+          }
+        } else {
+          // ถ้าไม่ได้ทำงานอยู่ แสดงหน้าปกติ
+          document.getElementById('special-checkout').style.display = 'none';
+          document.getElementById('main-page').style.display = 'block';
+        }
 
         // ผูก event listener กับปุ่ม check-in/out
         const checkInButton = document.querySelector('.checkin-button');
@@ -393,6 +398,8 @@ if (workingResult.isWorking) {
     hideLoading();
   }
 }
+
+
 
 async function checkRegistration(uid, profile) {
   try {
@@ -433,6 +440,7 @@ function showSpecialCheckout(startTime, nearPlace) {
   }
 }
 
+// ฟังก์ชันสำหรับสลับไปหน้าปกติ
 function switchToNormalPage() {
   document.getElementById('special-checkout').style.display = 'none';
   document.getElementById('main-page').style.display = 'block';
