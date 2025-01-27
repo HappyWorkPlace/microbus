@@ -92,7 +92,7 @@
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 10px;
     }
 
     /* Card ทั่วไป */
@@ -139,8 +139,8 @@
       color: white;
     }
 
-    .profile-card .user-info .location .position {
-      font-size: 0.9rem;
+    .profile-card .location .position {
+      font-size: 0.5rem;
       color: rgba(255, 255, 255, 0.9);
     }
 
@@ -256,6 +256,13 @@
     .checkin-button:hover {
       background: var(--secondary-color);
     }
+      .checkout-button {
+      background: #FF6B00;  /* สีส้ม */
+    }
+
+    .checkout-button:hover {
+      background: #E65100;  /* สีส้มเข้มเมื่อ hover */
+    }
   </style>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0sUp9IJILTAV4Qx7AHK6dugESDF5NWHA&libraries=places" async defer></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -327,7 +334,9 @@
 
           if (workingResult.isWorking) {
             document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime;
-            document.querySelector('.checkin-button').textContent = 'Check Out';
+            const checkButton = document.querySelector('.checkin-button');
+            checkButton.textContent = 'Check Out';
+            checkButton.classList.add('checkout-button');
             document.getElementById('shift').value = workingResult.shift;
             document.getElementById('shift').disabled = true;
           }
