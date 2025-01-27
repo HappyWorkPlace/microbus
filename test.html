@@ -460,7 +460,8 @@
 
       const day = String(now.getDate()).padStart(2, '0');
       const month = now.getMonth();
-      const year = now.getFullYear() + 543; // Convert to Buddhist year
+      const year = now.getFullYear();
+      const year2 = now.getFullYear() + 543; // Convert to Buddhist year
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
       const seconds = String(now.getSeconds()).padStart(2, '0');
@@ -475,7 +476,7 @@
       timeElement.textContent = `${hours}:${minutes}:${seconds}`;
 
       // Update current datetime in Thai format
-      currentDateTimeElement.textContent = `วันที่ ${day} ${thaiMonths[month]} ${year} เวลา ${hours}:${minutes}:${seconds} น.`;
+      currentDateTimeElement.textContent = `วันที่ ${day} ${thaiMonths[month]} ${year2} เวลา ${hours}:${minutes}:${seconds} น.`;
     }
 
     function startRealTimeClock() {
@@ -498,7 +499,7 @@
   </div>
 
   <div class="container">
-    <div class="current-datetime">วันที่ 27 มกราคม 2568 เวลา 10:33:00 น.</div>
+    <div class="current-datetime"> - -  - -</div>
     <!-- Profile Card -->
     <div class="card profile-card">
       <div class="avatar">
@@ -510,7 +511,7 @@
       </div>
       <!-- Shift Selector -->
       <div class="shift-wrapper">
-        <label for="shift">Shift:</label>
+        <label for="shift">กะการทำงาน:</label>
         <select id="shift">
           <option value="">Select</option>
           <option value="D">D</option>
@@ -520,12 +521,6 @@
         </select>
       </div>
     </div>
-
-    <div class="datetime">
-      <div class="date">00/00/0000</div>
-      <div class="time">00:00:00</div>
-    </div>
-
     <!-- Map Card -->
     <div class="card map-card">
       <div class="map-container">
