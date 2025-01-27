@@ -345,30 +345,32 @@ async function initializeLiff() {
         const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
         const workingResult = await workingResponse.json();
 
-        if (workingResult.isWorking) {
-          // อัพเดทปุ่มและ UI สำหรับสถานะ Check-out
-          const checkButton = document.querySelector('.checkin-button');
-          checkButton.textContent = 'Check Out';
-          checkButton.classList.add('checkout-button');
-          
-          if (workingResult.jobNo) {
-            checkButton.dataset.jobNo = workingResult.jobNo; // เก็บ Job_No สำหรับ Check-out
-          }
-          
-          if (workingResult.shift) {
-            document.getElementById('shift').value = workingResult.shift;
-            document.getElementById('shift').disabled = true;
-          }
+// ในส่วนของ workingResult check ใน initializeLiff
+if (workingResult.isWorking) {
+  const checkButton = document.querySelector('.checkin-button');
+  checkButton.textContent = 'Check Out';
+  checkButton.classList.add('checkout-button');
+  
+  if (workingResult.jobNo) {
+    checkButton.dataset.jobNo = workingResult.jobNo;
+  }
+  
+  if (workingResult.shift) {
+    document.getElementById('shift').value = workingResult.shift;
+    document.getElementById('shift').disabled = true;
+  }
 
-          if (workingResult.startTime) {
-            document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime;
-          }
-
-          // แสดงหน้า Special Checkout ถ้ามีข้อมูลครบ
-          if (workingResult.startTime && workingResult.nearPlace) {
-            showSpecialCheckout(workingResult.startTime, workingResult.nearPlace);
-          }
-        }
+  if (workingResult.startTime) {
+    document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime;
+    
+    // ใช้ workingResult.location แทน workingResult.nearPlace
+    const location = workingResult.location || workingResult.nearPlace;
+    if (location) {
+      console.log('Showing special checkout page'); // Debug log
+      showSpecialCheckout(workingResult.startTime, location);
+    }
+  }
+}
 
         // ผูก event listener กับปุ่ม check-in/out
         const checkInButton = document.querySelector('.checkin-button');
@@ -397,47 +399,18 @@ async function checkRegistration(uid, profile) {
     const regResponse = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
     const regResult = await regResponse.json();
 
-    // If registered
     if (regResult.registered) {
-      // Update user info on webpage
+      // Update user info
       document.querySelector('.user-id').textContent = `${regResult.employee_no} ${regResult.name}`;
       document.querySelector('.location').textContent = `${regResult.factory}`;
       document.querySelector('.position').textContent = `${regResult.position}`;
 
-      // Set profile picture
       if (profile && profile.pictureUrl) {
         document.querySelector('.avatar img').src = profile.pictureUrl;
       }
 
-      // Check working status
-      try {
-        const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
-        const workingResult = await workingResponse.json();
-
-        if (workingResult.isWorking) {
-          // Only show special checkout if we have both startTime and nearPlace
-          if (workingResult.startTime && workingResult.nearPlace) {
-            showSpecialCheckout(workingResult.startTime, workingResult.nearPlace);
-          }
-          
-          document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime || '--:--';
-          const checkButton = document.querySelector('.checkin-button');
-          checkButton.textContent = 'Check Out';
-          checkButton.classList.add('checkout-button');
-          
-          if (workingResult.shift) {
-            document.getElementById('shift').value = workingResult.shift;
-            document.getElementById('shift').disabled = true;
-          }
-        }
-      } catch (workingError) {
-        console.error("Error checking working status:", workingError);
-        // Continue allowing user to use the app even if there's an error checking work status
-      }
-
       return regResult;
     } else {
-      // If not registered
       window.location.href = "https://liff.line.me/2006809014-zqJWBVbA";
       return false;
     }
@@ -450,6 +423,8 @@ async function checkRegistration(uid, profile) {
 
 
 function showSpecialCheckout(startTime, nearPlace) {
+  console.log('Showing special checkout with:', { startTime, nearPlace }); // Debug log
+  
   if (startTime && nearPlace) {
     document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${startTime}`;
     document.getElementById('checkout-place').textContent = nearPlace;
