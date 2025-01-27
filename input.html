@@ -362,47 +362,52 @@ async function checkRegistration(uid, profile) {
     const regResponse = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
     const regResult = await regResponse.json();
 
-    // ถ้าลงทะเบียนแล้ว
+    // If registered
     if (regResult.registered) {
-      // อัพเดทข้อมูลผู้ใช้บนหน้าเว็บ
-      showSpecialCheckout(startTime, nearPlace)
+      // Update user info on webpage
       document.querySelector('.user-id').textContent = `${regResult.employee_no} ${regResult.name}`;
       document.querySelector('.location').textContent = `${regResult.factory}`;
       document.querySelector('.position').textContent = `${regResult.position}`;
 
-      // ตั้งค่ารูปโปรไฟล์
+      // Set profile picture
       if (profile && profile.pictureUrl) {
         document.querySelector('.avatar img').src = profile.pictureUrl;
       }
 
-      // ตรวจสอบสถานะการทำงาน
+      // Check working status
       try {
         const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
         const workingResult = await workingResponse.json();
 
         if (workingResult.isWorking) {
-          showCheckoutMask(workingResult.startTime, workingResult.nearPlace);
-          document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime;
+          // Only show special checkout if we have both startTime and nearPlace
+          if (workingResult.startTime && workingResult.nearPlace) {
+            showSpecialCheckout(workingResult.startTime, workingResult.nearPlace);
+          }
+          
+          document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime || '--:--';
           const checkButton = document.querySelector('.checkin-button');
           checkButton.textContent = 'Check Out';
           checkButton.classList.add('checkout-button');
-          document.getElementById('shift').value = workingResult.shift;
-          document.getElementById('shift').disabled = true;
+          
+          if (workingResult.shift) {
+            document.getElementById('shift').value = workingResult.shift;
+            document.getElementById('shift').disabled = true;
+          }
         }
       } catch (workingError) {
         console.error("Error checking working status:", workingError);
-        // ถึงแม้จะมี error ในการเช็คสถานะการทำงาน แต่ยังให้ผู้ใช้ใช้งานต่อได้
+        // Continue allowing user to use the app even if there's an error checking work status
       }
 
-      return regResult; // ส่งคืนผลการตรวจสอบทั้งหมด
+      return regResult;
     } else {
-      // ถ้ายังไม่ได้ลงทะเบียน
+      // If not registered
       window.location.href = "https://liff.line.me/2006809014-zqJWBVbA";
       return false;
     }
   } catch (error) {
     console.error("Error checking registration:", error);
-    // ในกรณีที่มี error ให้แสดง error message แทนการ redirect ทันที
     alert("เกิดข้อผิดพลาดในการตรวจสอบการลงทะเบียน กรุณาลองใหม่อีกครั้ง");
     return false;
   }
