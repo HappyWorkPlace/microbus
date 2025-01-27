@@ -19,6 +19,13 @@
       display: flex;
       justify-content: center;
     }
+    
+    .current-datetime {
+      text-align: center;
+      margin-bottom: 15px;
+      color: #666;
+      font-size: 0.9rem;
+    }
 
     /* Loading overlay styles */
     .loading-overlay {
@@ -449,16 +456,26 @@
       const now = new Date();
       const dateElement = document.querySelector('.datetime .date');
       const timeElement = document.querySelector('.datetime .time');
+      const currentDateTimeElement = document.querySelector('.current-datetime');
 
       const day = String(now.getDate()).padStart(2, '0');
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const year = now.getFullYear();
+      const month = now.getMonth();
+      const year = now.getFullYear() + 543; // Convert to Buddhist year
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
       const seconds = String(now.getSeconds()).padStart(2, '0');
 
-      dateElement.textContent = `${day}/${month}/${year}`;
+      const thaiMonths = [
+        'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+        'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+      ];
+
+      // Update main datetime display
+      dateElement.textContent = `${day}/${month + 1}/${year}`;
       timeElement.textContent = `${hours}:${minutes}:${seconds}`;
+
+      // Update current datetime in Thai format
+      currentDateTimeElement.textContent = `วันที่ ${day} ${thaiMonths[month]} ${year} เวลา ${hours}:${minutes}:${seconds} น.`;
     }
 
     function startRealTimeClock() {
@@ -481,6 +498,7 @@
   </div>
 
   <div class="container">
+    <div class="current-datetime">วันที่ 27 มกราคม 2568 เวลา 10:33:00 น.</div>
     <!-- Profile Card -->
     <div class="card profile-card">
       <div class="avatar">
