@@ -358,69 +358,56 @@
     }
 
 async function checkRegistration(uid, profile) {
- try {
-   const regResponse = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
-   const regResult = await regResponse.json();
+  try {
+    const regResponse = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
+    const regResult = await regResponse.json();
 
-   if (regResult.registered) {
-     try {
-       const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
-       const workingResult = await workingResponse.json();
+    // ถ้าลงทะเบียนแล้ว
+    if (regResult.registered) {
+      // อัพเดทข้อมูลผู้ใช้บนหน้าเว็บ
+      showSpecialCheckout(startTime, nearPlace)
+      document.querySelector('.user-id').textContent = `${regResult.employee_no} ${regResult.name}`;
+      document.querySelector('.location').textContent = `${regResult.factory}`;
+      document.querySelector('.position').textContent = `${regResult.position}`;
 
-       if (workingResult.isWorking) {
-         // แสดงหน้า Check-out พิเศษแทนการแทนที่ innerHTML
-         showSpecialCheckout(workingResult.startTime, workingResult.nearPlace);
-         return regResult;
-       } else {
-         // ถ้าไม่ได้ทำงานอยู่ ให้แสดงหน้าปกติ
-         document.getElementById('special-checkout').style.display = 'none';
-         document.getElementById('main-page').style.display = 'block';
-       }
-     } catch (workingError) {
-       console.error("Error checking working status:", workingError);
-     }
+      // ตั้งค่ารูปโปรไฟล์
+      if (profile && profile.pictureUrl) {
+        document.querySelector('.avatar img').src = profile.pictureUrl;
+      }
 
-     // อัพเดทข้อมูลผู้ใช้บนหน้าเว็บ
-     document.querySelector('.user-id').textContent = `${regResult.employee_no} ${regResult.name}`;
-     document.querySelector('.location').textContent = `${regResult.factory}`;
-     document.querySelector('.position').textContent = `${regResult.position}`;
+      // ตรวจสอบสถานะการทำงาน
+      try {
+        const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
+        const workingResult = await workingResponse.json();
 
-     // ตั้งค่ารูปโปรไฟล์
-     if (profile && profile.pictureUrl) {
-       document.querySelector('.avatar img').src = profile.pictureUrl;
-     }
+        if (workingResult.isWorking) {
+          showCheckoutMask(workingResult.startTime, workingResult.nearPlace);
+          document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime;
+          const checkButton = document.querySelector('.checkin-button');
+          checkButton.textContent = 'Check Out';
+          checkButton.classList.add('checkout-button');
+          document.getElementById('shift').value = workingResult.shift;
+          document.getElementById('shift').disabled = true;
+        }
+      } catch (workingError) {
+        console.error("Error checking working status:", workingError);
+        // ถึงแม้จะมี error ในการเช็คสถานะการทำงาน แต่ยังให้ผู้ใช้ใช้งานต่อได้
+      }
 
-     // ตรวจสอบสถานะการทำงาน
-     try {
-       const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
-       const workingResult = await workingResponse.json();
-
-       if (workingResult.isWorking) {
-         document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime;
-         const checkButton = document.querySelector('.checkin-button');
-         checkButton.textContent = 'Check Out';
-         checkButton.classList.add('checkout-button');
-         document.getElementById('shift').value = workingResult.shift;
-         document.getElementById('shift').disabled = true;
-       }
-     } catch (workingError) {
-       console.error("Error checking working status:", workingError);
-       // ถึงแม้จะมี error ในการเช็คสถานะการทำงาน แต่ยังให้ผู้ใช้ใช้งานต่อได้
-     }
-
-     return regResult; // ส่งคืนผลการตรวจสอบทั้งหมด
-   } else {
-     // ถ้ายังไม่ได้ลงทะเบียน
-     window.location.href = "https://liff.line.me/2006809014-zqJWBVbA";
-     return false;
-   }
- } catch (error) {
-   console.error("Error checking registration:", error);
-   // ในกรณีที่มี error ให้แสดง error message แทนการ redirect ทันที
-   alert("เกิดข้อผิดพลาดในการตรวจสอบการลงทะเบียน กรุณาลองใหม่อีกครั้ง");
-   return false;
- }
+      return regResult; // ส่งคืนผลการตรวจสอบทั้งหมด
+    } else {
+      // ถ้ายังไม่ได้ลงทะเบียน
+      window.location.href = "https://liff.line.me/2006809014-zqJWBVbA";
+      return false;
+    }
+  } catch (error) {
+    console.error("Error checking registration:", error);
+    // ในกรณีที่มี error ให้แสดง error message แทนการ redirect ทันที
+    alert("เกิดข้อผิดพลาดในการตรวจสอบการลงทะเบียน กรุณาลองใหม่อีกครั้ง");
+    return false;
+  }
 }
+
 
 function switchToNormalPage() {
   document.getElementById('special-checkout').style.display = 'none';
