@@ -283,75 +283,88 @@
       document.querySelector('.loading-overlay').classList.add('hidden');
     }
 
-    async function initializeLiff() {
-      try {
-        await liff.init({ liffId: "2006809014-elbWam3R" });
-        if (liff.isLoggedIn()) {
-          const profile = await liff.getProfile();
-          const uid = liff.getContext().userId;
-
-          const isRegistered = await checkRegistration(uid, profile);
-
-          if (isRegistered.registered) {
-            hideLoading();
-            setDefaultDateTime();
-            startRealTimeClock();
-            initMap();
-            updateLocation();
-
-            const checkInButton = document.querySelector('.checkin-button');
-            checkInButton.addEventListener('click', checkIn);
-          } else {
-            alert("UID not registered. Please register.");
-            hideLoading();
-          }
-        } else {
-          liff.login();
-        }
-      } catch (error) {
-        console.error("LIFF initialization failed", error);
-        alert("Error initializing LIFF.");
-        hideLoading();
-      }
+async function initializeLiff() {
+  try {
+    await liff.init({ liffId: "2006809014-elbWam3R" });
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      return;
     }
 
-    async function checkRegistration(uid, profile) {
-      try {
-        const regResponse = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
-        const regResult = await regResponse.json();
-
-        if (regResult.registered) {
-          const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
-          const workingResult = await workingResponse.json();
-
-          document.querySelector('.user-id').textContent = `${regResult.employee_no} ${regResult.name}`;
-          document.querySelector('.location').textContent = `${regResult.factory}`;
-          document.querySelector('.position').textContent = `${regResult.position}`;
-
-          if (profile && profile.pictureUrl) {
-            document.querySelector('.avatar img').src = profile.pictureUrl;
-          }
-
-          if (workingResult.isWorking) {
-            document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime;
-            const checkButton = document.querySelector('.checkin-button');
-            checkButton.textContent = 'Check Out';
-            checkButton.classList.add('checkout-button');
-            document.getElementById('shift').value = workingResult.shift;
-            document.getElementById('shift').disabled = true;
-          }
-
-          return true;
-        } else {
-          window.location.href = "https://liff.line.me/2006809014-zqJWBVbA";
-          return false;
-        }
-      } catch (error) {
-        console.error("Error checking registration:", error);
-        window.location.href = "https://liff.line.me/2006809014-zqJWBVbA";
-        return false;
-      }
+    const profile = await liff.getProfile();
+    const uid = liff.getContext().userId;
+    const regResult = await checkRegistration(uid);
+    
+    if (!regResult.registered) {
+      window.location.href = "https://liff.line.me/2006809014-zqJWBVbA";
+      return;
     }
+
+    // Update UI with registration data
+    updateUserInterface(regResult, profile);
+    
+    // Check working status
+    const workingResult = await checkWorkingStatus(uid);
+    if (workingResult.isWorking) {
+      updateWorkingStatus(workingResult);
+    }
+
+    // Initialize other features
+    hideLoading();
+    setDefaultDateTime();
+    startRealTimeClock();
+    initMap();
+    updateLocation();
+
+    // Setup check-in button
+    const checkInButton = document.querySelector('.checkin-button');
+    checkInButton.addEventListener('click', checkIn);
+
+  } catch (error) {
+    console.error("LIFF initialization failed", error);
+    alert("Error initializing LIFF.");
+    hideLoading();
+  }
+}
+
+async function checkRegistration(uid) {
+  try {
+    const response = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
+    return await response.json();
+  } catch (error) {
+    console.error("Error checking registration:", error);
+    throw error;
+  }
+}
+
+async function checkWorkingStatus(uid) {
+  try {
+    const response = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
+    return await response.json();
+  } catch (error) {
+    console.error("Error checking working status:", error);
+    throw error;
+  }
+}
+
+function updateUserInterface(regResult, profile) {
+  document.querySelector('.user-id').textContent = `${regResult.employee_no} ${regResult.name}`;
+  document.querySelector('.location').textContent = `${regResult.factory}`;
+  document.querySelector('.position').textContent = `${regResult.position}`;
+  
+  if (profile?.pictureUrl) {
+    document.querySelector('.avatar img').src = profile.pictureUrl;
+  }
+}
+
+function updateWorkingStatus(workingResult) {
+  document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime;
+  const checkButton = document.querySelector('.checkin-button');
+  checkButton.textContent = 'Check Out';
+  checkButton.classList.add('checkout-button');
+  document.getElementById('shift').value = workingResult.shift;
+  document.getElementById('shift').disabled = true;
+}
 
     let map;
     let marker;
