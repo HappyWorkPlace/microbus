@@ -347,9 +347,10 @@ async function initializeLiff() {
 
         if (workingResult.isWorking) {
           // แสดงหน้า Special Checkout ก่อน
+          
           document.getElementById('special-checkout').style.display = 'flex';
           document.getElementById('main-page').style.display = 'none';
-
+          hideLoading();
           const checkButton = document.querySelector('.checkin-button');
           checkButton.textContent = 'Check Out';
           checkButton.classList.add('checkout-button');
@@ -371,7 +372,7 @@ async function initializeLiff() {
               document.getElementById('checkout-place').textContent = location;
             }
           }
-          hideLoading();
+          
         } else {
           // ถ้าไม่ได้ทำงานอยู่ แสดงหน้าปกติ
           hideLoading();
