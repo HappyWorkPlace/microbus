@@ -12,6 +12,18 @@ function generateJobNo(empNo) {
     return `${empNo}${year}${month}${day}${hours}${minutes}${seconds}`;
 }
 
+// ฟังก์ชันสำหรับฟอร์แมตเวลาเป็น YYYY-MM-DD,HH:mm:ss
+function formatTimestamp(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+    return `${year}-${month}-${day},${hours}:${minutes}:${seconds}`;
+}
+
 // ฟังก์ชันสำหรับบันทึกข้อมูล Check-in
 async function recordStart(uid, jobNo, shift, lat, lng, nearPlace) {
     const data = {
@@ -20,7 +32,7 @@ async function recordStart(uid, jobNo, shift, lat, lng, nearPlace) {
         job_no: jobNo,
         day_type: '', // เว้นว่างให้หลังบ้านจัดการ
         shift: shift,
-        start_datetime: new Date().toISOString(),
+        start_datetime: formatTimestamp(new Date()),
         location: `https://www.google.com/maps?q=${lat},${lng}`,
         near_place: nearPlace
     };
@@ -39,7 +51,7 @@ async function recordFinish(uid, jobNo, lat, lng, nearPlace) {
         action: 'record_finish',
         uid: uid,
         job_no: jobNo,
-        end_datetime: new Date().toISOString(),
+        end_datetime: formatTimestamp(new Date()),
         location: `https://www.google.com/maps?q=${lat},${lng}`,
         near_place: nearPlace
     };
