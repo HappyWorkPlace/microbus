@@ -103,6 +103,15 @@ async function checkIn() {
 
     if (result.isConfirmed) {
         try {
+            // แสดง loading ด้วย Swal
+            Swal.fire({
+                title: 'กำลังดำเนินการ...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
             const uid = liff.getContext().userId;
             const empNo = document.querySelector('.user-id').textContent.split(' ')[0];
             const nearPlace = document.querySelector('.location-details').textContent;
@@ -131,7 +140,7 @@ async function checkIn() {
                     const checkButton = document.querySelector('.checkin-button');
                     checkButton.textContent = 'Check Out';
                     checkButton.classList.add('checkout-button');
-                    checkButton.dataset.jobNo = jobNo; // เก็บ Job_No ไว้ใช้ตอน Check-out
+                    checkButton.dataset.jobNo = jobNo;
                     document.getElementById('shift').disabled = true;
                     
                     const now = new Date();
@@ -166,12 +175,11 @@ async function checkIn() {
         } catch (error) {
             console.error('Error during check-in/out:', error);
             await Swal.fire({
-                hideLoading();
                 title: 'เกิดข้อผิดพลาด',
                 text: 'กรุณาลองใหม่อีกครั้ง',
                 icon: 'error',
                 confirmButtonText: 'ตกลง'
             });
-        } 
+        }
     }
 }
