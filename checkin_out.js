@@ -167,7 +167,7 @@ async function checkIn() {
                         icon: 'success',
                         confirmButtonText: 'ตกลง'
                     });
-                    location.reload();
+                    liff.closeWindow(); // ปิดหน้า LIFF
                 } else {
                     throw new Error('Failed to record check-out');
                 }
