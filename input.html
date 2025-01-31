@@ -95,13 +95,11 @@ body {
 
 /* Wrapper หลัก - Updated for nearly full screen */
 .container {
-  width: 100%;
-  max-width: 95vw; /* Changed from 500px to 95vw */
-  min-height: 90vh; /* Added minimum height */
+  width: 90%;
+  max-width: 90vw;
+  min-height: 90vh;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  padding: 10px;
 }
 
 /* Card ทั่วไป */
@@ -121,7 +119,8 @@ body {
   text-align: center;
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   color: white;
-  padding: 24px 16px;
+  padding: 20px;
+  margin-bottom: 15px;
 }
 
 .profile-card .avatar {
@@ -203,11 +202,11 @@ body {
 
 .map-container {
   width: 100%;
-  height: 180px;
+  height: 200px;
   border-radius: var(--border-radius);
   overflow: hidden;
   border: 1px solid #ccc;
-  margin-top: 10px;
+  margin: 10px 0;
 }
 
 #map {
@@ -215,12 +214,16 @@ body {
   height: 100%;
 }
 
+/* Location details adjustments */
 .location-details {
-  margin-top: 8px;
+  margin: 12px 0;
   color: #555;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   text-align: center;
+  padding: 0 10px;
+  line-height: 1.4;
 }
+
 
 /* Time Card */
 .info {
@@ -252,7 +255,9 @@ body {
   text-align: center;
   background: var(--primary-color);
   color: #fff;
-  font-size: 1rem;
+  margin-top: 15px;
+  padding: 15px;
+  font-size: 1.1rem;
   font-weight: 600;
   padding: 12px;
   border: none;
@@ -310,6 +315,18 @@ body {
 
 .special-checkout-button:hover {
   background: #E65100;
+}
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .container {
+    width: 95%;
+    max-width: 95vw;
+    padding: 5px;
+  }
+  
+  .profile-card {
+    padding: 15px;
+  }
 }
 </style>
   <script>
@@ -483,29 +500,30 @@ function switchToNormalPage() {
       }
     }
 
-function getNearbyPlaces(lat, lng) {
-  const mapElement = document.createElement('div');
-  const map = new google.maps.Map(mapElement, {
-    center: { lat, lng },
-    zoom: 15
-  });
+async function getNearbyPlaces(lat, lng) {
+  return new Promise((resolve, reject) => {
+    const mapElement = document.createElement('div');
+    const map = new google.maps.Map(mapElement, {
+      center: { lat, lng },
+      zoom: 15
+    });
 
-  const service = new google.maps.places.PlacesService(map);
-  const request = {
-    location: new google.maps.LatLng(lat, lng),
-    radius: 500, // Ensure radius is within limits
-    type: ['establishment'] // Try a different place type
-  };
+    const service = new google.maps.places.PlacesService(map);
+    const request = {
+      location: { lat, lng },
+      rankBy: google.maps.places.RankBy.DISTANCE,
+      type: ['establishment']
+    };
 
-  service.nearbySearch(request, (results, status) => {
-    if (status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {
-      console.log('Nearest Place:', results[0].name);
-    } else {
-      console.warn('No places found or API error:', status);
-    }
+    service.nearbySearch(request, (results, status) => {
+      if (status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {
+        resolve(results[0].name);
+      } else {
+        resolve(null);
+      }
+    });
   });
 }
-
 
 async function getGoogleLocationDetails(lat, lng) {
   try {
@@ -532,7 +550,6 @@ async function getGoogleLocationDetails(lat, lng) {
       province: ''
     };
 
-    // แยกข้อมูลที่อยู่
     result.address_components.forEach(component => {
       const types = component.types;
       if (types.includes('sublocality_level_1')) {
@@ -544,13 +561,12 @@ async function getGoogleLocationDetails(lat, lng) {
       }
     });
 
-    // หาสถานที่ใกล้เคียง
+    // Get nearby place
     const nearbyPlace = await getNearbyPlaces(lat, lng);
     let displayText = '';
 
-    // สร้างข้อความแสดงผล
-    if (nearbyPlace && nearbyPlace !== 'พิกัดปัจจุบัน') {
-      displayText = `ใกล้กับ ${nearbyPlace}`;
+    if (nearbyPlace) {
+      displayText = `ใกล้ ${nearbyPlace}`;
     }
 
     if (addressComponents.subdistrict) {
@@ -558,9 +574,6 @@ async function getGoogleLocationDetails(lat, lng) {
     }
     if (addressComponents.district) {
       displayText += `, อำเภอ${addressComponents.district}`;
-    }
-    if (addressComponents.province) {
-      displayText += `, จังหวัด${addressComponents.province}`;
     }
 
     return displayText || 'พิกัดปัจจุบัน';
