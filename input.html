@@ -14,187 +14,304 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
   <script src="checkin_out.js"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Prompt', sans-serif;
-    }
+/* Reset & Base */
+* {
+  margin: 0; padding: 0; box-sizing: border-box;
+  font-family: 'Prompt', sans-serif;
+}
+body {
+  background: #F7F9FC;
+  color: #333;
+  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
 
-    body {
-      background: #F7F9FC;
-      color: #333;
-      padding: 20px;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+.current-datetime {
+  text-align: center;
+  margin-bottom: 0px;
+  color: #666;
+  font-size: 0.9rem;
+}
 
-    .current-datetime {
-      text-align: center;
-      margin-bottom: 0px;
-      color: #666;
-      font-size: 0.9rem;
-    }
+/* Loading overlay styles */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
 
-    /* Wrapper หลัก */
-    .container {
-      width: 90%; /* เพิ่มให้เต็มจอมากขึ้น */
-      max-width: 800px; /* ปรับจาก 500px */
-      min-height: 90vh; /* ทำให้ container ยืดขยายเกือบเต็มหน้าจอ */
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      padding: 20px;
-    }
+.loading-overlay.hidden {
+  display: none;
+}
 
-    /* Card ทั่วไป */
-    .card {
-      background: var(--card-bg);
-      border-radius: var(--border-radius);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-      padding: 10px; /* เพิ่ม padding */
-    }
+.vehicle-image {
+  width: 100px;
+  margin-bottom: 20px;
+}
 
-    /* Profile Card */
-    .profile-card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      text-align: center;
-      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-      color: white;
-      padding: 30px 20px; /* ปรับ padding ให้ดูสมดุล */
-    }
+.spinner {
+  display: flex;
+  gap: 8px;
+}
 
-    .profile-card .avatar {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      overflow: hidden;
-      border: 3px solid white;
-    }
+.dot {
+  width: 10px;
+  height: 10px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  animation: bounce 0.5s ease-in-out infinite;
+}
 
-    .profile-card .avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+.dot:nth-child(2) {
+  animation-delay: 0.1s;
+}
 
-    /* Map Card */
-    .map-container {
-      width: 100%;
-      height: 250px; /* ขยายความสูงของแผนที่ */
-      border-radius: var(--border-radius);
-      overflow: hidden;
-      border: 1px solid #ccc;
-      margin-top: 10px;
-    }
+.dot:nth-child(3) {
+  animation-delay: 0.2s;
+}
 
-    #map {
-      width: 100%;
-      height: 100%;
-    }
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
 
-    .location-details {
-      margin-top: 10px;
-      color: #555;
-      font-size: 1rem; /* ปรับขนาดตัวอักษรให้ใหญ่ขึ้น */
-      text-align: center;
-    }
+/* ตัวอย่างสีหลัก (Primary Color) และสีรอง (Secondary/Accent) */
+:root {
+  --primary-color: #00B8D9;
+  --secondary-color: #005571;
+  --card-bg: #FFFFFF;
+  --border-radius: 12px;
+}
 
-    /* Time Card */
-    .info {
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-    }
+/* Wrapper หลัก - Updated for nearly full screen */
+.container {
+  width: 100%;
+  max-width: 95vw; /* Changed from 500px to 95vw */
+  min-height: 90vh; /* Added minimum height */
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-    .info-item {
-      text-align: center;
-    }
+/* Card ทั่วไป */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  padding: 5px;
+}
 
-    .info-item span {
-      font-size: 1rem;
-      color: #666;
-    }
+/* Profile Card */
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  padding: 24px 16px;
+}
 
-    .info-item .value {
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: #333;
-      margin-top: 4px;
-    }
+.profile-card .avatar {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid white;
+}
 
-    /* ปุ่มหลัก */
-    .checkin-button {
-      display: block;
-      width: 100%;
-      text-align: center;
-      background: var(--primary-color);
-      color: #fff;
-      font-size: 1.2rem; /* ปรับขนาดตัวอักษรให้ใหญ่ขึ้น */
-      font-weight: 600;
-      padding: 15px;
-      border: none;
-      border-radius: var(--border-radius);
-      cursor: pointer;
-      transition: background 0.3s ease;
-      text-decoration: none;
-    }
+.profile-card .avatar img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
 
-    .checkin-button:hover {
-      background: var(--secondary-color);
-    }
+.profile-card .user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
-    .checkout-button {
-      background: #FF6B00; /* สีส้ม */
-    }
+.profile-card .user-info .user-id {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+}
 
-    .checkout-button:hover {
-      background: #E65100; /* สีส้มเข้มเมื่อ hover */
-    }
+.profile-card .location .position {
+  font-size: 0.5rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Date Time Display */
+.datetime {
+  text-align: center;
+  margin: 10px 0;
+}
+
+.datetime .date {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.datetime .time {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+/* Shift Selector */
+.shift-wrapper {
+  margin-top: 8px;
+  text-align: center;
+}
+
+.shift-wrapper label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.shift-wrapper select {
+  margin-left: 8px;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-size: 0.85rem;
+  background: transparent;
+  color: white;
+}
+
+.shift-wrapper select option {
+  background: var(--primary-color);
+  color: white;
+}
+
+/* Map Card */
+.map-card {
+  position: relative;
+}
+
+.map-container {
+  width: 100%;
+  height: 180px;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  border: 1px solid #ccc;
+  margin-top: 10px;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+.location-details {
+  margin-top: 8px;
+  color: #555;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+/* Time Card */
+.info {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.info-item {
+  text-align: center;
+}
+
+.info-item span {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.info-item .value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  margin-top: 4px;
+}
+
+/* ปุ่มหลัก */
+.checkin-button {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background: var(--primary-color);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 12px;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background 0.3s ease;
+  text-decoration: none;
+}
+
+.checkin-button:hover {
+  background: var(--secondary-color);
+}
+
+.checkout-button {
+  background: #FF6B00;  /* สีส้ม */
+}
+
+.checkout-button:hover {
+  background: #E65100;  /* สีส้มเข้มเมื่อ hover */
+}
+
+/* Checkout page styles */
 .checkout-page {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: white;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
 }
 
 .checkout-info {
-    text-align: center;
-    color: #666;
-    font-size: 0.9rem;
-    margin: 20px 0;
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+  margin: 20px 0;
 }
 
 .special-checkout-button {
-    background: #FF6B00;
-    color: white;
-    padding: 12px 40px;
-    border-radius: 12px;
-    border: none;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.3s;
+  background: #FF6B00;
+  color: white;
+  padding: 12px 40px;
+  border-radius: 12px;
+  border: none;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
 }
 
 .special-checkout-button:hover {
-    background: #E65100;
+  background: #E65100;
 }
-</stlye>
-
+</style>
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpZT-A8mlg5E0IgQkmvdkzqBm8TEqw0NQw0n4dK9FkpvDQlakCLISxc1TCyWzGo006/exec";
 
