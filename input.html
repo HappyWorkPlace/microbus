@@ -13,342 +13,302 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
   <script src="checkin_out.js"></script>
   <style>
-/* CSS Variables */
-:root {
-  --primary-color: #00B8D9;
-  --secondary-color: #005571;
-  --card-bg: #FFFFFF;
-  --border-radius: 12px;
-}
+    /* Reset & Base */
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+      font-family: 'Prompt', sans-serif;
+    }
+    body {
+      background: #F7F9FC;
+      color: #333;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+    
+    .current-datetime {
+      text-align: center;
+      margin-bottom: 0px;
+      color: #666;
+      font-size: 0.9rem;
+    }
 
-/* Reset & Base Styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Prompt', sans-serif;
-}
+    /* Loading overlay styles */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
 
-body {
-  background: #F7F9FC;
-  color: #333;
-  padding: 10px;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-}
+    .loading-overlay.hidden {
+      display: none;
+    }
 
-/* Container */
-.container {
-  width: 100%;
-  max-width: 500px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+    .vehicle-image {
+      width: 100px;
+      margin-bottom: 20px;
+    }
 
-/* Loading Overlay */
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
+    .spinner {
+      display: flex;
+      gap: 8px;
+    }
 
-.loading-overlay.hidden {
-  display: none;
-}
+    .dot {
+      width: 10px;
+      height: 10px;
+      background: var(--primary-color);
+      border-radius: 50%;
+      animation: bounce 0.5s ease-in-out infinite;
+    }
 
-.vehicle-image {
-  width: 100px;
-  margin-bottom: 20px;
-}
+    .dot:nth-child(2) {
+      animation-delay: 0.1s;
+    }
 
-/* Loading Animation */
-.spinner {
-  display: flex;
-  gap: 8px;
-}
+    .dot:nth-child(3) {
+      animation-delay: 0.2s;
+    }
 
-.dot {
-  width: 10px;
-  height: 10px;
-  background: var(--primary-color);
-  border-radius: 50%;
-  animation: bounce 0.5s ease-in-out infinite;
-}
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
 
-.dot:nth-child(2) {
-  animation-delay: 0.1s;
-}
+    /* ตัวอย่างสีหลัก (Primary Color) และสีรอง (Secondary/Accent) */
+    :root {
+      --primary-color: #00B8D9;
+      --secondary-color: #005571;
+      --card-bg: #FFFFFF;
+      --border-radius: 12px;
+    }
 
-.dot:nth-child(3) {
-  animation-delay: 0.2s;
-}
+    /* Wrapper หลัก */
+    .container {
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
+    /* Card ทั่วไป */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+      padding: 5px;
+    }
 
-/* Cards */
-.card {
-  background: var(--card-bg);
-  border-radius: var(--border-radius);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-  padding: 16px;
-  width: 100%;
-}
+    /* Profile Card */
+    .profile-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      text-align: center;
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      padding: 24px 16px;
+    }
 
-/* Profile Card */
-.profile-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  text-align: center;
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  color: white;
-  padding: 24px 20px;
-}
+    .profile-card .avatar {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 3px solid white;
+    }
 
-.profile-card .avatar {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 3px solid white;
-}
+    .profile-card .avatar img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
 
-.profile-card .avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+    .profile-card .user-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
 
-.profile-card .user-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
-}
+    .profile-card .user-info .user-id {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: white;
+    }
 
-.profile-card .user-info .user-id {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: white;
-}
+    .profile-card .location .position {
+      font-size: 0.5rem;
+      color: rgba(255, 255, 255, 0.9);
+    }
 
-.profile-card .location .position {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.9);
-}
+    /* Date Time Display */
+    .datetime {
+      text-align: center;
+      margin: 10px 0;
+    }
 
-/* Shift Selector */
-.shift-wrapper {
-  margin-top: 16px;
-  text-align: center;
-}
+    .datetime .date {
+      font-size: 0.9rem;
+      color: #666;
+    }
 
-.shift-wrapper label {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.9);
-}
+    .datetime .time {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--primary-color);
+    }
 
-.shift-wrapper select {
-  margin-left: 8px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  font-size: 1rem;
-  background: transparent;
-  color: white;
-}
+    /* Shift Selector */
+    .shift-wrapper {
+      margin-top: 8px;
+      text-align: center;
+    }
+    
+    .shift-wrapper label {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .shift-wrapper select {
+      margin-left: 8px;
+      padding: 6px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      font-size: 0.85rem;
+      background: transparent;
+      color: white;
+    }
 
-.shift-wrapper select option {
-  background: var(--primary-color);
-  color: white;
-  padding: 8px;
-}
+    .shift-wrapper select option {
+      background: var(--primary-color);
+      color: white;
+    }
 
-/* DateTime Display */
-.current-datetime {
-  text-align: center;
-  color: #666;
-  font-size: 1.1rem;
-  padding: 8px 0;
-}
+    /* Map Card */
+    .map-card {
+      position: relative;
+    }
 
-.datetime {
-  text-align: center;
-  margin: 16px 0;
-}
+    .map-container {
+      width: 100%;
+      height: 180px;
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      border: 1px solid #ccc;
+      margin-top: 10px;
+    }
 
-.datetime .date {
-  font-size: 1rem;
-  color: #666;
-}
+    #map {
+      width: 100%;
+      height: 100%;
+    }
 
-.datetime .time {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--primary-color);
-}
+    .location-details {
+      margin-top: 8px;
+      color: #555;
+      font-size: 0.85rem;
+      text-align: center;
+    }
 
-/* Map */
-.map-card {
-  position: relative;
-}
+    /* Time Card */
+    .info {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
 
-.map-container {
-  width: 100%;
-  height: 250px;
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  border: 1px solid #ccc;
-  margin: 8px 0;
-}
+    .info-item {
+      text-align: center;
+    }
 
-#map {
-  width: 100%;
-  height: 100%;
-}
+    .info-item span {
+      font-size: 0.8rem;
+      color: #666;
+    }
 
-.location-details {
-  margin-top: 12px;
-  color: #555;
-  font-size: 1rem;
-  text-align: center;
-  line-height: 1.4;
-  padding: 0 8px;
-}
+    .info-item .value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #333;
+      margin-top: 4px;
+    }
 
-/* Time Info */
-.info {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  padding: 16px;
-}
+    /* ปุ่มหลัก */
+    .checkin-button {
+      display: block;
+      width: 100%;
+      text-align: center;
+      background: var(--primary-color);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 12px;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: background 0.3s ease;
+      text-decoration: none;
+    }
 
-.info-item {
-  text-align: center;
-}
+    .checkin-button:hover {
+      background: var(--secondary-color);
+    }
+      .checkout-button {
+      background: #FF6B00;  /* สีส้ม */
+    }
 
-.info-item span {
-  font-size: 1rem;
-  color: #666;
-}
-
-.info-item .value {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #333;
-  margin-top: 6px;
-}
-
-/* Buttons */
-.checkin-button {
-  display: block;
-  width: 100%;
-  text-align: center;
-  background: var(--primary-color);
-  color: #fff;
-  font-size: 1.2rem;
-  font-weight: 600;
-  padding: 16px;
-  border: none;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  transition: background 0.3s ease;
-  text-decoration: none;
-  margin-top: 8px;
-}
-
-.checkin-button:hover {
-  background: var(--secondary-color);
-}
-
-.checkout-button {
-  background: #FF6B00;
-}
-
-.checkout-button:hover {
-  background: #E65100;
-}
-
-/* Checkout Page */
+    .checkout-button:hover {
+      background: #E65100;  /* สีส้มเข้มเมื่อ hover */
+    }
+  </style>
+  <style>
 .checkout-page {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: white;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
 }
 
 .checkout-info {
-  text-align: center;
-  color: #666;
-  font-size: 1rem;
-  margin: 20px 0;
-  line-height: 1.5;
+    text-align: center;
+    color: #666;
+    font-size: 0.9rem;
+    margin: 20px 0;
 }
 
 .special-checkout-button {
-  background: #FF6B00;
-  color: white;
-  padding: 16px 40px;
-  border-radius: 12px;
-  border: none;
-  font-size: 1.2rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.3s;
+    background: #FF6B00;
+    color: white;
+    padding: 12px 40px;
+    border-radius: 12px;
+    border: none;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
 }
 
 .special-checkout-button:hover {
-  background: #E65100;
+    background: #E65100;
 }
-
-/* Media Queries for Responsive Design */
-@media (max-width: 380px) {
-  .container {
-    width: 100%;
-    padding: 5px;
-  }
-  
-  .profile-card {
-    padding: 16px;
-  }
-  
-  .profile-card .avatar {
-    width: 80px;
-    height: 80px;
-  }
-  
-  .map-container {
-    height: 200px;
-  }
-  
-  .checkin-button {
-    font-size: 1.1rem;
-    padding: 14px;
-  }
-}
+</style>
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpZT-A8mlg5E0IgQkmvdkzqBm8TEqw0NQw0n4dK9FkpvDQlakCLISxc1TCyWzGo006/exec";
@@ -521,7 +481,7 @@ function switchToNormalPage() {
       }
     }
 
-async function getNearbyPlaces(lat, lng) {
+   async function getNearbyPlaces(lat, lng) {
   return new Promise((resolve, reject) => {
     try {
       // สร้าง map element สำหรับ PlacesService
