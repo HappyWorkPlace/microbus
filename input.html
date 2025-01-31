@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NMB Driver Attendance Record</title>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0sUp9IJILTAV4Qx7AHK6dugESDF5NWHA&libraries=places,geometry" async defer></script>
+  <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0sUp9IJILTAV4Qx7AHK6dugESDF5NWHA&libraries=places,geometry&loading=async"></script>
+
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
@@ -481,49 +482,29 @@ function switchToNormalPage() {
       }
     }
 
-   async function getNearbyPlaces(lat, lng) {
-  return new Promise((resolve, reject) => {
-    try {
-      // สร้าง map element สำหรับ PlacesService
-      const mapElement = document.createElement('div');
-      const map = new google.maps.Map(mapElement, {
-        center: { lat, lng },
-        zoom: 15
-      });
-      
-      const service = new google.maps.places.PlacesService(map);
-      const request = {
-        location: new google.maps.LatLng(lat, lng),
-        radius: '500',
-        type: ['point_of_interest']
-      };
+function getNearbyPlaces(lat, lng) {
+  const mapElement = document.createElement('div');
+  const map = new google.maps.Map(mapElement, {
+    center: { lat, lng },
+    zoom: 15
+  });
 
-      service.nearbySearch(request, (results, status) => {
-        if (status === google.maps.places.PlacesServiceStatus.OK && results && results.length > 0) {
-          // เรียงลำดับตามระยะทาง
-          results.sort((a, b) => {
-            const distanceA = google.maps.geometry.spherical.computeDistanceBetween(
-              new google.maps.LatLng(lat, lng),
-              a.geometry.location
-            );
-            const distanceB = google.maps.geometry.spherical.computeDistanceBetween(
-              new google.maps.LatLng(lat, lng),
-              b.geometry.location
-            );
-            return distanceA - distanceB;
-          });
-          
-          resolve(results[0].name);
-        } else {
-          resolve('พิกัดปัจจุบัน');
-        }
-      });
-    } catch (error) {
-      console.error('Error in getNearbyPlaces:', error);
-      resolve('พิกัดปัจจุบัน');
+  const service = new google.maps.places.PlacesService(map);
+  const request = {
+    location: new google.maps.LatLng(lat, lng),
+    radius: 500, // Ensure radius is within limits
+    type: ['establishment'] // Try a different place type
+  };
+
+  service.nearbySearch(request, (results, status) => {
+    if (status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {
+      console.log('Nearest Place:', results[0].name);
+    } else {
+      console.warn('No places found or API error:', status);
     }
   });
 }
+
 
 async function getGoogleLocationDetails(lat, lng) {
   try {
