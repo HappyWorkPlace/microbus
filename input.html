@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NMB Driver Attendance Record</title>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0sUp9IJILTAV4Qx7AHK6dugESDF5NWHA&libraries=places" async defer></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0sUp9IJILTAV4Qx7AHK6dugESDF5NWHA&libraries=places,geometry" async defer></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
@@ -13,19 +13,32 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
   <script src="checkin_out.js"></script>
   <style>
-    /* Reset & Base */
-    * {
-      margin: 0; padding: 0; box-sizing: border-box;
-      font-family: 'Prompt', sans-serif;
-    }
-    body {
-      background: #F7F9FC;
-      color: #333;
-      padding: 20px;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-    }
+/* Reset & Base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Prompt', sans-serif;
+}
+
+body {
+  background: #F7F9FC;
+  color: #333;
+  padding: 10px;  /* ลด padding ลง */
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+/* ปรับ Container หลัก */
+.container {
+  width: 100%;
+  max-width: 500px;  /* เพิ่มความกว้างสูงสุด */
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
     
     .current-datetime {
       text-align: center;
@@ -269,45 +282,342 @@
     .checkout-button:hover {
       background: #E65100;  /* สีส้มเข้มเมื่อ hover */
     }
-  </style>
-  <style>
+/* CSS Variables */
+:root {
+  --primary-color: #00B8D9;
+  --secondary-color: #005571;
+  --card-bg: #FFFFFF;
+  --border-radius: 12px;
+}
+
+/* Reset & Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Prompt', sans-serif;
+}
+
+body {
+  background: #F7F9FC;
+  color: #333;
+  padding: 10px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+/* Container */
+.container {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loading-overlay.hidden {
+  display: none;
+}
+
+.vehicle-image {
+  width: 100px;
+  margin-bottom: 20px;
+}
+
+/* Loading Animation */
+.spinner {
+  display: flex;
+  gap: 8px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  animation: bounce 0.5s ease-in-out infinite;
+}
+
+.dot:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.dot:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* Cards */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  padding: 16px;
+  width: 100%;
+}
+
+/* Profile Card */
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  padding: 24px 20px;
+}
+
+.profile-card .avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid white;
+}
+
+.profile-card .avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-card .user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.profile-card .user-info .user-id {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: white;
+}
+
+.profile-card .location .position {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Shift Selector */
+.shift-wrapper {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.shift-wrapper label {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.shift-wrapper select {
+  margin-left: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-size: 1rem;
+  background: transparent;
+  color: white;
+}
+
+.shift-wrapper select option {
+  background: var(--primary-color);
+  color: white;
+  padding: 8px;
+}
+
+/* DateTime Display */
+.current-datetime {
+  text-align: center;
+  color: #666;
+  font-size: 1.1rem;
+  padding: 8px 0;
+}
+
+.datetime {
+  text-align: center;
+  margin: 16px 0;
+}
+
+.datetime .date {
+  font-size: 1rem;
+  color: #666;
+}
+
+.datetime .time {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+/* Map */
+.map-card {
+  position: relative;
+}
+
+.map-container {
+  width: 100%;
+  height: 250px;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  border: 1px solid #ccc;
+  margin: 8px 0;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+.location-details {
+  margin-top: 12px;
+  color: #555;
+  font-size: 1rem;
+  text-align: center;
+  line-height: 1.4;
+  padding: 0 8px;
+}
+
+/* Time Info */
+.info {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 16px;
+}
+
+.info-item {
+  text-align: center;
+}
+
+.info-item span {
+  font-size: 1rem;
+  color: #666;
+}
+
+.info-item .value {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin-top: 6px;
+}
+
+/* Buttons */
+.checkin-button {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background: var(--primary-color);
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 16px;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background 0.3s ease;
+  text-decoration: none;
+  margin-top: 8px;
+}
+
+.checkin-button:hover {
+  background: var(--secondary-color);
+}
+
+.checkout-button {
+  background: #FF6B00;
+}
+
+.checkout-button:hover {
+  background: #E65100;
+}
+
+/* Checkout Page */
 .checkout-page {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: white;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
 }
 
 .checkout-info {
-    text-align: center;
-    color: #666;
-    font-size: 0.9rem;
-    margin: 20px 0;
+  text-align: center;
+  color: #666;
+  font-size: 1rem;
+  margin: 20px 0;
+  line-height: 1.5;
 }
 
 .special-checkout-button {
-    background: #FF6B00;
-    color: white;
-    padding: 12px 40px;
-    border-radius: 12px;
-    border: none;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.3s;
+  background: #FF6B00;
+  color: white;
+  padding: 16px 40px;
+  border-radius: 12px;
+  border: none;
+  font-size: 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
 }
 
 .special-checkout-button:hover {
-    background: #E65100;
+  background: #E65100;
 }
-</style>
+
+/* Media Queries for Responsive Design */
+@media (max-width: 380px) {
+  .container {
+    width: 100%;
+    padding: 5px;
+  }
+  
+  .profile-card {
+    padding: 16px;
+  }
+  
+  .profile-card .avatar {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .map-container {
+    height: 200px;
+  }
+  
+  .checkin-button {
+    font-size: 1.1rem;
+    padding: 14px;
+  }
+}
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpZT-A8mlg5E0IgQkmvdkzqBm8TEqw0NQw0n4dK9FkpvDQlakCLISxc1TCyWzGo006/exec";
