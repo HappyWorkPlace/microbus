@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NMB Driver Attendance Record</title>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
-  <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0sUp9IJILTAV4Qx7AHK6dugESDF5NWHA&libraries=places,geometry&loading=async"></script>
+  <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClC8pRmRIOYrDfTHubMrfUqCAuz966AgM&libraries=places,geometry&loading=async"></script>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -13,12 +13,14 @@
   <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
   <script src="checkin_out.js"></script>
-  <style>
-    /* Reset & Base */
+  <stlye>
     * {
-      margin: 0; padding: 0; box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
       font-family: 'Prompt', sans-serif;
     }
+
     body {
       background: #F7F9FC;
       color: #333;
@@ -26,8 +28,9 @@
       min-height: 100vh;
       display: flex;
       justify-content: center;
+      align-items: center;
     }
-    
+
     .current-datetime {
       text-align: center;
       margin-bottom: 0px;
@@ -35,72 +38,16 @@
       font-size: 0.9rem;
     }
 
-    /* Loading overlay styles */
-    .loading-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: white;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-
-    .loading-overlay.hidden {
-      display: none;
-    }
-
-    .vehicle-image {
-      width: 100px;
-      margin-bottom: 20px;
-    }
-
-    .spinner {
-      display: flex;
-      gap: 8px;
-    }
-
-    .dot {
-      width: 10px;
-      height: 10px;
-      background: var(--primary-color);
-      border-radius: 50%;
-      animation: bounce 0.5s ease-in-out infinite;
-    }
-
-    .dot:nth-child(2) {
-      animation-delay: 0.1s;
-    }
-
-    .dot:nth-child(3) {
-      animation-delay: 0.2s;
-    }
-
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-5px); }
-    }
-
-    /* ตัวอย่างสีหลัก (Primary Color) และสีรอง (Secondary/Accent) */
-    :root {
-      --primary-color: #00B8D9;
-      --secondary-color: #005571;
-      --card-bg: #FFFFFF;
-      --border-radius: 12px;
-    }
-
     /* Wrapper หลัก */
     .container {
-      width: 100%;
-      max-width: 500px;
+      width: 90%; /* เพิ่มให้เต็มจอมากขึ้น */
+      max-width: 800px; /* ปรับจาก 500px */
+      min-height: 90vh; /* ทำให้ container ยืดขยายเกือบเต็มหน้าจอ */
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 15px;
+      padding: 20px;
     }
 
     /* Card ทั่วไป */
@@ -108,7 +55,7 @@
       background: var(--card-bg);
       border-radius: var(--border-radius);
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-      padding: 5px;
+      padding: 10px; /* เพิ่ม padding */
     }
 
     /* Profile Card */
@@ -116,93 +63,31 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       text-align: center;
       background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
       color: white;
-      padding: 24px 16px;
+      padding: 30px 20px; /* ปรับ padding ให้ดูสมดุล */
     }
 
     .profile-card .avatar {
-      width: 80px; height: 80px;
+      width: 100px;
+      height: 100px;
       border-radius: 50%;
       overflow: hidden;
       border: 3px solid white;
     }
 
     .profile-card .avatar img {
-      width: 100%; height: 100%;
+      width: 100%;
+      height: 100%;
       object-fit: cover;
     }
 
-    .profile-card .user-info {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .profile-card .user-info .user-id {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: white;
-    }
-
-    .profile-card .location .position {
-      font-size: 0.5rem;
-      color: rgba(255, 255, 255, 0.9);
-    }
-
-    /* Date Time Display */
-    .datetime {
-      text-align: center;
-      margin: 10px 0;
-    }
-
-    .datetime .date {
-      font-size: 0.9rem;
-      color: #666;
-    }
-
-    .datetime .time {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: var(--primary-color);
-    }
-
-    /* Shift Selector */
-    .shift-wrapper {
-      margin-top: 8px;
-      text-align: center;
-    }
-    
-    .shift-wrapper label {
-      font-size: 0.85rem;
-      color: rgba(255, 255, 255, 0.9);
-    }
-    
-    .shift-wrapper select {
-      margin-left: 8px;
-      padding: 6px;
-      border-radius: 6px;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      font-size: 0.85rem;
-      background: transparent;
-      color: white;
-    }
-
-    .shift-wrapper select option {
-      background: var(--primary-color);
-      color: white;
-    }
-
     /* Map Card */
-    .map-card {
-      position: relative;
-    }
-
     .map-container {
       width: 100%;
-      height: 180px;
+      height: 250px; /* ขยายความสูงของแผนที่ */
       border-radius: var(--border-radius);
       overflow: hidden;
       border: 1px solid #ccc;
@@ -215,9 +100,9 @@
     }
 
     .location-details {
-      margin-top: 8px;
+      margin-top: 10px;
       color: #555;
-      font-size: 0.85rem;
+      font-size: 1rem; /* ปรับขนาดตัวอักษรให้ใหญ่ขึ้น */
       text-align: center;
     }
 
@@ -233,12 +118,12 @@
     }
 
     .info-item span {
-      font-size: 0.8rem;
+      font-size: 1rem;
       color: #666;
     }
 
     .info-item .value {
-      font-size: 1rem;
+      font-size: 1.2rem;
       font-weight: 600;
       color: #333;
       margin-top: 4px;
@@ -251,9 +136,9 @@
       text-align: center;
       background: var(--primary-color);
       color: #fff;
-      font-size: 1rem;
+      font-size: 1.2rem; /* ปรับขนาดตัวอักษรให้ใหญ่ขึ้น */
       font-weight: 600;
-      padding: 12px;
+      padding: 15px;
       border: none;
       border-radius: var(--border-radius);
       cursor: pointer;
@@ -264,15 +149,14 @@
     .checkin-button:hover {
       background: var(--secondary-color);
     }
-      .checkout-button {
-      background: #FF6B00;  /* สีส้ม */
+
+    .checkout-button {
+      background: #FF6B00; /* สีส้ม */
     }
 
     .checkout-button:hover {
-      background: #E65100;  /* สีส้มเข้มเมื่อ hover */
+      background: #E65100; /* สีส้มเข้มเมื่อ hover */
     }
-  </style>
-  <style>
 .checkout-page {
     position: fixed;
     top: 0;
@@ -309,7 +193,7 @@
 .special-checkout-button:hover {
     background: #E65100;
 }
-</style>
+</stlye>
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpZT-A8mlg5E0IgQkmvdkzqBm8TEqw0NQw0n4dK9FkpvDQlakCLISxc1TCyWzGo006/exec";
