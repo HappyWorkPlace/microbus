@@ -379,68 +379,34 @@ async function initializeLiff() {
         // Debug: ดูข้อมูลที่ได้จาก API
         console.log('Working Result:', workingResult);
 
-        if (workingResult.isWorking) {
-          // แสดงหน้า checkout
-          document.getElementById('special-checkout').style.display = 'flex';
-          document.getElementById('main-page').style.display = 'none';
+  if (workingResult.isWorking && workingResult.startTime) {
+    try {
+        console.log('Original startTime:', workingResult.startTime);
+        
+        const thaiDateTime = formatThaiDateTime(workingResult.startTime);
+        console.log('Formatted Thai DateTime:', thaiDateTime);
 
-          const checkButton = document.querySelector('.checkin-button');
-          checkButton.textContent = 'Check Out';
-          checkButton.classList.add('checkout-button');
-
-          if (workingResult.jobNo) {
-            checkButton.dataset.jobNo = workingResult.jobNo;
-          }
-
-          if (workingResult.shift) {
-            document.getElementById('shift').value = workingResult.shift;
-            document.getElementById('shift').disabled = true;
-          }
-
-          // จัดการข้อมูลเวลาและสถานที่
-          if (workingResult.startTime) {
-            try {
-              console.log('Original startTime:', workingResult.startTime); // Debug
-
-              // ถ้า startTime ไม่ได้อยู่ในรูปแบบ YYYY-MM-DD,HH:mm:ss
-              // ให้แปลงเป็นรูปแบบที่ต้องการก่อน
-              let formattedDateTime = workingResult.startTime;
-              if (!workingResult.startTime.includes(',')) {
-                const date = new Date(workingResult.startTime);
-                if (!isNaN(date.getTime())) {
-                  // แปลงเป็น timezone ของประเทศไทย (UTC+7)
-                  const bangkokDate = new Date(date.getTime() + (7 * 60 * 60 * 1000));
-                  formattedDateTime = formatTimestamp(bangkokDate);
-                }
-              }
-
-              console.log('Formatted DateTime:', formattedDateTime); // Debug
-
-              const thaiDateTime = formatThaiDateTime(formattedDateTime);
-              console.log('Thai DateTime:', thaiDateTime); // Debug
-
-              if (thaiDateTime) {
-                // แสดงแค่เวลาในส่วน Time-In
-                const timePart = formattedDateTime.split(',')[1];
-                if (timePart) {
-                  document.querySelector('.info-item:first-child .value').textContent = timePart;
-                }
-
-                // กำหนดข้อความและสถานที่
-                const location = workingResult.location || workingResult.nearPlace || 'ไม่ระบุสถานที่';
-                document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${thaiDateTime}`;
-                document.getElementById('checkout-place').textContent = location;
-              } else {
-                throw new Error('Cannot format Thai datetime');
-              }
-            } catch (error) {
-              console.error('Error processing datetime:', error);
-              document.getElementById('checkout-time').textContent = 'ไม่สามารถแสดงเวลา Check-in ได้';
-              document.getElementById('checkout-place').textContent = 
-                workingResult.location || workingResult.nearPlace || 'ไม่ระบุสถานที่';
+        if (thaiDateTime) {
+            // แสดงแค่เวลาในส่วน Time-In
+            const timePart = workingResult.startTime.split(' ')[1] || 
+                           workingResult.startTime.split(',')[1];
+            if (timePart) {
+                document.querySelector('.info-item:first-child .value').textContent = timePart;
             }
-          }
+
+            const location = workingResult.location || workingResult.nearPlace || 'ไม่ระบุสถานที่';
+            document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${thaiDateTime}`;
+            document.getElementById('checkout-place').textContent = location;
         } else {
+            throw new Error('Cannot format Thai datetime');
+        }
+    } catch (error) {
+        console.error('Error processing datetime:', error);
+        document.getElementById('checkout-time').textContent = 'ไม่สามารถแสดงเวลา Check-in ได้';
+        document.getElementById('checkout-place').textContent = 
+            workingResult.location || workingResult.nearPlace || 'ไม่ระบุสถานที่';
+    }
+} else {
           // แสดงหน้าปกติ
           document.getElementById('special-checkout').style.display = 'none';
           document.getElementById('main-page').style.display = 'block';
