@@ -364,6 +364,7 @@ async function initializeLiff() {
     if (liff.isLoggedIn()) {
       const profile = await liff.getProfile();
       const uid = liff.getContext().userId;
+
       const isRegistered = await checkRegistration(uid, profile);
 
       if (isRegistered.registered) {
@@ -375,39 +376,31 @@ async function initializeLiff() {
         // ตรวจสอบสถานะการทำงาน
         const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
         const workingResult = await workingResponse.json();
-        
-        // Debug: ดูข้อมูลที่ได้จาก API
-        console.log('Working Result:', workingResult);
 
-  if (workingResult.isWorking && workingResult.startTime) {
-    try {
-        console.log('Original startTime:', workingResult.startTime);
-        
-        const thaiDateTime = formatThaiDateTime(workingResult.startTime);
-        console.log('Formatted Thai DateTime:', thaiDateTime);
+        if (workingResult.isWorking) {
+          document.getElementById('special-checkout').style.display = 'flex';
+          document.getElementById('main-page').style.display = 'none';
 
-        if (thaiDateTime) {
-            // แสดงแค่เวลาในส่วน Time-In
-            const timePart = workingResult.startTime.split(' ')[1] || 
-                           workingResult.startTime.split(',')[1];
-            if (timePart) {
-                document.querySelector('.info-item:first-child .value').textContent = timePart;
+          const checkButton = document.querySelector('.checkin-button');
+          checkButton.textContent = 'Check Out';
+          checkButton.classList.add('checkout-button');
+
+          if (workingResult.jobNo) {
+            checkButton.dataset.jobNo = workingResult.jobNo;
+          }
+          if (workingResult.shift) {
+            document.getElementById('shift').value = workingResult.shift;
+            document.getElementById('shift').disabled = true;
+          }
+          if (workingResult.startTime) {
+            document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime;
+            const location = workingResult.location || workingResult.nearPlace;
+            if (location) {
+              document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${workingResult.startTime}`;
+              document.getElementById('checkout-place').textContent = location;
             }
-
-            const location = workingResult.location || workingResult.nearPlace || 'ไม่ระบุสถานที่';
-            document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${thaiDateTime}`;
-            document.getElementById('checkout-place').textContent = location;
+          }
         } else {
-            throw new Error('Cannot format Thai datetime');
-        }
-    } catch (error) {
-        console.error('Error processing datetime:', error);
-        document.getElementById('checkout-time').textContent = 'ไม่สามารถแสดงเวลา Check-in ได้';
-        document.getElementById('checkout-place').textContent = 
-            workingResult.location || workingResult.nearPlace || 'ไม่ระบุสถานที่';
-    }
-} else {
-          // แสดงหน้าปกติ
           document.getElementById('special-checkout').style.display = 'none';
           document.getElementById('main-page').style.display = 'block';
         }
@@ -430,6 +423,7 @@ async function initializeLiff() {
       confirmButtonText: 'ตกลง'
     });
   } finally {
+    // ซ่อน loading overlay ไม่ว่าจะสำเร็จหรือล้มเหลว
     hideLoading();
   }
 }
