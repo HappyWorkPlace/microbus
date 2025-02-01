@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NMB Driver Attendance Record</title>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
-  <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClC8pRmRIOYrDfTHubMrfUqCAuz966AgM&libraries=places,geometry&loading=async"></script>
-
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
@@ -343,6 +341,23 @@ body {
 }
 </style>
   <script>
+function initMap() {
+    // ย้ายโค้ดการ initialize map มาไว้ที่นี่
+    if (typeof google !== 'undefined') {
+        map = L.map('map').setView([13.7563, 100.5018], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        // เริ่มอัพเดทตำแหน่งหลังจาก map พร้อมใช้งาน
+        updateLocation();
+    }
+}
+</script>
+<script async
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClC8pRmRIOYrDfTHubMrfUqCAuz966AgM&libraries=places,geometry&loading=async&callback=initMap">
+</script>
+  <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpZT-A8mlg5E0IgQkmvdkzqBm8TEqw0NQw0n4dK9FkpvDQlakCLISxc1TCyWzGo006/exec";
 
     window.onload = function() {
@@ -479,39 +494,61 @@ function switchToNormalPage() {
     let map;
     let marker;
     let userLocation = { lat: 0, lng: 0 };
-
-    function initMap() {
-      map = L.map('map').setView([13.7563, 100.5018], 13);
-
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-      }).addTo(map);
-    }
-
- function updateLocation() {
-      if (navigator.geolocation) {
+function updateLocation() {
+    if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async position => {
-          userLocation.lat = position.coords.latitude;
-          userLocation.lng = position.coords.longitude;
+            try {
+                userLocation.lat = position.coords.latitude;
+                userLocation.lng = position.coords.longitude;
 
-          map.setView([userLocation.lat, userLocation.lng], 15);
+                // ตรวจสอบว่า map และ google object พร้อมใช้งาน
+                if (map && typeof google !== 'undefined') {
+                    map.setView([userLocation.lat, userLocation.lng], 15);
 
-          if (marker) {
-            marker.setLatLng([userLocation.lat, userLocation.lng]);
-          } else {
-            marker = L.marker([userLocation.lat, userLocation.lng]).addTo(map);
-          }
+                    if (marker) {
+                        marker.setLatLng([userLocation.lat, userLocation.lng]);
+                    } else {
+                        marker = L.marker([userLocation.lat, userLocation.lng]).addTo(map);
+                    }
 
-          const locationInfo = await getGoogleLocationDetails(userLocation.lat, userLocation.lng);
-          document.querySelector('.location-details').textContent = locationInfo;
+                    const locationInfo = await getGoogleLocationDetails(userLocation.lat, userLocation.lng);
+                    document.querySelector('.location-details').textContent = locationInfo;
+                } else {
+                    console.warn('Map or Google Maps API not ready');
+                    document.querySelector('.location-details').textContent = 'กำลังโหลดแผนที่...';
+                }
+            } catch (error) {
+                console.error('Error updating location:', error);
+                document.querySelector('.location-details').textContent = 'ไม่สามารถระบุตำแหน่งได้';
+            }
         }, error => {
-          console.error('Error getting location:', error);
-          alert('ไม่สามารถดึงตำแหน่งได้');
+            console.error('Geolocation error:', error);
+            document.querySelector('.location-details').textContent = 'ไม่สามารถเข้าถึงตำแหน่งของคุณได้';
+            
+            // แสดง error message ที่เป็นมิตรกับผู้ใช้
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    alert('กรุณาอนุญาตให้เข้าถึงตำแหน่งของคุณ เพื่อใช้งานแอพได้อย่างสมบูรณ์');
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert('ไม่สามารถระบุตำแหน่งของคุณได้ กรุณาลองใหม่อีกครั้ง');
+                    break;
+                case error.TIMEOUT:
+                    alert('หมดเวลาในการค้นหาตำแหน่ง กรุณาลองใหม่อีกครั้ง');
+                    break;
+                default:
+                    alert('เกิดข้อผิดพลาดในการระบุตำแหน่ง กรุณาลองใหม่อีกครั้ง');
+            }
+        }, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
         });
-      } else {
+    } else {
         alert('Browser ของคุณไม่รองรับ Geolocation');
-      }
+        document.querySelector('.location-details').textContent = 'ไม่สามารถระบุตำแหน่งได้';
     }
+}
 
 async function getGoogleLocationDetails(lat, lng) {
   try {
