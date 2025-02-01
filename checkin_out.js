@@ -12,26 +12,97 @@ function generateJobNo(empNo) {
     return `${empNo}${year}${month}${day}${hours}${minutes}${seconds}`;
 }
 
-// ฟังก์ชันสำหรับฟอร์แมตเวลาเป็น YYYY-MM-DD,HH:mm:ss
 // ฟังก์ชันสำหรับแปลงเวลาเป็นรูปแบบภาษาไทย
 function formatThaiDateTime(timestamp) {
-    // ถ้าไม่มี timestamp ให้ return ค่าว่าง
-    if (!timestamp) return '';
-    
-    // แยกวันที่และเวลาออกจากกัน (รูปแบบ YYYY-MM-DD,HH:mm:ss)
-    const [datePart, timePart] = timestamp.split(',');
-    const [year, month, day] = datePart.split('-');
-    
-    // แปลงเดือนเป็นภาษาไทย
-    const thaiMonths = [
-        'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
-        'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
-    ];
-    
-    // แปลงปีเป็น พ.ศ.
-    const thaiYear = parseInt(year) + 543;
-    
-    return `วันที่ ${parseInt(day)} ${thaiMonths[parseInt(month) - 1]} ${thaiYear} เวลา ${timePart} น.`;
+    try {
+        // ตรวจสอบว่า timestamp มีค่าและเป็นสตริงหรือไม่
+        if (!timestamp || typeof timestamp !== 'string') {
+            console.error('Invalid timestamp:', timestamp);
+            return '';
+        }
+
+        // แยกวันที่และเวลาออกจากกัน (รูปแบบ YYYY-MM-DD,HH:mm:ss)
+        const parts = timestamp.split(',');
+        if (parts.length !== 2) {
+            console.error('Invalid timestamp format:', timestamp);
+            return '';
+        }
+
+        const [datePart, timePart] = parts;
+        const [year, month, day] = datePart.split('-');
+
+        // ตรวจสอบความถูกต้องของค่าวันที่
+        if (!year || !month || !day) {
+            console.error('Invalid date parts:', { year, month, day });
+            return '';
+        }
+
+        // แปลงเดือนเป็นภาษาไทย
+        const thaiMonths = [
+            'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+            'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+        ];
+
+        // แปลงปีเป็น พ.ศ.
+        const thaiYear = parseInt(year) + 543;
+        
+        // ตรวจสอบความถูกต้องของค่าเดือน
+        const monthIndex = parseInt(month) - 1;
+        if (monthIndex < 0 || monthIndex >= 12) {
+            console.error('Invalid month index:', monthIndex);
+            return '';
+        }
+
+        return `วันที่ ${parseInt(day)} ${thaiMonths[monthIndex]} ${thaiYear} เวลา ${timePart} น.`;
+    } catch (error) {
+        console.error('Error formatting date:', error);
+        return '';
+    }
+}
+
+// แก้ไขส่วนที่แสดงผลเวลาใน initializeLiff
+if (workingResult.isWorking) {
+    document.getElementById('special-checkout').style.display = 'flex';
+    document.getElementById('main-page').style.display = 'none';
+
+    const checkButton = document.querySelector('.checkin-button');
+    checkButton.textContent = 'Check Out';
+    checkButton.classList.add('checkout-button');
+
+    if (workingResult.jobNo) {
+        checkButton.dataset.jobNo = workingResult.jobNo;
+    }
+    if (workingResult.shift) {
+        document.getElementById('shift').value = workingResult.shift;
+        document.getElementById('shift').disabled = true;
+    }
+    if (workingResult.startTime) {
+        try {
+            // ใช้ฟังก์ชัน formatThaiDateTime กับ startTime
+            const formattedTime = formatThaiDateTime(workingResult.startTime);
+            
+            // ถ้าการแปลงเวลาสำเร็จ
+            if (formattedTime) {
+                // แสดงแค่เวลาในส่วน Time-In
+                const timePart = workingResult.startTime.split(',')[1];
+                if (timePart) {
+                    document.querySelector('.info-item:first-child .value').textContent = timePart;
+                }
+
+                const location = workingResult.location || workingResult.nearPlace || 'ไม่ระบุสถานที่';
+                document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${formattedTime}`;
+                document.getElementById('checkout-place').textContent = location;
+            } else {
+                // กรณีแปลงเวลาไม่สำเร็จ
+                document.getElementById('checkout-time').textContent = 'ไม่สามารถแสดงเวลา Check-in ได้';
+                document.getElementById('checkout-place').textContent = workingResult.location || workingResult.nearPlace || 'ไม่ระบุสถานที่';
+            }
+        } catch (error) {
+            console.error('Error processing time:', error);
+            document.getElementById('checkout-time').textContent = 'ไม่สามารถแสดงเวลา Check-in ได้';
+            document.getElementById('checkout-place').textContent = workingResult.location || workingResult.nearPlace || 'ไม่ระบุสถานที่';
+        }
+    }
 }
 
 
