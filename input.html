@@ -356,7 +356,9 @@ body {
     function hideLoading() {
       document.querySelector('.loading-overlay').classList.add('hidden');
     }
-
+// ตรวจสอบสถานะการทำงาน
+const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
+const workingResult = await workingResponse.json();
 async function initializeLiff() {
   try {
     await liff.init({ liffId: "2006809014-elbWam3R" });
@@ -373,9 +375,9 @@ async function initializeLiff() {
         initMap();
         updateLocation();
 
-        // ตรวจสอบสถานะการทำงาน
-        const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
-        const workingResult = await workingResponse.json();
+        // // ตรวจสอบสถานะการทำงาน
+        // const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
+        // const workingResult = await workingResponse.json();
 
         if (workingResult.isWorking) {
           document.getElementById('special-checkout').style.display = 'flex';
@@ -463,7 +465,7 @@ function showSpecialCheckout(startTime, nearPlace) {
   console.log('Showing special checkout with:', { startTime, nearPlace }); // Debug log
   
   if (startTime && nearPlace) {
-    document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${startTime}`;
+    document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${workingResult.startTime}`;
     document.getElementById('checkout-place').textContent = nearPlace;
     document.getElementById('special-checkout').style.display = 'flex';
     document.getElementById('main-page').style.display = 'none';
