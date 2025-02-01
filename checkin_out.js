@@ -12,70 +12,21 @@ function generateJobNo(empNo) {
     return `${empNo}${year}${month}${day}${hours}${minutes}${seconds}`;
 }
 
-// ฟังก์ชันสำหรับแปลงเวลาเป็นรูปแบบภาษาไทย
-// ฟังก์ชันสำหรับแปลงเวลาเป็นรูปแบบภาษาไทย
-function formatThaiDateTime(timestamp) {
-    try {
-        console.log('Input timestamp:', timestamp);
-        
-        // ตรวจสอบว่า timestamp มีค่าและเป็นสตริง
-        if (!timestamp || typeof timestamp !== 'string') {
-            console.error('Invalid timestamp:', timestamp);
-            return '';
-        }
-
-        let datePart, timePart;
-
-        // รองรับทั้งรูปแบบที่มี comma และไม่มี comma
-        if (timestamp.includes(',')) {
-            [datePart, timePart] = timestamp.split(',');
-        } else {
-            [datePart, timePart] = timestamp.split(' ');
-        }
-
-        // ตรวจสอบว่าแยกวันที่และเวลาได้ถูกต้อง
-        if (!datePart || !timePart) {
-            console.error('Cannot split date and time:', { datePart, timePart });
-            return '';
-        }
-
-        console.log('Split result:', { datePart, timePart });
-
-        // แยกส่วนประกอบของวันที่
-        const [year, month, day] = datePart.split('-');
-        
-        // ตรวจสอบความถูกต้องของค่าวันที่
-        if (!year || !month || !day) {
-            console.error('Invalid date components:', { year, month, day });
-            return '';
-        }
-
-        console.log('Date components:', { year, month, day });
-
-        // แปลงเดือนเป็นภาษาไทย
-        const thaiMonths = [
-            'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
-            'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
-        ];
-
-        // แปลงปีเป็น พ.ศ.
-        const thaiYear = parseInt(year) + 543;
-        
-        // ตรวจสอบและแปลงค่าเดือน
-        const monthIndex = parseInt(month) - 1;
-        if (monthIndex < 0 || monthIndex >= 12) {
-            console.error('Invalid month index:', monthIndex);
-            return '';
-        }
-
-        const thaiDate = `วันที่ ${parseInt(day)} ${thaiMonths[monthIndex]} ${thaiYear} เวลา ${timePart} น.`;
-        console.log('Thai date result:', thaiDate);
-        
-        return thaiDate;
-    } catch (error) {
-        console.error('Error in formatThaiDateTime:', error);
-        return '';
-    }
+// ฟังก์ชันสำหรับฟอร์แมตเวลาเป็น YYYY-MM-DD,HH:mm:ss
+function formatTimestamp(dateString) {
+    const date = new Date(dateString || new Date());
+    
+    // แปลงเป็น timezone ของประเทศไทย (UTC+7)
+    const bangkokDate = new Date(date.getTime() + (7 * 60 * 60 * 1000));
+    
+    const year = bangkokDate.getUTCFullYear();
+    const month = String(bangkokDate.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(bangkokDate.getUTCDate()).padStart(2, '0');
+    const hours = String(bangkokDate.getUTCHours()).padStart(2, '0');
+    const minutes = String(bangkokDate.getUTCMinutes()).padStart(2, '0');
+    const seconds = String(bangkokDate.getUTCSeconds()).padStart(2, '0');
+    
+    return `${year}-${month}-${day},${hours}:${minutes}:${seconds}`;
 }
 
 // ฟังก์ชันสำหรับบันทึกข้อมูล Check-in
