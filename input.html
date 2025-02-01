@@ -488,7 +488,7 @@ function switchToNormalPage() {
       }).addTo(map);
     }
 
-    function updateLocation() {
+ function updateLocation() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async position => {
           userLocation.lat = position.coords.latitude;
@@ -513,92 +513,77 @@ function switchToNormalPage() {
       }
     }
 
-function getNearbyPlaces(lat, lng) {
-  const mapElement = document.createElement('div');
-  const map = new google.maps.Map(mapElement, {
-    center: { lat, lng },
-    zoom: 15
-  });
+    async function getGoogleLocationDetails(lat, lng) {
+      try {
+        const geocoder = new google.maps.Geocoder();
+        const latlng = { lat: parseFloat(lat), lng: parseFloat(lng) };
+        
+        const response = await new Promise((resolve, reject) => {
+          geocoder.geocode({ location: latlng, language: 'th' }, (results, status) => {
+            if (status === 'OK') {
+              resolve(results);
+            } else {
+              reject(new Error('Geocoder failed: ' + status));
+            }
+          });
+        });
 
-  const service = new google.maps.places.PlacesService(map);
-  const request = {
-    location: new google.maps.LatLng(lat, lng),
-    radius: 500, // Ensure radius is within limits
-    type: ['establishment'] // Try a different place type
-  };
+        const result = response[0];
+        const addressComponents = {};
 
-  service.nearbySearch(request, (results, status) => {
-    if (status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {
-      console.log('Nearest Place:', results[0].name);
-    } else {
-      console.warn('No places found or API error:', status);
-    }
-  });
-}
+        result.address_components.forEach(component => {
+          const types = component.types;
+          if (types.includes('sublocality_level_1') || types.includes('sublocality')) {
+            addressComponents.subdistrict = component.long_name;
+          }
+          if (types.includes('administrative_area_level_2') || types.includes('district')) {
+            addressComponents.district = component.long_name;
+          }
+          if (types.includes('administrative_area_level_1') || types.includes('province')) {
+            addressComponents.province = component.long_name;
+          }
+        });
 
+        const nearbyPlace = await getNearbyPlaces(lat, lng);
 
-async function getGoogleLocationDetails(lat, lng) {
-  try {
-    const geocoder = new google.maps.Geocoder();
-    const latlng = { lat: parseFloat(lat), lng: parseFloat(lng) };
-    
-    const response = await new Promise((resolve, reject) => {
-      geocoder.geocode({ 
-        location: latlng, 
-        language: 'th' 
-      }, (results, status) => {
-        if (status === 'OK' && results && results.length > 0) {
-          resolve(results);
-        } else {
-          reject(new Error('Geocoder failed: ' + status));
+        let displayText = `ใกล้กับ ${nearbyPlace}`;
+
+        if (addressComponents.subdistrict) {
+          displayText += `, ตำบล${addressComponents.subdistrict}`;
         }
-      });
-    });
+        if (addressComponents.district) {
+          displayText += `, อำเภอ${addressComponents.district}`;
+        }
+        if (addressComponents.province) {
+          displayText += `, จังหวัด${addressComponents.province}`;
+        }
 
-    const result = response[0];
-    const addressComponents = {
-      subdistrict: '',
-      district: '',
-      province: ''
-    };
+        return displayText;
 
-    // แยกข้อมูลที่อยู่
-    result.address_components.forEach(component => {
-      const types = component.types;
-      if (types.includes('sublocality_level_1')) {
-        addressComponents.subdistrict = component.long_name;
-      } else if (types.includes('administrative_area_level_2')) {
-        addressComponents.district = component.long_name;
-      } else if (types.includes('administrative_area_level_1')) {
-        addressComponents.province = component.long_name;
+      } catch (error) {
+        console.error('Error getting Google location details:', error);
+        return 'ไม่พบข้อมูล';
       }
-    });
-
-    // หาสถานที่ใกล้เคียง
-    const nearbyPlace = await getNearbyPlaces(lat, lng);
-    let displayText = '';
-
-    // สร้างข้อความแสดงผล
-    if (nearbyPlace && nearbyPlace !== 'พิกัดปัจจุบัน') {
-      displayText = `ใกล้กับ ${nearbyPlace}`;
     }
 
-    if (addressComponents.subdistrict) {
-      displayText += (displayText ? ', ' : '') + `ตำบล${addressComponents.subdistrict}`;
-    }
-    if (addressComponents.district) {
-      displayText += `, อำเภอ${addressComponents.district}`;
-    }
-    if (addressComponents.province) {
-      displayText += `, จังหวัด${addressComponents.province}`;
-    }
+    async function getNearbyPlaces(lat, lng) {
+      const service = new google.maps.places.PlacesService(document.createElement('div'));
+      const request = {
+        location: new google.maps.LatLng(lat, lng),
+        radius: 500,
+        type: ['point_of_interest', 'establishment']
+      };
 
-    return displayText || 'พิกัดปัจจุบัน';
-  } catch (error) {
-    console.error('Error in getGoogleLocationDetails:', error);
-    return 'พิกัดปัจจุบัน';
-  }
-}
+      return new Promise((resolve, reject) => {
+        service.nearbySearch(request, (results, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {
+            resolve(results[0].name);
+          } else {
+            resolve('ไม่พบสถานที่สำคัญใกล้เคียง');
+          }
+        });
+      });
+    }
 
     function setDefaultDateTime() {
       const now = new Date();
