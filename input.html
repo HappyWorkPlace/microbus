@@ -348,19 +348,31 @@ body {
 // Global variables
 let map;
 let marker;
-let userLocation = { lat: 0, lng: 0 };
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpZT-A8mlg5E0IgQkmvdkzqBm8TEqw0NQw0n4dK9FkpvDQlakCLISxc1TCyWzGo006/exec";
+let userLocation = { lat: 13.7563, lng: 100.5018 }; // Default to Bangkok
 
-// Initialize map
 function initMap() {
     if (!map) {
-        map = L.map('map').setView([13.7563, 100.5018], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 15,
+            center: userLocation,
+            styles: [
+                {
+                    featureType: "poi",
+                    stylers: [{ visibility: "off" }]
+                }
+            ]
+        });
+
+        marker = new google.maps.Marker({
+            position: userLocation,
+            map: map,
+            title: 'ตำแหน่งของคุณ'
+        });
+
         updateLocation();
     }
 }
+
 
 // LIFF Initialization
 async function initializeLiff() {
@@ -459,28 +471,24 @@ async function checkRegistration(uid, profile) {
 }
 
 // Location functions
-async function updateLocation() {
+
+function updateLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async position => {
             try {
-                userLocation.lat = position.coords.latitude;
-                userLocation.lng = position.coords.longitude;
+                userLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
 
-                if (map && typeof google !== 'undefined') {
-                    map.setView([userLocation.lat, userLocation.lng], 15);
+                // อัพเดทแผนที่และ marker
+                map.setCenter(userLocation);
+                marker.setPosition(userLocation);
 
-                    if (marker) {
-                        marker.setLatLng([userLocation.lat, userLocation.lng]);
-                    } else {
-                        marker = L.marker([userLocation.lat, userLocation.lng]).addTo(map);
-                    }
+                // ดึงข้อมูลตำแหน่ง
+                const locationInfo = await getGoogleLocationDetails(userLocation.lat, userLocation.lng);
+                document.querySelector('.location-details').textContent = locationInfo;
 
-                    const locationInfo = await getGoogleLocationDetails(userLocation.lat, userLocation.lng);
-                    document.querySelector('.location-details').textContent = locationInfo;
-                } else {
-                    console.warn('Map or Google Maps API not ready');
-                    document.querySelector('.location-details').textContent = 'กำลังโหลดแผนที่...';
-                }
             } catch (error) {
                 console.error('Error updating location:', error);
                 document.querySelector('.location-details').textContent = 'ไม่สามารถระบุตำแหน่งได้';
@@ -491,16 +499,23 @@ async function updateLocation() {
             
             switch(error.code) {
                 case error.PERMISSION_DENIED:
-                    alert('กรุณาอนุญาตให้เข้าถึงตำแหน่งของคุณ เพื่อใช้งานแอพได้อย่างสมบูรณ์');
+                    Swal.fire({
+                        title: 'ไม่สามารถเข้าถึงตำแหน่งได้',
+                        text: 'กรุณาอนุญาตให้เข้าถึงตำแหน่งของคุณ เพื่อใช้งานแอพได้อย่างสมบูรณ์',
+                        icon: 'warning',
+                        confirmButtonText: 'ตกลง'
+                    });
                     break;
                 case error.POSITION_UNAVAILABLE:
-                    alert('ไม่สามารถระบุตำแหน่งของคุณได้ กรุณาลองใหม่อีกครั้ง');
-                    break;
                 case error.TIMEOUT:
-                    alert('หมดเวลาในการค้นหาตำแหน่ง กรุณาลองใหม่อีกครั้ง');
+                case error.UNKNOWN_ERROR:
+                    Swal.fire({
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่สามารถระบุตำแหน่งของคุณได้ กรุณาลองใหม่อีกครั้ง',
+                        icon: 'error',
+                        confirmButtonText: 'ตกลง'
+                    });
                     break;
-                default:
-                    alert('เกิดข้อผิดพลาดในการระบุตำแหน่ง กรุณาลองใหม่อีกครั้ง');
             }
         }, {
             enableHighAccuracy: true,
@@ -508,8 +523,12 @@ async function updateLocation() {
             maximumAge: 0
         });
     } else {
-        alert('Browser ของคุณไม่รองรับ Geolocation');
-        document.querySelector('.location-details').textContent = 'ไม่สามารถระบุตำแหน่งได้';
+        Swal.fire({
+            title: 'ไม่รองรับ Geolocation',
+            text: 'Browser ของคุณไม่รองรับการระบุตำแหน่ง',
+            icon: 'error',
+            confirmButtonText: 'ตกลง'
+        });
     }
 }
 
