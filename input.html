@@ -357,8 +357,8 @@ body {
       document.querySelector('.loading-overlay').classList.add('hidden');
     }
 // ตรวจสอบสถานะการทำงาน
-const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
-const workingResult = await workingResponse.json();
+const workingResponse = fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
+const workingResult = workingResponse.json();
 async function initializeLiff() {
   try {
     await liff.init({ liffId: "2006809014-elbWam3R" });
