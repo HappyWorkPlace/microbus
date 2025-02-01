@@ -377,55 +377,58 @@ async function initializeLiff() {
         const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
         const workingResult = await workingResponse.json();
 
-        if (workingResult.isWorking) {
+      
+      if (workingResult.isWorking) {
           document.getElementById('special-checkout').style.display = 'flex';
           document.getElementById('main-page').style.display = 'none';
-
+      
           const checkButton = document.querySelector('.checkin-button');
           checkButton.textContent = 'Check Out';
           checkButton.classList.add('checkout-button');
-
+      
           if (workingResult.jobNo) {
-            checkButton.dataset.jobNo = workingResult.jobNo;
+              checkButton.dataset.jobNo = workingResult.jobNo;
           }
           if (workingResult.shift) {
-            document.getElementById('shift').value = workingResult.shift;
-            document.getElementById('shift').disabled = true;
+              document.getElementById('shift').value = workingResult.shift;
+              document.getElementById('shift').disabled = true;
           }
           if (workingResult.startTime) {
-            document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime;
-            const location = workingResult.location || workingResult.nearPlace;
-            if (location) {
-              document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${workingResult.startTime}`;
-              document.getElementById('checkout-place').textContent = location;
-            }
+              // ใช้ฟังก์ชัน formatThaiDateTime กับ startTime
+              const formattedTime = formatThaiDateTime(workingResult.startTime);
+              document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime.split(',')[1]; // แสดงแค่เวลาในส่วน Time-In
+              const location = workingResult.location || workingResult.nearPlace;
+              if (location) {
+                  document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${formattedTime}`;
+                  document.getElementById('checkout-place').textContent = location;
+              }
           }
-        } else {
-          document.getElementById('special-checkout').style.display = 'none';
-          document.getElementById('main-page').style.display = 'block';
-        }
-
-        // ผูก event listener กับปุ่ม check-in/out
-        const checkInButton = document.querySelector('.checkin-button');
-        checkInButton.addEventListener('click', checkIn);
       } else {
-        alert("UID not registered. Please register.");
-      }
-    } else {
-      liff.login();
-    }
-  } catch (error) {
-    console.error("LIFF initialization failed", error);
-    await Swal.fire({
-      title: 'เกิดข้อผิดพลาด',
-      text: 'ไม่สามารถเริ่มต้นระบบได้ กรุณาลองใหม่อีกครั้ง',
-      icon: 'error',
-      confirmButtonText: 'ตกลง'
-    });
-  } finally {
-    // ซ่อน loading overlay ไม่ว่าจะสำเร็จหรือล้มเหลว
-    hideLoading();
-  }
+                document.getElementById('special-checkout').style.display = 'none';
+                document.getElementById('main-page').style.display = 'block';
+              }
+      
+              // ผูก event listener กับปุ่ม check-in/out
+              const checkInButton = document.querySelector('.checkin-button');
+              checkInButton.addEventListener('click', checkIn);
+            } else {
+              alert("UID not registered. Please register.");
+            }
+          } else {
+            liff.login();
+          }
+        } catch (error) {
+          console.error("LIFF initialization failed", error);
+          await Swal.fire({
+            title: 'เกิดข้อผิดพลาด',
+            text: 'ไม่สามารถเริ่มต้นระบบได้ กรุณาลองใหม่อีกครั้ง',
+            icon: 'error',
+            confirmButtonText: 'ตกลง'
+          });
+        } finally {
+          // ซ่อน loading overlay ไม่ว่าจะสำเร็จหรือล้มเหลว
+          hideLoading();
+        }
 }
 
 
