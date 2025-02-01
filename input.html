@@ -6,7 +6,7 @@
   <title>NMB Driver Attendance Record</title>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
 <!--   <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClC8pRmRIOYrDfTHubMrfUqCAuz966AgM&libraries=places,geometry&loading=async"></script> -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClC8pRmRIOYrDfTHubMrfUqCAuz966AgM&callback=initMap" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClC8pRmRIOYrDfTHubMrfUqCAuz966AgM" async defer></script>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -482,11 +482,13 @@ function switchToNormalPage() {
     let userLocation = { lat: 0, lng: 0 };
 
     function initMap() {
+      if (!map) {
       map = L.map('map').setView([13.7563, 100.5018], 13);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
       }).addTo(map);
+      }
     }
 
     function updateLocation() {
@@ -513,93 +515,71 @@ function switchToNormalPage() {
         alert('Browser ของคุณไม่รองรับ Geolocation');
       }
     }
-
-function getNearbyPlaces(lat, lng) {
-  const mapElement = document.createElement('div');
-  const map = new google.maps.Map(mapElement, {
-    center: { lat, lng },
-    zoom: 15
-  });
-
-  const service = new google.maps.places.PlacesService(map);
-  const request = {
-    location: new google.maps.LatLng(lat, lng),
-    radius: 500, // Ensure radius is within limits
-    type: ['establishment'] // Try a different place type
-  };
-
-  service.nearbySearch(request, (results, status) => {
-    if (status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {
-      console.log('Nearest Place:', results[0].name);
-    } else {
-      console.warn('No places found or API error:', status);
-    }
-  });
-}
-
-
 async function getGoogleLocationDetails(lat, lng) {
-  try {
-    const geocoder = new google.maps.Geocoder();
-    const latlng = { lat: parseFloat(lat), lng: parseFloat(lng) };
-    
-    const response = await new Promise((resolve, reject) => {
-      geocoder.geocode({ 
-        location: latlng, 
-        language: 'th' 
-      }, (results, status) => {
-        if (status === 'OK' && results && results.length > 0) {
-          resolve(results);
-        } else {
-          reject(new Error('Geocoder failed: ' + status));
+    try {
+        const apiKey = "AIzaSyClC8pRmRIOYrDfTHubMrfUqCAuz966AgM";
+        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}&language=th`;
+        
+        const response = await fetch(geocodeUrl);
+        const data = await response.json();
+        
+        if (data.status !== "OK" || data.results.length === 0) {
+            throw new Error("Geocoder failed: " + data.status);
         }
-      });
-    });
 
-    const result = response[0];
-    const addressComponents = {
-      subdistrict: '',
-      district: '',
-      province: ''
-    };
+        const result = data.results[0];
+        const addressComponents = {
+            subdistrict: '',
+            district: '',
+            province: ''
+        };
 
-    // แยกข้อมูลที่อยู่
-    result.address_components.forEach(component => {
-      const types = component.types;
-      if (types.includes('sublocality_level_1')) {
-        addressComponents.subdistrict = component.long_name;
-      } else if (types.includes('administrative_area_level_2')) {
-        addressComponents.district = component.long_name;
-      } else if (types.includes('administrative_area_level_1')) {
-        addressComponents.province = component.long_name;
-      }
-    });
+        result.address_components.forEach(component => {
+            const types = component.types;
+            if (types.includes('sublocality_level_1')) {
+                addressComponents.subdistrict = component.long_name;
+            } else if (types.includes('administrative_area_level_2')) {
+                addressComponents.district = component.long_name;
+            } else if (types.includes('administrative_area_level_1')) {
+                addressComponents.province = component.long_name;
+            }
+        });
 
-    // หาสถานที่ใกล้เคียง
-    const nearbyPlace = await getNearbyPlaces(lat, lng);
-    let displayText = '';
+        // ดึงสถานที่ใกล้เคียง
+        const nearbyPlace = await getNearbyPlaces(lat, lng);
 
-    // สร้างข้อความแสดงผล
-    if (nearbyPlace && nearbyPlace !== 'พิกัดปัจจุบัน') {
-      displayText = `ใกล้กับ ${nearbyPlace}`;
+        // สร้างข้อความแสดงผล
+        let displayText = nearbyPlace ? `ใกล้กับ ${nearbyPlace}` : '';
+        if (addressComponents.subdistrict) displayText += `, ตำบล${addressComponents.subdistrict}`;
+        if (addressComponents.district) displayText += `, อำเภอ${addressComponents.district}`;
+        if (addressComponents.province) displayText += `, จังหวัด${addressComponents.province}`;
+
+        return displayText || `พิกัดปัจจุบัน (${lat}, ${lng})`;
+    } catch (error) {
+        console.error("Error in getGoogleLocationDetails:", error);
+        return `พิกัดปัจจุบัน (${lat}, ${lng})`;
     }
-
-    if (addressComponents.subdistrict) {
-      displayText += (displayText ? ', ' : '') + `ตำบล${addressComponents.subdistrict}`;
-    }
-    if (addressComponents.district) {
-      displayText += `, อำเภอ${addressComponents.district}`;
-    }
-    if (addressComponents.province) {
-      displayText += `, จังหวัด${addressComponents.province}`;
-    }
-
-    return displayText || 'พิกัดปัจจุบัน';
-  } catch (error) {
-    console.error('Error in getGoogleLocationDetails:', error);
-    return 'พิกัดปัจจุบัน';
-  }
 }
+
+async function getNearbyPlaces(lat, lng) {
+    try {
+        const apiKey = "AIzaSyClC8pRmRIOYrDfTHubMrfUqCAuz966AgM";
+        const placesUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=500&type=establishment&key=${apiKey}`;
+        
+        const response = await fetch(placesUrl);
+        const data = await response.json();
+
+        if (data.status === "OK" && data.results.length > 0) {
+            return data.results[0].name; // คืนชื่อสถานที่ที่ใกล้ที่สุด
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.error("Error in getNearbyPlaces:", error);
+        return null;
+    }
+}
+
 
     function setDefaultDateTime() {
       const now = new Date();
