@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NMB Driver Attendance Record</title>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
+  <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClC8pRmRIOYrDfTHubMrfUqCAuz966AgM&libraries=places,geometry&loading=async"></script>
+
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
@@ -340,503 +342,295 @@ body {
   }
 }
 </style>
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpZT-A8mlg5E0IgQkmvdkzqBm8TEqw0NQw0n4dK9FkpvDQlakCLISxc1TCyWzGo006/exec";
 
-<script>
-// Global variables
-let map;
-let marker;
-let userLocation = { lat: 13.7563, lng: 100.5018 }; // Default to Bangkok
+    window.onload = function() {
+      initializeLiff();
+    };
 
-function initMap() {
-    if (!map) {
-        map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 15,
-            center: userLocation,
-            styles: [
-                {
-                    featureType: "poi",
-                    stylers: [{ visibility: "off" }]
-                }
-            ]
-        });
-
-        marker = new google.maps.Marker({
-            position: userLocation,
-            map: map,
-            title: 'ตำแหน่งของคุณ'
-        });
-
-        updateLocation();
+    function showLoading() {
+      document.querySelector('.loading-overlay').classList.remove('hidden');
     }
-}
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpZT-A8mlg5E0IgQkmvdkzqBm8TEqw0NQw0n4dK9FkpvDQlakCLISxc1TCyWzGo006/exec";
-// LIFF Initialization
+    function hideLoading() {
+      document.querySelector('.loading-overlay').classList.add('hidden');
+    }
+
 async function initializeLiff() {
-    try {
-        await liff.init({ liffId: "2006809014-elbWam3R" });
+  try {
+    await liff.init({ liffId: "2006809014-elbWam3R" });
 
-        if (liff.isLoggedIn()) {
-            const profile = await liff.getProfile();
-            const uid = liff.getContext().userId;
-            const isRegistered = await checkRegistration(uid, profile);
+    if (liff.isLoggedIn()) {
+      const profile = await liff.getProfile();
+      const uid = liff.getContext().userId;
 
-            if (isRegistered.registered) {
-                setDefaultDateTime();
-                startRealTimeClock();
-                updateLocation();
+      const isRegistered = await checkRegistration(uid, profile);
 
-                // Check working status
-                const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
-                const workingResult = await workingResponse.json();
+      if (isRegistered.registered) {
+        setDefaultDateTime();
+        startRealTimeClock();
+        initMap();
+        updateLocation();
 
-                if (workingResult.isWorking) {
-                    document.getElementById('special-checkout').style.display = 'flex';
-                    document.getElementById('main-page').style.display = 'none';
+        // ตรวจสอบสถานะการทำงาน
+        const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
+        const workingResult = await workingResponse.json();
 
-                    const checkButton = document.querySelector('.checkin-button');
-                    checkButton.textContent = 'Check Out';
-                    checkButton.classList.add('checkout-button');
+        if (workingResult.isWorking) {
+          document.getElementById('special-checkout').style.display = 'flex';
+          document.getElementById('main-page').style.display = 'none';
 
-                    if (workingResult.jobNo) {
-                        checkButton.dataset.jobNo = workingResult.jobNo;
-                    }
-                    if (workingResult.shift) {
-                        document.getElementById('shift').value = workingResult.shift;
-                        document.getElementById('shift').disabled = true;
-                    }
-                    if (workingResult.startTime) {
-                        document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime;
-                        const location = workingResult.location || workingResult.nearPlace;
-                        if (location) {
-                            document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${workingResult.startTime}`;
-                            document.getElementById('checkout-place').textContent = location;
-                        }
-                    }
-                } else {
-                    document.getElementById('special-checkout').style.display = 'none';
-                    document.getElementById('main-page').style.display = 'block';
-                }
+          const checkButton = document.querySelector('.checkin-button');
+          checkButton.textContent = 'Check Out';
+          checkButton.classList.add('checkout-button');
 
-                // Bind check-in/out button event
-                const checkInButton = document.querySelector('.checkin-button');
-                checkInButton.addEventListener('click', checkIn);
-            } else {
-                window.location.href = "https://liff.line.me/2006809014-zqJWBVbA";
+          if (workingResult.jobNo) {
+            checkButton.dataset.jobNo = workingResult.jobNo;
+          }
+          if (workingResult.shift) {
+            document.getElementById('shift').value = workingResult.shift;
+            document.getElementById('shift').disabled = true;
+          }
+          if (workingResult.startTime) {
+            document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime;
+            const location = workingResult.location || workingResult.nearPlace;
+            if (location) {
+              document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${workingResult.startTime}`;
+              document.getElementById('checkout-place').textContent = location;
             }
+          }
         } else {
-            liff.login();
-        }
-    } catch (error) {
-        console.error("LIFF initialization failed", error);
-        await Swal.fire({
-            title: 'เกิดข้อผิดพลาด',
-            text: 'ไม่สามารถเริ่มต้นระบบได้ กรุณาลองใหม่อีกครั้ง',
-            icon: 'error',
-            confirmButtonText: 'ตกลง'
-        });
-    } finally {
-        hideLoading();
-    }
-}
-
-// Registration check
-      async function checkRegistration(uid, profile) {
-            try {
-                const regResponse = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
-                if (!regResponse.ok) {
-                    throw new Error(`HTTP error! status: ${regResponse.status}`);
-                }
-                const regResult = await regResponse.json();
-
-                if (regResult && regResult.registered) {
-                    // Update user info
-                    document.querySelector('.user-id').textContent = `${regResult.employee_no} ${regResult.name}`;
-                    document.querySelector('.location').textContent = `${regResult.factory}`;
-                    document.querySelector('.position').textContent = `${regResult.position}`;
-
-                    if (profile && profile.pictureUrl) {
-                        document.querySelector('.avatar img').src = profile.pictureUrl;
-                    }
-
-                    return regResult;
-                } else {
-                    console.log('Registration check failed:', regResult);
-                    if (regResult.message) {
-                        await Swal.fire({
-                            title: 'ไม่พบข้อมูลการลงทะเบียน',
-                            text: regResult.message,
-                            icon: 'warning',
-                            confirmButtonText: 'ไปหน้าลงทะเบียน'
-                        });
-                    }
-                    window.location.href = "https://liff.line.me/2006809014-zqJWBVbA";
-                    return false;
-                }
-            } catch (error) {
-                console.error("Error checking registration:", error);
-                await Swal.fire({
-                    title: 'เกิดข้อผิดพลาด',
-                    text: 'ไม่สามารถตรวจสอบการลงทะเบียนได้ กรุณาลองใหม่อีกครั้ง',
-                    icon: 'error',
-                    confirmButtonText: 'ตกลง'
-                });
-                return false;
-            }
+          document.getElementById('special-checkout').style.display = 'none';
+          document.getElementById('main-page').style.display = 'block';
         }
 
-// Location functions
-
-function updateLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async position => {
-            try {
-                userLocation = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-
-                // อัพเดทแผนที่และ marker
-                map.setCenter(userLocation);
-                marker.setPosition(userLocation);
-
-                // ดึงข้อมูลตำแหน่ง
-                const locationInfo = await getGoogleLocationDetails(userLocation.lat, userLocation.lng);
-                document.querySelector('.location-details').textContent = locationInfo;
-
-            } catch (error) {
-                console.error('Error updating location:', error);
-                document.querySelector('.location-details').textContent = 'ไม่สามารถระบุตำแหน่งได้';
-            }
-        }, error => {
-            console.error('Geolocation error:', error);
-            document.querySelector('.location-details').textContent = 'ไม่สามารถเข้าถึงตำแหน่งของคุณได้';
-            
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    Swal.fire({
-                        title: 'ไม่สามารถเข้าถึงตำแหน่งได้',
-                        text: 'กรุณาอนุญาตให้เข้าถึงตำแหน่งของคุณ เพื่อใช้งานแอพได้อย่างสมบูรณ์',
-                        icon: 'warning',
-                        confirmButtonText: 'ตกลง'
-                    });
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                case error.TIMEOUT:
-                case error.UNKNOWN_ERROR:
-                    Swal.fire({
-                        title: 'เกิดข้อผิดพลาด',
-                        text: 'ไม่สามารถระบุตำแหน่งของคุณได้ กรุณาลองใหม่อีกครั้ง',
-                        icon: 'error',
-                        confirmButtonText: 'ตกลง'
-                    });
-                    break;
-            }
-        }, {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
-        });
+        // ผูก event listener กับปุ่ม check-in/out
+        const checkInButton = document.querySelector('.checkin-button');
+        checkInButton.addEventListener('click', checkIn);
+      } else {
+        alert("UID not registered. Please register.");
+      }
     } else {
-        Swal.fire({
-            title: 'ไม่รองรับ Geolocation',
-            text: 'Browser ของคุณไม่รองรับการระบุตำแหน่ง',
-            icon: 'error',
-            confirmButtonText: 'ตกลง'
-        });
+      liff.login();
     }
+  } catch (error) {
+    console.error("LIFF initialization failed", error);
+    await Swal.fire({
+      title: 'เกิดข้อผิดพลาด',
+      text: 'ไม่สามารถเริ่มต้นระบบได้ กรุณาลองใหม่อีกครั้ง',
+      icon: 'error',
+      confirmButtonText: 'ตกลง'
+    });
+  } finally {
+    // ซ่อน loading overlay ไม่ว่าจะสำเร็จหรือล้มเหลว
+    hideLoading();
+  }
 }
 
-async function getGoogleLocationDetails(lat, lng) {
-    try {
-        const geocoder = new google.maps.Geocoder();
-        const latlng = { lat: parseFloat(lat), lng: parseFloat(lng) };
-        
-        const response = await new Promise((resolve, reject) => {
-            geocoder.geocode({ location: latlng, language: 'th' }, (results, status) => {
-                if (status === 'OK' && results && results.length > 0) {
-                    resolve(results);
-                } else {
-                    reject(new Error(`Geocoding failed: ${status}`));
-                }
-            });
-        });
 
-        const addressResult = response[0];
-        const addressComponents = {
-            subdistrict: '',
-            district: '',
-            province: ''
-        };
 
-        for (const component of addressResult.address_components) {
-            const types = component.types;
 
-            if (types.includes('sublocality_level_1') || 
-                types.includes('sublocality') ||
-                types.includes('administrative_area_level_3')) {
-                addressComponents.subdistrict = component.long_name;
-            }
-            else if (types.includes('administrative_area_level_2')) {
-                addressComponents.district = component.long_name;
-            }
-            else if (types.includes('administrative_area_level_1')) {
-                addressComponents.province = component.long_name;
-            }
-        }
+async function checkRegistration(uid, profile) {
+  try {
+    const regResponse = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
+    const regResult = await regResponse.json();
 
-        let nearbyPlaceText = '';
-        try {
-            const nearbyPlace = await getNearbyPlaces(lat, lng);
-            if (nearbyPlace) {
-                nearbyPlaceText = `ใกล้กับ ${nearbyPlace}`;
-            }
-        } catch (error) {
-            console.warn('Error getting nearby places:', error);
-        }
+    if (regResult.registered) {
+      // Update user info
+      document.querySelector('.user-id').textContent = `${regResult.employee_no} ${regResult.name}`;
+      document.querySelector('.location').textContent = `${regResult.factory}`;
+      document.querySelector('.position').textContent = `${regResult.position}`;
 
-        const addressParts = [];
-        if (addressComponents.subdistrict) addressParts.push(`ตำบล${addressComponents.subdistrict}`);
-        if (addressComponents.district) addressParts.push(`อำเภอ${addressComponents.district}`);
-        if (addressComponents.province) addressParts.push(`จังหวัด${addressComponents.province}`);
+      if (profile && profile.pictureUrl) {
+        document.querySelector('.avatar img').src = profile.pictureUrl;
+      }
 
-        const addressText = addressParts.join(', ');
-        
-        let displayText = '';
-        if (nearbyPlaceText && addressText) {
-            displayText = `${nearbyPlaceText}, ${addressText}`;
-        } else if (nearbyPlaceText) {
-            displayText = nearbyPlaceText;
-        } else if (addressText) {
-            displayText = addressText;
-        } else {
-            displayText = 'พิกัดปัจจุบัน';
-        }
-
-        return displayText;
-
-    } catch (error) {
-        console.error('Error in getGoogleLocationDetails:', error);
-        return 'ไม่สามารถระบุตำแหน่งได้';
+      return regResult;
+    } else {
+      window.location.href = "https://liff.line.me/2006809014-zqJWBVbA";
+      return false;
     }
+  } catch (error) {
+    console.error("Error checking registration:", error);
+    alert("เกิดข้อผิดพลาดในการตรวจสอบการลงทะเบียน กรุณาลองใหม่อีกครั้ง");
+    return false;
+  }
 }
 
-async function getNearbyPlaces(lat, lng) {
-    try {
-        const mapDiv = document.createElement('div');
-        const service = new google.maps.places.PlacesService(mapDiv);
-
-        const request = {
-            location: { lat: parseFloat(lat), lng: parseFloat(lng) },
-            rankBy: google.maps.places.RankBy.DISTANCE,
-            type: ['point_of_interest']
-        };
-
-        const results = await new Promise((resolve, reject) => {
-            service.nearbySearch(request, (results, status) => {
-                if (status === google.maps.places.PlacesServiceStatus.OK && results && results.length > 0) {
-                    resolve(results);
-                } else {
-                    reject(new Error(`Places search failed: ${status}`));
-                }
-            });
-        });
-
-        if (results && results.length > 0) {
-            const nearest = results[0];
-            const distance = calculateDistance(
-                lat,
-                lng,
-                nearest.geometry.location.lat(),
-                nearest.geometry.location.lng()
-            );
-            return `${nearest.name}(${distance}m.)`;
-        }
-        return null;
-
-    } catch (error) {
-        console.error('Error in getNearbyPlaces:', error);
-        return null;
-    }
-}
-
-function calculateDistance(lat1, lon1, lat2, lon2) {
-    try {
-        const R = 6371e3; // Earth's radius in meters
-        const φ1 = lat1 * Math.PI/180;
-        const φ2 = lat2 * Math.PI/180;
-        const Δφ = (lat2-lat1) * Math.PI/180;
-        const Δλ = (lon2-lon1) * Math.PI/180;
-
-        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-                Math.cos(φ1) * Math.cos(φ2) *
-                Math.sin(Δλ/2) * Math.sin(Δλ/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
-        return Math.round(R * c);
-    } catch (error) {
-        console.error('Error calculating distance:', error);
-        return 0;
-    }
-}
-
-// Date and Time functions
-function setDefaultDateTime() {
-    const now = new Date();
-    const currentDateTimeElement = document.querySelector('.current-datetime');
-
-    const day = String(now.getDate()).padStart(2, '0');
-    const month = now.getMonth();
-    const year2 = now.getFullYear() + 543;
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-
-    const thaiMonths = [
-        'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
-        'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
-    ];
-
-    currentDateTimeElement.textContent = 
-        `วันที่ ${day} ${thaiMonths[month]} ${year2} เวลา ${hours}:${minutes}:${seconds} น.`;
-}
-
-function startRealTimeClock() {
-    setInterval(setDefaultDateTime, 1000);
-}
-
-// UI Helper functions
-function showLoading() {
-    document.querySelector('.loading-overlay').classList.remove('hidden');
-}
-
-function hideLoading() {
-    document.querySelector('.loading-overlay').classList.add('hidden');
-}
 
 function showSpecialCheckout(startTime, nearPlace) {
-    if (startTime && nearPlace) {
-        document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${startTime}`;
-        document.getElementById('checkout-place').textContent = nearPlace;
-        document.getElementById('special-checkout').style.display = 'flex';
-        document.getElementById('main-page').style.display = 'none';
-    }
+  console.log('Showing special checkout with:', { startTime, nearPlace }); // Debug log
+  
+  if (startTime && nearPlace) {
+    document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${startTime}`;
+    document.getElementById('checkout-place').textContent = nearPlace;
+    document.getElementById('special-checkout').style.display = 'flex';
+    document.getElementById('main-page').style.display = 'none';
+  }
 }
 
+// ฟังก์ชันสำหรับสลับไปหน้าปกติ
 function switchToNormalPage() {
-    document.getElementById('special-checkout').style.display = 'none';
-    document.getElementById('main-page').style.display = 'block';
+  document.getElementById('special-checkout').style.display = 'none';
+  document.getElementById('main-page').style.display = 'block';
 }
 
-// Check-in/out function
-async function checkIn(event) {
-    event.preventDefault();
-    
-    try {
-        const shift = document.getElementById('shift').value;
-        if (!shift) {
-            await Swal.fire({
-                title: 'กรุณาเลือกกะการทำงาน',
-                text: 'โปรดเลือกกะการทำงานก่อนทำการ Check-in',
-                icon: 'warning',
-                confirmButtonText: 'ตกลง'
-            });
-            return;
-        }
+    let map;
+    let marker;
+    let userLocation = { lat: 0, lng: 0 };
 
-        showLoading();
-        
-        if (!navigator.geolocation) {
-            throw new Error('Geolocation is not supported by your browser');
-        }
+    function initMap() {
+      map = L.map('map').setView([13.7563, 100.5018], 13);
 
-        const position = await new Promise((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject, {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
-            });
-        });
-
-        const locationDetails = await getGoogleLocationDetails(
-            position.coords.latitude,
-            position.coords.longitude
-        );
-
-        const uid = liff.getContext().userId;
-        const isCheckout = event.target.classList.contains('checkout-button');
-        const action = isCheckout ? 'checkout' : 'checkin';
-        const jobNo = event.target.dataset.jobNo;
-
-        const data = {
-            uid,
-            action,
-            shift,
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            location: locationDetails
-        };
-
-        if (jobNo) {
-            data.jobNo = jobNo;
-        }
-
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-            const message = isCheckout ? 'Check-out สำเร็จ' : 'Check-in สำเร็จ';
-            await Swal.fire({
-                title: 'สำเร็จ',
-                text: message,
-                icon: 'success',
-                confirmButtonText: 'ตกลง'
-            });
-
-            if (isCheckout) {
-                window.location.reload();
-            } else {
-                document.querySelector('.checkin-button').textContent = 'Check Out';
-                document.querySelector('.checkin-button').classList.add('checkout-button');
-                if (result.jobNo) {
-                    document.querySelector('.checkin-button').dataset.jobNo = result.jobNo;
-                }
-                document.getElementById('shift').disabled = true;
-                showSpecialCheckout(
-                    new Date().toLocaleTimeString('th-TH'),
-                    locationDetails
-                );
-            }
-        } else {
-            throw new Error(result.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
-        }
-
-    } catch (error) {
-        console.error('Error in checkIn:', error);
-        await Swal.fire({
-            title: 'เกิดข้อผิดพลาด',
-            text: error.message || 'ไม่สามารถทำรายการได้ กรุณาลองใหม่อีกครั้ง',
-            icon: 'error',
-            confirmButtonText: 'ตกลง'
-        });
-    } finally {
-        hideLoading();
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
     }
+
+    function updateLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async position => {
+          userLocation.lat = position.coords.latitude;
+          userLocation.lng = position.coords.longitude;
+
+          map.setView([userLocation.lat, userLocation.lng], 15);
+
+          if (marker) {
+            marker.setLatLng([userLocation.lat, userLocation.lng]);
+          } else {
+            marker = L.marker([userLocation.lat, userLocation.lng]).addTo(map);
+          }
+
+          const locationInfo = await getGoogleLocationDetails(userLocation.lat, userLocation.lng);
+          document.querySelector('.location-details').textContent = locationInfo;
+        }, error => {
+          console.error('Error getting location:', error);
+          alert('ไม่สามารถดึงตำแหน่งได้');
+        });
+      } else {
+        alert('Browser ของคุณไม่รองรับ Geolocation');
+      }
+    }
+
+function getNearbyPlaces(lat, lng) {
+  const mapElement = document.createElement('div');
+  const map = new google.maps.Map(mapElement, {
+    center: { lat, lng },
+    zoom: 15
+  });
+
+  const service = new google.maps.places.PlacesService(map);
+  const request = {
+    location: new google.maps.LatLng(lat, lng),
+    radius: 500, // Ensure radius is within limits
+    type: ['establishment'] // Try a different place type
+  };
+
+  service.nearbySearch(request, (results, status) => {
+    if (status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {
+      console.log('Nearest Place:', results[0].name);
+    } else {
+      console.warn('No places found or API error:', status);
+    }
+  });
 }
 
-// Initialize when window loads
-window.onload = function() {
-    initializeLiff();
-};
+
+async function getGoogleLocationDetails(lat, lng) {
+  try {
+    const geocoder = new google.maps.Geocoder();
+    const latlng = { lat: parseFloat(lat), lng: parseFloat(lng) };
+    
+    const response = await new Promise((resolve, reject) => {
+      geocoder.geocode({ 
+        location: latlng, 
+        language: 'th' 
+      }, (results, status) => {
+        if (status === 'OK' && results && results.length > 0) {
+          resolve(results);
+        } else {
+          reject(new Error('Geocoder failed: ' + status));
+        }
+      });
+    });
+
+    const result = response[0];
+    const addressComponents = {
+      subdistrict: '',
+      district: '',
+      province: ''
+    };
+
+    // แยกข้อมูลที่อยู่
+    result.address_components.forEach(component => {
+      const types = component.types;
+      if (types.includes('sublocality_level_1')) {
+        addressComponents.subdistrict = component.long_name;
+      } else if (types.includes('administrative_area_level_2')) {
+        addressComponents.district = component.long_name;
+      } else if (types.includes('administrative_area_level_1')) {
+        addressComponents.province = component.long_name;
+      }
+    });
+
+    // หาสถานที่ใกล้เคียง
+    const nearbyPlace = await getNearbyPlaces(lat, lng);
+    let displayText = '';
+
+    // สร้างข้อความแสดงผล
+    if (nearbyPlace && nearbyPlace !== 'พิกัดปัจจุบัน') {
+      displayText = `ใกล้กับ ${nearbyPlace}`;
+    }
+
+    if (addressComponents.subdistrict) {
+      displayText += (displayText ? ', ' : '') + `ตำบล${addressComponents.subdistrict}`;
+    }
+    if (addressComponents.district) {
+      displayText += `, อำเภอ${addressComponents.district}`;
+    }
+    if (addressComponents.province) {
+      displayText += `, จังหวัด${addressComponents.province}`;
+    }
+
+    return displayText || 'พิกัดปัจจุบัน';
+  } catch (error) {
+    console.error('Error in getGoogleLocationDetails:', error);
+    return 'พิกัดปัจจุบัน';
+  }
+}
+
+    function setDefaultDateTime() {
+      const now = new Date();
+      const dateElement = document.querySelector('.datetime .date');
+      const timeElement = document.querySelector('.datetime .time');
+      const currentDateTimeElement = document.querySelector('.current-datetime');
+
+      const day = String(now.getDate()).padStart(2, '0');
+      const month = now.getMonth();
+      const year = now.getFullYear();
+      const year2 = now.getFullYear() + 543; // Convert to Buddhist year
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+
+      const thaiMonths = [
+        'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+        'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+      ];
+
+      // // Update main datetime display
+      // dateElement.textContent = `${day}/${month + 1}/${year}`;
+      // timeElement.textContent = `${hours}:${minutes}:${seconds}`;
+
+      // Update current datetime in Thai format
+      currentDateTimeElement.textContent = `วันที่ ${day} ${thaiMonths[month]} ${year2} เวลา ${hours}:${minutes}:${seconds} น.`;
+    }
+
+    function startRealTimeClock() {
+      setInterval(setDefaultDateTime, 1000);
+    }
   </script>
-      <!-- Load Google Maps API last -->
-    <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClC8pRmRIOYrDfTHubMrfUqCAuz966AgM&libraries=places&callback=initMap">
-    </script>
 </head>
 <body>
 
