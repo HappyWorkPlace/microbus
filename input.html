@@ -340,10 +340,7 @@ body {
   }
 }
 </style>
-    <!-- Load Google Maps API last -->
-    <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClC8pRmRIOYrDfTHubMrfUqCAuz966AgM&libraries=places&callback=initMap">
-    </script>
+
 <script>
 // Global variables
 let map;
@@ -444,31 +441,49 @@ async function initializeLiff() {
 }
 
 // Registration check
-async function checkRegistration(uid, profile) {
-    try {
-        const regResponse = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
-        const regResult = await regResponse.json();
+      async function checkRegistration(uid, profile) {
+            try {
+                const regResponse = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
+                if (!regResponse.ok) {
+                    throw new Error(`HTTP error! status: ${regResponse.status}`);
+                }
+                const regResult = await regResponse.json();
 
-        if (regResult.registered) {
-            document.querySelector('.user-id').textContent = `${regResult.employee_no} ${regResult.name}`;
-            document.querySelector('.location').textContent = `${regResult.factory}`;
-            document.querySelector('.position').textContent = `${regResult.position}`;
+                if (regResult && regResult.registered) {
+                    // Update user info
+                    document.querySelector('.user-id').textContent = `${regResult.employee_no} ${regResult.name}`;
+                    document.querySelector('.location').textContent = `${regResult.factory}`;
+                    document.querySelector('.position').textContent = `${regResult.position}`;
 
-            if (profile && profile.pictureUrl) {
-                document.querySelector('.avatar img').src = profile.pictureUrl;
+                    if (profile && profile.pictureUrl) {
+                        document.querySelector('.avatar img').src = profile.pictureUrl;
+                    }
+
+                    return regResult;
+                } else {
+                    console.log('Registration check failed:', regResult);
+                    if (regResult.message) {
+                        await Swal.fire({
+                            title: 'ไม่พบข้อมูลการลงทะเบียน',
+                            text: regResult.message,
+                            icon: 'warning',
+                            confirmButtonText: 'ไปหน้าลงทะเบียน'
+                        });
+                    }
+                    window.location.href = "https://liff.line.me/2006809014-zqJWBVbA";
+                    return false;
+                }
+            } catch (error) {
+                console.error("Error checking registration:", error);
+                await Swal.fire({
+                    title: 'เกิดข้อผิดพลาด',
+                    text: 'ไม่สามารถตรวจสอบการลงทะเบียนได้ กรุณาลองใหม่อีกครั้ง',
+                    icon: 'error',
+                    confirmButtonText: 'ตกลง'
+                });
+                return false;
             }
-
-            return regResult;
-        } else {
-            window.location.href = "https://liff.line.me/2006809014-zqJWBVbA";
-            return false;
         }
-    } catch (error) {
-        console.error("Error checking registration:", error);
-        alert("เกิดข้อผิดพลาดในการตรวจสอบการลงทะเบียน กรุณาลองใหม่อีกครั้ง");
-        return false;
-    }
-}
 
 // Location functions
 
@@ -818,6 +833,10 @@ window.onload = function() {
     initializeLiff();
 };
   </script>
+      <!-- Load Google Maps API last -->
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClC8pRmRIOYrDfTHubMrfUqCAuz966AgM&libraries=places&callback=initMap">
+    </script>
 </head>
 <body>
 
