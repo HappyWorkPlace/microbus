@@ -13,29 +13,44 @@ function generateJobNo(empNo) {
 }
 
 // ฟังก์ชันสำหรับแปลงเวลาเป็นรูปแบบภาษาไทย
+// ฟังก์ชันสำหรับแปลงเวลาเป็นรูปแบบภาษาไทย
 function formatThaiDateTime(timestamp) {
     try {
-        // ตรวจสอบว่า timestamp มีค่าและเป็นสตริงหรือไม่
+        console.log('Input timestamp:', timestamp);
+        
+        // ตรวจสอบว่า timestamp มีค่าและเป็นสตริง
         if (!timestamp || typeof timestamp !== 'string') {
             console.error('Invalid timestamp:', timestamp);
             return '';
         }
 
-        // แยกวันที่และเวลาออกจากกัน (รูปแบบ YYYY-MM-DD,HH:mm:ss)
-        const parts = timestamp.split(',');
-        if (parts.length !== 2) {
-            console.error('Invalid timestamp format:', timestamp);
+        let datePart, timePart;
+
+        // รองรับทั้งรูปแบบที่มี comma และไม่มี comma
+        if (timestamp.includes(',')) {
+            [datePart, timePart] = timestamp.split(',');
+        } else {
+            [datePart, timePart] = timestamp.split(' ');
+        }
+
+        // ตรวจสอบว่าแยกวันที่และเวลาได้ถูกต้อง
+        if (!datePart || !timePart) {
+            console.error('Cannot split date and time:', { datePart, timePart });
             return '';
         }
 
-        const [datePart, timePart] = parts;
-        const [year, month, day] = datePart.split('-');
+        console.log('Split result:', { datePart, timePart });
 
+        // แยกส่วนประกอบของวันที่
+        const [year, month, day] = datePart.split('-');
+        
         // ตรวจสอบความถูกต้องของค่าวันที่
         if (!year || !month || !day) {
-            console.error('Invalid date parts:', { year, month, day });
+            console.error('Invalid date components:', { year, month, day });
             return '';
         }
+
+        console.log('Date components:', { year, month, day });
 
         // แปลงเดือนเป็นภาษาไทย
         const thaiMonths = [
@@ -46,22 +61,22 @@ function formatThaiDateTime(timestamp) {
         // แปลงปีเป็น พ.ศ.
         const thaiYear = parseInt(year) + 543;
         
-        // ตรวจสอบความถูกต้องของค่าเดือน
+        // ตรวจสอบและแปลงค่าเดือน
         const monthIndex = parseInt(month) - 1;
         if (monthIndex < 0 || monthIndex >= 12) {
             console.error('Invalid month index:', monthIndex);
             return '';
         }
 
-        return `วันที่ ${parseInt(day)} ${thaiMonths[monthIndex]} ${thaiYear} เวลา ${timePart} น.`;
+        const thaiDate = `วันที่ ${parseInt(day)} ${thaiMonths[monthIndex]} ${thaiYear} เวลา ${timePart} น.`;
+        console.log('Thai date result:', thaiDate);
+        
+        return thaiDate;
     } catch (error) {
-        console.error('Error formatting date:', error);
+        console.error('Error in formatThaiDateTime:', error);
         return '';
     }
 }
-
-
-
 
 // ฟังก์ชันสำหรับบันทึกข้อมูล Check-in
 async function recordStart(uid, jobNo, shift, lat, lng, nearPlace) {
