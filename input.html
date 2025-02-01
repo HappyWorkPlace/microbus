@@ -231,7 +231,7 @@ body {
 .location-details {
   margin: 12px 0;
   color: #555;
-  font-size: 0.9rem;
+  font-size: 0.6rem;
   text-align: center;
   padding: 0 10px;
   line-height: 1.4;
@@ -488,102 +488,138 @@ function switchToNormalPage() {
       }).addTo(map);
     }
 
- function updateLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async position => {
-          userLocation.lat = position.coords.latitude;
-          userLocation.lng = position.coords.longitude;
+// เพิ่มฟังก์ชันคำนวณระยะทาง
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // Earth's radius in meters
+  const φ1 = lat1 * Math.PI/180;
+  const φ2 = lat2 * Math.PI/180;
+  const Δφ = (lat2-lat1) * Math.PI/180;
+  const Δλ = (lon2-lon1) * Math.PI/180;
 
-          map.setView([userLocation.lat, userLocation.lng], 15);
+  const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+          Math.cos(φ1) * Math.cos(φ2) *
+          Math.sin(Δλ/2) * Math.sin(Δλ/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
-          if (marker) {
-            marker.setLatLng([userLocation.lat, userLocation.lng]);
-          } else {
-            marker = L.marker([userLocation.lat, userLocation.lng]).addTo(map);
-          }
+  return Math.round(R * c); // ระยะทางในเมตร
+}
 
-          const locationInfo = await getGoogleLocationDetails(userLocation.lat, userLocation.lng);
-          document.querySelector('.location-details').textContent = locationInfo;
-        }, error => {
-          console.error('Error getting location:', error);
-          alert('ไม่สามารถดึงตำแหน่งได้');
-        });
-      } else {
-        alert('Browser ของคุณไม่รองรับ Geolocation');
-      }
-    }
+// เพิ่มฟังก์ชันใหม่สำหรับดึงข้อมูลสถานที่
+async function getGoogleLocationDetails(lat, lng) {
+  try {
+    // Places API สำหรับหาสถานที่ใกล้เคียง
+    const mapElement = document.createElement('div');
+    const map = new google.maps.Map(mapElement, {
+      center: { lat, lng },
+      zoom: 15
+    });
 
-    async function getGoogleLocationDetails(lat, lng) {
-      try {
-        const geocoder = new google.maps.Geocoder();
-        const latlng = { lat: parseFloat(lat), lng: parseFloat(lng) };
-        
-        const response = await new Promise((resolve, reject) => {
-          geocoder.geocode({ location: latlng, language: 'th' }, (results, status) => {
-            if (status === 'OK') {
-              resolve(results);
-            } else {
-              reject(new Error('Geocoder failed: ' + status));
-            }
-          });
-        });
-
-        const result = response[0];
-        const addressComponents = {};
-
-        result.address_components.forEach(component => {
-          const types = component.types;
-          if (types.includes('sublocality_level_1') || types.includes('sublocality')) {
-            addressComponents.subdistrict = component.long_name;
-          }
-          if (types.includes('administrative_area_level_2') || types.includes('district')) {
-            addressComponents.district = component.long_name;
-          }
-          if (types.includes('administrative_area_level_1') || types.includes('province')) {
-            addressComponents.province = component.long_name;
-          }
-        });
-
-        const nearbyPlace = await getNearbyPlaces(lat, lng);
-
-        let displayText = `ใกล้กับ ${nearbyPlace}`;
-
-        if (addressComponents.subdistrict) {
-          displayText += `, ตำบล${addressComponents.subdistrict}`;
+    const placesService = new google.maps.places.PlacesService(map);
+    const nearbyPlaces = await new Promise((resolve, reject) => {
+      placesService.nearbySearch({
+        location: { lat, lng },
+        radius: 150,
+        type: ['point_of_interest']
+      }, (results, status) => {
+        if (status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {
+          resolve(results);
+        } else {
+          resolve([]);
         }
-        if (addressComponents.district) {
-          displayText += `, อำเภอ${addressComponents.district}`;
-        }
-        if (addressComponents.province) {
-          displayText += `, จังหวัด${addressComponents.province}`;
-        }
-
-        return displayText;
-
-      } catch (error) {
-        console.error('Error getting Google location details:', error);
-        return 'ไม่พบข้อมูล';
-      }
-    }
-
-    async function getNearbyPlaces(lat, lng) {
-      const service = new google.maps.places.PlacesService(document.createElement('div'));
-      const request = {
-        location: new google.maps.LatLng(lat, lng),
-        radius: 500,
-        type: ['point_of_interest', 'establishment']
-      };
-
-      return new Promise((resolve, reject) => {
-        service.nearbySearch(request, (results, status) => {
-          if (status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {
-            resolve(results[0].name);
-          } else {
-            resolve('ไม่พบสถานที่สำคัญใกล้เคียง');
-          }
-        });
       });
+    });
+
+    // Geocoding API สำหรับข้อมูลที่อยู่
+    const geocoder = new google.maps.Geocoder();
+    const geocodeResults = await new Promise((resolve, reject) => {
+      geocoder.geocode({ 
+        location: { lat, lng },
+        language: 'th'
+      }, (results, status) => {
+        if (status === 'OK' && results && results.length > 0) {
+          resolve(results);
+        } else {
+          reject(new Error('Geocoder failed: ' + status));
+        }
+      });
+    });
+
+    const result = geocodeResults[0];
+    const addressComponents = {
+      subdistrict: '',
+      district: '',
+      province: ''
+    };
+
+    // ค้นหาข้อมูลที่อยู่
+    result.address_components.forEach(component => {
+      if (component.types.includes('sublocality_level_1') || 
+          component.types.includes('sublocality') ||
+          component.types.includes('locality') ||
+          component.types.includes('administrative_area_level_3')) {
+        addressComponents.subdistrict = component.long_name;
+      } else if (component.long_name.includes('ตำบล')) {
+        addressComponents.subdistrict = component.long_name.replace('ตำบล', '').trim();
+      }
+      
+      if (component.types.includes('administrative_area_level_2')) {
+        addressComponents.district = component.long_name;
+      } else if (component.types.includes('administrative_area_level_1')) {
+        addressComponents.province = component.long_name;
+      }
+    });
+
+    // สร้างข้อความแสดงผล
+    let displayText = '';
+    if (nearbyPlaces.length > 0) {
+      const nearestPlace = nearbyPlaces[0];
+      const distance = calculateDistance(lat, lng,
+        nearestPlace.geometry.location.lat(),
+        nearestPlace.geometry.location.lng()
+      );
+      displayText = `ใกล้กับ ${nearestPlace.name}(${distance}m.)`;
     }
+
+    if (addressComponents.subdistrict) {
+      displayText += (displayText ? ', ' : '') + `ตำบล${addressComponents.subdistrict}`;
+    }
+    if (addressComponents.district) {
+      displayText += `, อำเภอ${addressComponents.district}`;
+    }
+    if (addressComponents.province) {
+      displayText += `, จังหวัด${addressComponents.province}`;
+    }
+
+    return displayText || 'พิกัดปัจจุบัน';
+  } catch (error) {
+    console.error('Error in getGoogleLocationDetails:', error);
+    return 'พิกัดปัจจุบัน';
+  }
+}
+    function updateLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(async position => {
+      userLocation.lat = position.coords.latitude;
+      userLocation.lng = position.coords.longitude;
+
+      map.setView([userLocation.lat, userLocation.lng], 15);
+
+      if (marker) {
+        marker.setLatLng([userLocation.lat, userLocation.lng]);
+      } else {
+        marker = L.marker([userLocation.lat, userLocation.lng]).addTo(map);
+      }
+
+      const locationInfo = await getGoogleLocationDetails(userLocation.lat, userLocation.lng);
+      document.querySelector('.location-details').textContent = locationInfo;
+    }, error => {
+      console.error('Error getting location:', error);
+      alert('ไม่สามารถดึงตำแหน่งได้');
+    });
+  } else {
+    alert('Browser ของคุณไม่รองรับ Geolocation');
+  }
+}
 
     function setDefaultDateTime() {
       const now = new Date();
