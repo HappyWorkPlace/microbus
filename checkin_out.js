@@ -60,50 +60,6 @@ function formatThaiDateTime(timestamp) {
     }
 }
 
-// แก้ไขส่วนที่แสดงผลเวลาใน initializeLiff
-if (workingResult.isWorking) {
-    document.getElementById('special-checkout').style.display = 'flex';
-    document.getElementById('main-page').style.display = 'none';
-
-    const checkButton = document.querySelector('.checkin-button');
-    checkButton.textContent = 'Check Out';
-    checkButton.classList.add('checkout-button');
-
-    if (workingResult.jobNo) {
-        checkButton.dataset.jobNo = workingResult.jobNo;
-    }
-    if (workingResult.shift) {
-        document.getElementById('shift').value = workingResult.shift;
-        document.getElementById('shift').disabled = true;
-    }
-    if (workingResult.startTime) {
-        try {
-            // ใช้ฟังก์ชัน formatThaiDateTime กับ startTime
-            const formattedTime = formatThaiDateTime(workingResult.startTime);
-            
-            // ถ้าการแปลงเวลาสำเร็จ
-            if (formattedTime) {
-                // แสดงแค่เวลาในส่วน Time-In
-                const timePart = workingResult.startTime.split(',')[1];
-                if (timePart) {
-                    document.querySelector('.info-item:first-child .value').textContent = timePart;
-                }
-
-                const location = workingResult.location || workingResult.nearPlace || 'ไม่ระบุสถานที่';
-                document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${formattedTime}`;
-                document.getElementById('checkout-place').textContent = location;
-            } else {
-                // กรณีแปลงเวลาไม่สำเร็จ
-                document.getElementById('checkout-time').textContent = 'ไม่สามารถแสดงเวลา Check-in ได้';
-                document.getElementById('checkout-place').textContent = workingResult.location || workingResult.nearPlace || 'ไม่ระบุสถานที่';
-            }
-        } catch (error) {
-            console.error('Error processing time:', error);
-            document.getElementById('checkout-time').textContent = 'ไม่สามารถแสดงเวลา Check-in ได้';
-            document.getElementById('checkout-place').textContent = workingResult.location || workingResult.nearPlace || 'ไม่ระบุสถานที่';
-        }
-    }
-}
 
 
 
