@@ -29,38 +29,30 @@ function formatTimestamp(dateString) {
     return `${year}-${month}-${day},${hours}:${minutes}:${seconds}`;
 }
 
-
-// ฟังก์ชันสำหรับบันทึกข้อมูล Check-in
+// 14:31
 // ฟังก์ชันสำหรับบันทึกข้อมูล Check-in
 async function recordStart(uid, jobNo, shift, lat, lng, nearPlace) {
-    const data = {
-        action: 'record_start',
-        uid: uid,
-        job_no: jobNo,
-        day_type: '', // เว้นว่างให้หลังบ้านจัดการ
-        shift: shift,
-        start_datetime: formatTimestamp(new Date()),
-        location: `https://www.google.com/maps?q=${lat},${lng}`,
-        near_place: nearPlace,
-        status: 'started' // เพิ่ม status เพื่อให้ backend ติดตามสถานะ
-    };
-
     try {
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify(data),
-            headers: {
-                'Content-Type': 'application/json'
-            }
+        const params = new URLSearchParams({
+            action: 'record_start',
+            uid: uid,
+            job_no: jobNo,
+            day_type: '',
+            shift: shift,
+            start_datetime: formatTimestamp(new Date()),
+            location: `https://www.google.com/maps?q=${lat},${lng}`,
+            near_place: nearPlace
         });
 
+        const response = await fetch(`${SCRIPT_URL}?${params}`);
+        
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const result = await response.json();
+        console.log('recordStart response:', result);
         
-        // เพิ่มการตรวจสอบ error จาก response
         if (!result.success) {
             throw new Error(result.message || 'Failed to record check-in');
         }
@@ -68,38 +60,31 @@ async function recordStart(uid, jobNo, shift, lat, lng, nearPlace) {
         return result;
     } catch (error) {
         console.error('Error in recordStart:', error);
-        throw error; // Re-throw เพื่อให้ฟังก์ชันที่เรียกใช้จัดการต่อ
+        throw error;
     }
 }
 
 // ฟังก์ชันสำหรับบันทึกข้อมูล Check-out
 async function recordFinish(uid, jobNo, lat, lng, nearPlace) {
-    const data = {
-        action: 'record_finish',
-        uid: uid,
-        job_no: jobNo,
-        end_datetime: formatTimestamp(new Date()),
-        location: `https://www.google.com/maps?q=${lat},${lng}`,
-        near_place: nearPlace,
-        status: 'finished' // Add status to help backend track state
-    };
-
     try {
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify(data),
-            headers: {
-                'Content-Type': 'application/json'
-            }
+        const params = new URLSearchParams({
+            action: 'record_finish',
+            uid: uid,
+            job_no: jobNo,
+            end_datetime: formatTimestamp(new Date()),
+            location: `https://www.google.com/maps?q=${lat},${lng}`,
+            near_place: nearPlace
         });
 
+        const response = await fetch(`${SCRIPT_URL}?${params}`);
+        
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const result = await response.json();
+        console.log('recordFinish response:', result);
         
-        // Add error checking for the response
         if (!result.success) {
             throw new Error(result.message || 'Failed to record check-out');
         }
@@ -107,7 +92,7 @@ async function recordFinish(uid, jobNo, lat, lng, nearPlace) {
         return result;
     } catch (error) {
         console.error('Error in recordFinish:', error);
-        throw error; // Re-throw to be handled by the calling function
+        throw error;
     }
 }
 
