@@ -470,44 +470,6 @@ function showSpecialCheckout(startTime, nearPlace) {
   }
 }
 
-// ฟังก์ชันสำหรับสลับไปหน้าปกติ
-async function switchToNormalPage() {
-    try {
-        const uid = liff.getContext().userId;
-        const empNo = document.querySelector('.user-id').textContent.split(' ')[0];
-        const nearPlace = document.querySelector('.location-details').textContent;
-        const jobNo = document.querySelector('.checkin-button').dataset.jobNo;
-
-        const recordResult = await recordFinish(
-            uid,
-            jobNo,
-            userLocation.lat,
-            userLocation.lng,
-            nearPlace
-        );
-
-        if (recordResult.success) {
-            await Swal.fire({
-                title: 'Check-out สำเร็จ',
-                text: `Job No: ${jobNo}`,
-                icon: 'success',
-                confirmButtonText: 'ตกลง'
-            });
-            liff.closeWindow();
-        } else {
-            throw new Error('Failed to record check-out');
-        }
-    } catch (error) {
-        console.error('Error during check-out:', error);
-        await Swal.fire({
-            title: 'เกิดข้อผิดพลาด',
-            text: 'กรุณาลองใหม่อีกครั้ง',
-            icon: 'error',
-            confirmButtonText: 'ตกลง'
-        });
-    }
-}
-
     let map;
     let marker;
     let userLocation = { lat: 0, lng: 0 };
