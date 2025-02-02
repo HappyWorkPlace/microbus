@@ -374,7 +374,12 @@ async function initializeLiff() {
         const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
         const workingResult = await workingResponse.json();
 
+        // ในส่วนของการ initialize
         const checkInButton = document.querySelector('.checkin-button');
+        if (checkInButton) {
+            checkInButton.removeEventListener('click', checkIn);
+            checkInButton.addEventListener('click', checkIn);
+        }
         
         // ตั้งค่าปุ่มตามสถานะการทำงาน
         if (workingResult.isWorking) {
@@ -648,7 +653,7 @@ function updateLocation() {
       </div>
     </div>
     
-    <button type="button" class="checkin-button">Check In</button>
+    <button type="button" class="checkin-button" onclick="checkIn()">Check In</button>
   </div>
 </div>
 </body>
