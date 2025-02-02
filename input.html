@@ -373,21 +373,14 @@ async function initializeLiff() {
         // ตรวจสอบสถานะการทำงานก่อน
         const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
         const workingResult = await workingResponse.json();
-
-        // ในส่วนของการ initialize
+        
         const checkInButton = document.querySelector('.checkin-button');
-        if (checkInButton) {
-            checkInButton.removeEventListener('click', checkIn);
-            checkInButton.addEventListener('click', checkIn);
-        }
         
         // ตั้งค่าปุ่มตามสถานะการทำงาน
         if (workingResult.isWorking) {
-          // ถ้ากำลังทำงานอยู่ ให้แสดงหน้า special-checkout
           document.getElementById('special-checkout').style.display = 'flex';
           document.getElementById('main-page').style.display = 'none';
           
-          // ตั้งค่าปุ่มเป็น Check-out
           checkInButton.textContent = 'Check Out';
           checkInButton.classList.add('checkout-button');
 
@@ -407,20 +400,16 @@ async function initializeLiff() {
             }
           }
         } else {
-          // ถ้าไม่ได้ทำงานอยู่ ให้แสดงหน้าปกติ
           document.getElementById('special-checkout').style.display = 'none';
           document.getElementById('main-page').style.display = 'block';
           
-          // ตั้งค่าปุ่มเป็น Check-in
           checkInButton.textContent = 'Check In';
           checkInButton.classList.remove('checkout-button');
           document.getElementById('shift').disabled = false;
         }
 
-        // ผูก event listener
-        checkInButton.removeEventListener('click', checkIn);
+        // ผูก event listener เพียงครั้งเดียว
         checkInButton.addEventListener('click', checkIn);
-
       } else {
         alert("UID not registered. Please register.");
       }
@@ -653,7 +642,7 @@ function updateLocation() {
       </div>
     </div>
     
-    <button type="button" class="checkin-button" onclick="checkIn()">Check In</button>
+    <button type="button" class="checkin-button">Check In</button>
   </div>
 </div>
 </body>
