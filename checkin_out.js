@@ -52,6 +52,10 @@ async function recordStart(uid, jobNo, shift, lat, lng, nearPlace) {
 
 // ฟังก์ชันสำหรับบันทึกข้อมูล Check-out
 async function recordFinish(uid, jobNo, lat, lng, nearPlace) {
+    if (!jobNo) {
+        throw new Error('Missing job number for check-out');
+    }
+    
     const data = {
         action: 'record_finish',
         uid: uid,
@@ -61,12 +65,21 @@ async function recordFinish(uid, jobNo, lat, lng, nearPlace) {
         near_place: nearPlace
     };
 
-    const response = await fetch(SCRIPT_URL, {
-        method: 'POST',
-        body: JSON.stringify(data)
-    });
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
 
-    return response.json();
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Record finish error:', error);
+        throw error;
+    }
 }
 
 // ปรับปรุงฟังก์ชัน checkIn
