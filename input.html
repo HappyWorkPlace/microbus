@@ -358,34 +358,36 @@ body {
 async function initializeLiff() {
   try {
     await liff.init({ liffId: "2006809014-elbWam3R" });
+
     if (liff.isLoggedIn()) {
       const profile = await liff.getProfile();
       const uid = liff.getContext().userId;
       const isRegistered = await checkRegistration(uid, profile);
-      
+
       if (isRegistered.registered) {
         setDefaultDateTime();
         startRealTimeClock();
         initMap();
         updateLocation();
-        
-        // ตรวจสอบสถานะการทำงาน
+
+        // ตรวจสอบสถานะการทำงานก่อน
         const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
         const workingResult = await workingResponse.json();
-        
-        // ลบ event listener เดิมก่อนผูกใหม่ (ย้ายมาไว้ตรงนี้)
+
         const checkInButton = document.querySelector('.checkin-button');
-        checkInButton.removeEventListener('click', checkIn);
         
+        // ตั้งค่าปุ่มตามสถานะการทำงาน
         if (workingResult.isWorking) {
+          // ถ้ากำลังทำงานอยู่ ให้แสดงหน้า special-checkout
           document.getElementById('special-checkout').style.display = 'flex';
           document.getElementById('main-page').style.display = 'none';
           
+          // ตั้งค่าปุ่มเป็น Check-out
           checkInButton.textContent = 'Check Out';
           checkInButton.classList.add('checkout-button');
-          
+
           if (workingResult.jobNo) {
-            checkInButton.dataset.jobNo = workingResult.jobNo; // แก้จาก checkButton เป็น checkInButton
+            checkInButton.dataset.jobNo = workingResult.jobNo;
           }
           if (workingResult.shift) {
             document.getElementById('shift').value = workingResult.shift;
@@ -400,12 +402,20 @@ async function initializeLiff() {
             }
           }
         } else {
+          // ถ้าไม่ได้ทำงานอยู่ ให้แสดงหน้าปกติ
           document.getElementById('special-checkout').style.display = 'none';
           document.getElementById('main-page').style.display = 'block';
+          
+          // ตั้งค่าปุ่มเป็น Check-in
+          checkInButton.textContent = 'Check In';
+          checkInButton.classList.remove('checkout-button');
+          document.getElementById('shift').disabled = false;
         }
-        
-        // ผูก event listener ครั้งเดียว
+
+        // ผูก event listener
+        checkInButton.removeEventListener('click', checkIn);
         checkInButton.addEventListener('click', checkIn);
+
       } else {
         alert("UID not registered. Please register.");
       }
@@ -424,8 +434,6 @@ async function initializeLiff() {
     hideLoading();
   }
 }
-
-
 
 
 async function checkRegistration(uid, profile) {
@@ -472,12 +480,15 @@ function switchToNormalPage() {
     document.getElementById('special-checkout').style.display = 'none';
     document.getElementById('main-page').style.display = 'block';
     
-    // เพิ่มการรีเซ็ต state
-    const checkButton = document.querySelector('.checkin-button');
-    if (checkButton) {
-        checkButton.textContent = 'Check In';
-        checkButton.classList.remove('checkout-button');
-        document.getElementById('shift').disabled = false;
+    // เพิ่มการผูก event listener ใหม่
+    const checkInButton = document.querySelector('.checkin-button');
+    if (checkInButton) {
+        checkInButton.removeEventListener('click', checkIn);
+        checkInButton.addEventListener('click', checkIn);
+        
+        // ตั้งค่าปุ่มให้เป็น Check Out
+        checkInButton.textContent = 'Check Out';
+        checkInButton.classList.add('checkout-button');
     }
 }
 
@@ -578,9 +589,9 @@ function updateLocation() {
       <span id="checkout-time"></span><br>
       <span id="checkout-place"></span>
     </div>
-    <button class="special-checkout-button" onclick="switchToNormalPage()">
-      Check Out
-    </button>
+<button type="button" class="special-checkout-button" onclick="switchToNormalPage()">
+  Check Out
+</button>
   </div>
 <!-- หน้าปกติ -->
 <div id="main-page">
