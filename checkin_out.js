@@ -129,25 +129,33 @@ async function checkIn() {
                     nearPlace
                 );
 
-                if (recordResult.success) {
-                    await Swal.fire({
-                        title: 'Check-in สำเร็จ',
-                        text: `Job No: ${jobNo}`,
-                        icon: 'success',
-                        confirmButtonText: 'ตกลง'
-                    });
+ if (recordResult.success) {
+    await Swal.fire({
+        title: 'Check-in สำเร็จ',
+        text: `Job No: ${jobNo}`,
+        icon: 'success',
+        confirmButtonText: 'ตกลง'
+    });
 
-                    // Update UI
-                    const checkButton = document.querySelector('.checkin-button');
-                    checkButton.textContent = 'Check Out';
-                    checkButton.classList.add('checkout-button');
-                    checkButton.dataset.jobNo = jobNo;
-                    document.getElementById('shift').disabled = true;
-                    
-                    const now = new Date();
-                    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-                    document.querySelector('.info-item:first-child .value').textContent = timeStr;
-                } else {
+    // แสดงหน้า special-checkout
+    document.getElementById('special-checkout').style.display = 'flex';
+    document.getElementById('main-page').style.display = 'none';
+    
+    // Update checkout page info
+    document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${timeStr}`;
+    document.getElementById('checkout-place').textContent = nearPlace;
+    
+    // Update main page UI (สำหรับตอนกลับมาที่หน้าหลัก)
+    const checkButton = document.querySelector('.checkin-button');
+    checkButton.textContent = 'Check Out';
+    checkButton.classList.add('checkout-button');
+    checkButton.dataset.jobNo = jobNo;
+    document.getElementById('shift').disabled = true;
+    
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    document.querySelector('.info-item:first-child .value').textContent = timeStr;
+} else {
                     throw new Error('Failed to record check-in');
                 }
             } else {
