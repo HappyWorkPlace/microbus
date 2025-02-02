@@ -163,7 +163,7 @@ async function checkIn() {
                     
                     await Swal.fire({
                         title: 'Check-in สำเร็จ',
-                        text: `Job No: ${jobNo}`,
+                        text: `วันที่: ${timeStr}`,
                         icon: 'success',
                         confirmButtonText: 'ตกลง'
                     });
@@ -198,7 +198,7 @@ async function checkIn() {
                     if (recordResult.success) {
                         await Swal.fire({
                             title: 'Check-out สำเร็จ',
-                            text: `Job No: ${jobNo}`,
+                            text: `วันที่: ${timeStr}`,
                             icon: 'success',
                             confirmButtonText: 'ตกลง'
                         });
