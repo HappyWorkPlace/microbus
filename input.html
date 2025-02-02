@@ -375,11 +375,12 @@ async function initializeLiff() {
         const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
         const workingResult = await workingResponse.json();
 
+        const checkButton = document.querySelector('.checkin-button');
+        
         if (workingResult.isWorking) {
           document.getElementById('special-checkout').style.display = 'flex';
           document.getElementById('main-page').style.display = 'none';
 
-          const checkButton = document.querySelector('.checkin-button');
           checkButton.textContent = 'Check Out';
           checkButton.classList.add('checkout-button');
 
@@ -403,9 +404,11 @@ async function initializeLiff() {
           document.getElementById('main-page').style.display = 'block';
         }
 
-        // ผูก event listener กับปุ่ม check-in/out
-        const checkInButton = document.querySelector('.checkin-button');
-        checkInButton.addEventListener('click', checkIn);
+        // ผูก event listener แบบใหม่
+        checkButton.addEventListener('click', async (e) => {
+          e.preventDefault();
+          await checkIn();
+        });
       } else {
         alert("UID not registered. Please register.");
       }
@@ -421,13 +424,9 @@ async function initializeLiff() {
       confirmButtonText: 'ตกลง'
     });
   } finally {
-    // ซ่อน loading overlay ไม่ว่าจะสำเร็จหรือล้มเหลว
     hideLoading();
   }
 }
-
-
-
 
 async function checkRegistration(uid, profile) {
   try {
