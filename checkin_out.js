@@ -154,7 +154,7 @@ async function checkIn() {
                     
                     await Swal.fire({
                         title: 'Check-in สำเร็จ',
-                        text: `Job No: ${jobNo}`,
+                        // text: `Job No: ${jobNo}`,
                         icon: 'success',
                         confirmButtonText: 'ตกลง'
                     });
@@ -197,7 +197,7 @@ async function checkIn() {
                     console.log('Check-out successful, closing window');
                     await Swal.fire({
                         title: 'Check-out สำเร็จ',
-                        text: `Job No: ${jobNo}`,
+                        // text: `Job No: ${jobNo}`,
                         icon: 'success',
                         confirmButtonText: 'ตกลง'
                     });
