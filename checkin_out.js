@@ -30,49 +30,29 @@ function formatTimestamp(dateString) {
 }
 
 
-// ฟังก์ชัน Check-in/out
+// ฟังก์ชันสำหรับบันทึกข้อมูล Check-in
 async function recordStart(uid, jobNo, shift, lat, lng, nearPlace) {
-    try {
-        const data = {
-            action: 'record_start',
-            uid: uid,
-            job_no: jobNo,
-            day_type: '',
-            shift: shift,
-            start_datetime: formatTimestamp(new Date()),
-            location: `https://www.google.com/maps?q=${lat},${lng}`,
-            near_place: nearPlace
-        };
+    const data = {
+        action: 'record_start',
+        uid: uid,
+        job_no: jobNo,
+        day_type: '', // เว้นว่างให้หลังบ้านจัดการ
+        shift: shift,
+        start_datetime: formatTimestamp(new Date()),
+        location: `https://www.google.com/maps?q=${lat},${lng}`,
+        near_place: nearPlace
+    };
 
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
-        });
+    const response = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify(data)
+    });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        if (!result.success) {
-            throw new Error(result.error || 'Failed to record check-in');
-        }
-
-        return result;
-    } catch (error) {
-        console.error('Record start error:', error);
-        throw error;
-    }
+    return response.json();
 }
 
+// ฟังก์ชันสำหรับบันทึกข้อมูล Check-out
 async function recordFinish(uid, jobNo, lat, lng, nearPlace) {
-    if (!jobNo) {
-        throw new Error('Missing job number for check-out');
-    }
-    
     const data = {
         action: 'record_finish',
         uid: uid,
@@ -82,82 +62,19 @@ async function recordFinish(uid, jobNo, lat, lng, nearPlace) {
         near_place: nearPlace
     };
 
-    try {
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
-        });
+    const response = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify(data)
+    });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        return await response.json();
-    } catch (error) {
-        console.error('Record finish error:', error);
-        throw error;
-    }
+    return response.json();
 }
 
-// ฟังก์ชัน Handle Check-in/out
-async function handleCheckIn(uid, jobNo, shift, lat, lng, nearPlace) {
-    const result = await recordStart(uid, jobNo, shift, lat, lng, nearPlace);
-    if (result.success) {
-        const checkButton = document.querySelector('.checkin-button');
-        const now = new Date();
-        const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-        
-        checkButton.textContent = 'Check Out';
-        checkButton.classList.add('checkout-button');
-        checkButton.dataset.jobNo = jobNo;
-        document.getElementById('shift').disabled = true;
-        document.querySelector('.info-item:first-child .value').textContent = timeStr;
-        
-        await Swal.fire({
-            title: 'Check-in สำเร็จ',
-            text: `Job No: ${jobNo}`,
-            icon: 'success',
-            confirmButtonText: 'ตกลง'
-        });
-    }
-    return result;
-}
-
-async function handleCheckOut(uid, jobNo, lat, lng, nearPlace) {
-    const result = await recordFinish(uid, jobNo, lat, lng, nearPlace);
-    if (result.success) {
-        const checkButton = document.querySelector('.checkin-button');
-        const now = new Date();
-        const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-        
-        document.querySelector('.info-item:last-child .value').textContent = timeStr;
-        checkButton.textContent = 'Check In';
-        checkButton.classList.remove('checkout-button');
-        delete checkButton.dataset.jobNo;
-        document.getElementById('shift').disabled = false;
-        document.getElementById('shift').value = '';
-        
-        await Swal.fire({
-            title: 'Check-out สำเร็จ',
-            text: `Job No: ${jobNo}`,
-            icon: 'success',
-            confirmButtonText: 'ตกลง'
-        });
-        
-        setTimeout(() => {
-            liff.closeWindow();
-        }, 500);
-    }
-    return result;
-}
+// ปรับปรุงฟังก์ชัน checkIn
 async function checkIn() {
     const shift = document.getElementById('shift').value;
-    const checkButton = document.querySelector('.checkin-button');
-    const isCheckout = checkButton.classList.contains('checkout-button');
-
+    const isCheckout = document.querySelector('.checkin-button').classList.contains('checkout-button');
+    
     if (!isCheckout && !shift) {
         await Swal.fire({
             title: 'กรุณาเลือกกะการทำงาน',
@@ -167,98 +84,103 @@ async function checkIn() {
         return;
     }
 
-    try {
-        if (!userLocation || !userLocation.lat || !userLocation.lng) {
-            throw new Error('Location data not available');
-        }
+    const confirmText = isCheckout ? 
+        'ยืนยันการ Check-out?' : 
+        `ยืนยันการ Check-in กะ ${shift}?`;
 
-        const confirmResult = await Swal.fire({
-            title: isCheckout ? 'ยืนยันการ Check-out?' : `ยืนยันการ Check-in กะ ${shift}?`,
-            html: `
-                <p>พิกัด: (${userLocation.lat.toFixed(6)}, ${userLocation.lng.toFixed(6)})</p>
-                <p>${document.querySelector('.location-details').textContent}</p>
-            `,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'ยืนยัน',
-            cancelButtonText: 'ยกเลิก',
-            confirmButtonColor: '#00B8D9',
-            cancelButtonColor: '#FF6B6B'
-        });
+    const result = await Swal.fire({
+        title: confirmText,
+        html: `
+            <p>พิกัด: (${userLocation.lat.toFixed(6)}, ${userLocation.lng.toFixed(6)})</p>
+            <p>${document.querySelector('.location-details').textContent}</p>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'ยืนยัน',
+        cancelButtonText: 'ยกเลิก',
+        confirmButtonColor: '#00B8D9',
+        cancelButtonColor: '#FF6B6B'
+    });
 
-        if (!confirmResult.isConfirmed) {
-            return;
-        }
+    if (result.isConfirmed) {
+        try {
+            // แสดง loading ด้วย Swal
+            Swal.fire({
+                title: 'กำลังดำเนินการ...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
 
-        // Show loading state
-        Swal.fire({
-            title: 'กำลังดำเนินการ...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
+            const uid = liff.getContext().userId;
+            const empNo = document.querySelector('.user-id').textContent.split(' ')[0];
+            const nearPlace = document.querySelector('.location-details').textContent;
+            
+            if (!isCheckout) {
+                // Check-in process
+                const jobNo = generateJobNo(empNo);
+                const recordResult = await recordStart(
+                    uid,
+                    jobNo,
+                    shift,
+                    userLocation.lat,
+                    userLocation.lng,
+                    nearPlace
+                );
+
+                if (recordResult.success) {
+                    await Swal.fire({
+                        title: 'Check-in สำเร็จ',
+                        text: `Job No: ${jobNo}`,
+                        icon: 'success',
+                        confirmButtonText: 'ตกลง'
+                    });
+
+                    // Update UI
+                    const checkButton = document.querySelector('.checkin-button');
+                    checkButton.textContent = 'Check Out';
+                    checkButton.classList.add('checkout-button');
+                    checkButton.dataset.jobNo = jobNo;
+                    document.getElementById('shift').disabled = true;
+                    
+                    const now = new Date();
+                    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                    document.querySelector('.info-item:first-child .value').textContent = timeStr;
+                } else {
+                    throw new Error('Failed to record check-in');
+                }
+            } else {
+                // Check-out process
+                const jobNo = document.querySelector('.checkin-button').dataset.jobNo;
+                const recordResult = await recordFinish(
+                    uid,
+                    jobNo,
+                    userLocation.lat,
+                    userLocation.lng,
+                    nearPlace
+                );
+
+                if (recordResult.success) {
+                    await Swal.fire({
+                        title: 'Check-out สำเร็จ',
+                        text: `Job No: ${jobNo}`,
+                        icon: 'success',
+                        confirmButtonText: 'ตกลง'
+                    });
+                    liff.closeWindow(); // ปิดหน้า LIFF
+                } else {
+                    throw new Error('Failed to record check-out');
+                }
             }
-        });
-
-        const uid = liff.getContext().userId;
-        const empNo = document.querySelector('.user-id').textContent.split(' ')[0];
-        const nearPlace = document.querySelector('.location-details').textContent;
-
-        if (!uid || !empNo) {
-            throw new Error('User information not available');
+        } catch (error) {
+            console.error('Error during check-in/out:', error);
+            await Swal.fire({
+                title: 'เกิดข้อผิดพลาด',
+                text: 'กรุณาลองใหม่อีกครั้ง',
+                icon: 'error',
+                confirmButtonText: 'ตกลง'
+            });
         }
-
-        if (isCheckout) {
-            const jobNo = checkButton.dataset.jobNo;
-            if (!jobNo) {
-                throw new Error('Job number not found');
-            }
-            await handleCheckOut(uid, jobNo, userLocation.lat, userLocation.lng, nearPlace);
-        } else {
-            const jobNo = generateJobNo(empNo);
-            await handleCheckIn(uid, jobNo, shift, userLocation.lat, userLocation.lng, nearPlace);
-        }
-
-    } catch (error) {
-        console.error('Error during check-in/out:', error);
-        await Swal.fire({
-            title: 'เกิดข้อผิดพลาด',
-            text: error.message || 'กรุณาลองใหม่อีกครั้ง',
-            icon: 'error',
-            confirmButtonText: 'ตกลง'
-        });
-    }
-}
-
-// ฟังก์ชันแสดงหน้า Special Checkout
-function showSpecialCheckout(startTime, nearPlace) {
-    if (startTime && nearPlace) {
-        document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${startTime}`;
-        document.getElementById('checkout-place').textContent = nearPlace;
-        document.getElementById('special-checkout').style.display = 'flex';
-        document.getElementById('main-page').style.display = 'none';
-    }
-}
-
-// ฟังก์ชันสลับกลับไปหน้าปกติ (Special Checkout)
-async function switchToNormalPage() {
-    try {
-        const uid = liff.getContext().userId;
-        const jobNo = document.querySelector('.checkin-button').dataset.jobNo;
-        
-        if (!userLocation || !userLocation.lat || !userLocation.lng) {
-            throw new Error('Location data not available');
-        }
-
-        const nearPlace = document.querySelector('.location-details').textContent;
-        
-        await handleCheckOut(uid, jobNo, userLocation.lat, userLocation.lng, nearPlace);
-    } catch (error) {
-        console.error('Error during check-out:', error);
-        await Swal.fire({
-            title: 'เกิดข้อผิดพลาด',
-            text: error.message || 'กรุณาลองใหม่อีกครั้ง',
-            icon: 'error',
-            confirmButtonText: 'ตกลง'
-        });
     }
 }
