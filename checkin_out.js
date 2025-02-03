@@ -144,6 +144,10 @@ async function checkIn() {
             const uid = liff.getContext().userId;
             const empNo = document.querySelector('.user-id').textContent.split(' ')[0];
             const nearPlace = document.querySelector('.location-details').textContent;
+            
+            // Get current time string - moved outside the blocks to be available for both check-in and check-out
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
             if (!isCheckout) {
                 // Check-in process
@@ -158,9 +162,6 @@ async function checkIn() {
                 );
 
                 if (recordResult.success) {
-                    const now = new Date();
-                    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-                    
                     await Swal.fire({
                         title: 'Check-in สำเร็จ',
                         text: `วันที่: ${timeStr}`,
