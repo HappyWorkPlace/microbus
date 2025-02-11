@@ -516,6 +516,12 @@ async function getLocationDetails(lat, lng) {
 }
 
 function updateLocation() {
+  // ปิดปุ่ม Check-in/Check-out ระหว่างโหลดข้อมูล
+  const checkButton = document.querySelector('.checkin-button');
+  checkButton.disabled = true;
+  checkButton.style.opacity = '0.5';
+  document.querySelector('.location-details').textContent = 'กำลังโหลดข้อมูลตำแหน่ง...';
+
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(async position => {
       userLocation.lat = position.coords.latitude;
@@ -530,15 +536,31 @@ function updateLocation() {
         marker = L.marker([userLocation.lat, userLocation.lng]).addTo(map);
       }
 
-      // เรียกใช้ API getPlace
-      const locationInfo = await getLocationDetails(userLocation.lat, userLocation.lng);
-      document.querySelector('.location-details').textContent = locationInfo;
+      try {
+        // เรียกใช้ API getPlace
+        const locationInfo = await getLocationDetails(userLocation.lat, userLocation.lng);
+        document.querySelector('.location-details').textContent = locationInfo;
+        
+        // เปิดปุ่มหลังจากโหลดข้อมูลสำเร็จ
+        checkButton.disabled = false;
+        checkButton.style.opacity = '1';
+      } catch (error) {
+        console.error('Error getting location details:', error);
+        document.querySelector('.location-details').textContent = 'ไม่สามารถโหลดข้อมูลสถานที่ได้ กรุณาลองใหม่';
+        // กรณีเกิดข้อผิดพลาด ยังคงปิดปุ่มไว้
+        checkButton.disabled = true;
+        checkButton.style.opacity = '0.5';
+      }
     }, error => {
       console.error('Error getting location:', error);
-      alert('ไม่สามารถดึงตำแหน่งได้');
+      document.querySelector('.location-details').textContent = 'ไม่สามารถระบุตำแหน่งได้ กรุณาอนุญาตการเข้าถึงตำแหน่ง';
+      checkButton.disabled = true;
+      checkButton.style.opacity = '0.5';
     });
   } else {
-    alert('Browser ของคุณไม่รองรับ Geolocation');
+    document.querySelector('.location-details').textContent = 'Browser ของคุณไม่รองรับการระบุตำแหน่ง';
+    checkButton.disabled = true;
+    checkButton.style.opacity = '0.5';
   }
 }
     function setDefaultDateTime() {
