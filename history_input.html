@@ -87,14 +87,32 @@
         .history-header i {
             margin-right: 10px;
         }
-        .record-item {
-            background: white;
-            padding: 20px;
-            margin-bottom: 15px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease;
-        }
+.record-item {
+    background: white;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+.record-header {
+    padding: 15px 20px;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: background-color 0.2s ease;
+}
+.record-header:hover {
+    background-color: #f8f9fa;
+}
+.record-content {
+    padding: 0 20px 20px 20px;
+    border-top: 1px solid #eee;
+}
+.fa-chevron-down {
+    transition: transform 0.2s ease;
+}
+.collapsed .fa-chevron-down {
+    transform: rotate(-90deg);
+}
         .record-item:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
@@ -366,42 +384,53 @@
 
 function updateUI(records) {
     const recordsList = document.getElementById('recordsList');
-    recordsList.innerHTML = records.map(record => `
-        <div class="record-item">
-            <div class="record-date">
-                <i class="far fa-calendar-alt me-2 text-primary"></i>
-                ${formatDate(record.start_time)}
-            </div>
-            <div class="record-row">
-                <span>ประเภทวัน</span>
-                <span class="badge-type">${record.day_type}</span>
-            </div>
-            <div class="record-row">
-                <span>กะ</span>
-                <span class="badge-shift">กะ ${record.shift}</span>
-            </div>
-            <div class="time-section">
-                <div class="time-block">
-                    <div class="time-label">เวลาเข้างาน</div>
-                    <div class="time-value in">
-                        <i class="far fa-clock me-1"></i>
-                        ${formatTime(record.start_time)}
+    recordsList.innerHTML = records.map(record => {
+        const dateId = record.start_time.split(',')[0];
+        return `
+            <div class="record-item">
+                <div class="record-header collapsed" data-bs-toggle="collapse" data-bs-target="#record-${dateId}" role="button" aria-expanded="false">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="record-date">
+                            <i class="far fa-calendar-alt me-2 text-primary"></i>
+                            ${formatDate(record.start_time)}
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <span class="badge-type me-2">${record.day_type}</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
                     </div>
                 </div>
-                <div class="time-block">
-                    <div class="time-label">เวลาออกงาน</div>
-                    <div class="time-value out">
-                        <i class="far fa-clock me-1"></i>
-                        ${formatTime(record.end_time)}
+                <div class="collapse" id="record-${dateId}">
+                    <div class="record-content pt-3">
+                        <div class="record-row">
+                            <span>กะ</span>
+                            <span class="badge-shift">กะ ${record.shift}</span>
+                        </div>
+                        <div class="time-section">
+                            <div class="time-block">
+                                <div class="time-label">เวลาเข้างาน</div>
+                                <div class="time-value in">
+                                    <i class="far fa-clock me-1"></i>
+                                    ${formatTime(record.start_time)}
+                                </div>
+                            </div>
+                            <div class="time-block">
+                                <div class="time-label">เวลาออกงาน</div>
+                                <div class="time-value out">
+                                    <i class="far fa-clock me-1"></i>
+                                    ${formatTime(record.end_time)}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="record-row">
+                            <span>OT</span>
+                            <span class="badge-ot">${record.ot} ชั่วโมง</span>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="record-row">
-                <span>OT</span>
-                <span class="badge-ot">${record.ot} ชั่วโมง</span>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
         document.getElementById('monthSelect').addEventListener('change', function(e) {
             const [year, month] = e.target.value.split('-');
