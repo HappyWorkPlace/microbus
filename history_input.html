@@ -321,20 +321,6 @@
                 hideLoading();
             }
         }
-
-function formatTime(dateString) {
-    if (!dateString) return '-';
-    
-    // ถ้ามี , ให้ split แล้วเอาส่วนที่เป็นเวลา
-    if (dateString.includes(',')) {
-        const time = dateString.split(',')[1].trim();
-        return time.substring(0, 5) + ' น.';
-    }
-    
-    // ถ้าไม่มี , ให้เอาตัวเลขมาแสดงเลย
-    return dateString + ' น.';
-}
-
         function formatDate(dateString) {
             const datePart = dateString.split(',')[0];
             if (!datePart) return '-';
@@ -348,6 +334,33 @@ function formatTime(dateString) {
                 });
             } catch (e) {
                 return '-';
+            }
+        }
+        function formatTime(timeString) {
+            if (!timeString) return '-';
+            
+            try {
+                // กรณีที่เป็น ISO datetime string (เช่น "2025-02-03,04:56:38")
+                if (timeString.includes(',')) {
+                    const time = timeString.split(',')[1].trim();
+                    return time.substring(0, 5) + ' น.';
+                }
+                
+                // กรณีที่เป็น ISO datetime string (เช่น "2025-02-03T04:56:38")
+                if (timeString.includes('T')) {
+                    const date = new Date(timeString);
+                    return date.toLocaleTimeString('th-TH', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    }) + ' น.';
+                }
+                
+                // กรณีที่เป็นเวลาในรูปแบบอื่นๆ
+                return timeString.substring(0, 5) + ' น.';
+            } catch (e) {
+                console.error('Error formatting time:', e);
+                return timeString;
             }
         }
 
@@ -372,16 +385,17 @@ function updateUI(records) {
                     <div class="time-label">เวลาเข้างาน</div>
                     <div class="time-value in">
                         <i class="far fa-clock me-1"></i>
-                        ${record.start_time + ' น.'}
+                        ${formatTime(record.start_time)}
                     </div>
                 </div>
-         <div class="time-block">
-            <div class="time-label">เวลาออกงาน</div>
-            <div class="time-value out">
-                <i class="far fa-clock me-1"></i>
-                ${record.end_time + ' น.'}
+                <div class="time-block">
+                    <div class="time-label">เวลาออกงาน</div>
+                    <div class="time-value out">
+                        <i class="far fa-clock me-1"></i>
+                        ${formatTime(record.end_time)}
+                    </div>
+                </div>
             </div>
-        </div>
             <div class="record-row">
                 <span>OT</span>
                 <span class="badge-ot">${record.ot} ชั่วโมง</span>
@@ -389,7 +403,6 @@ function updateUI(records) {
         </div>
     `).join('');
 }
-
         document.getElementById('monthSelect').addEventListener('change', function(e) {
             const [year, month] = e.target.value.split('-');
             fetchMonthlyRecords(parseInt(month), parseInt(year));
