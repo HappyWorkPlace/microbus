@@ -190,15 +190,6 @@
         <div class="user-info">
             <div class="user-info-item">
                 <div class="user-info-icon">
-                    <i class="fas fa-user"></i>
-                </div>
-                <div>
-                    <div class="info-label">ชื่อ-นามสกุล</div>
-                    <div class="info-value" id="employeeName">กำลังโหลด...</div>
-                </div>
-            </div>
-            <div class="user-info-item">
-                <div class="user-info-icon">
                     <i class="fas fa-id-card"></i>
                 </div>
                 <div>
@@ -206,6 +197,15 @@
                     <div class="info-value" id="employeeId">กำลังโหลด...</div>
                 </div>
             </div>
+            </div>
+                <div class="user-info-item">
+                <div class="user-info-icon">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div>
+                    <div class="info-label">ชื่อ-นามสกุล</div>
+                    <div class="info-value" id="employeeName">กำลังโหลด...</div>
+                </div>
         </div>
 
         <!-- เลือกเดือน -->
@@ -356,45 +356,45 @@
             }
         }
 
-        function updateUI(records) {
-            const recordsList = document.getElementById('recordsList');
-            recordsList.innerHTML = records.map(record => `
-                <div class="record-item">
-                    <div class="record-date">
-                        <i class="far fa-calendar-alt me-2 text-primary"></i>
-                        ${formatDate(record.start_time)}
-                    </div>
-                    <div class="record-row">
-                        <span>ประเภทวัน</span>
-                        <span class="badge-type">${record.day_type}</span>
-                    </div>
-                    <div class="record-row">
-                        <span>กะ</span>
-                        <span class="badge-shift">กะ ${record.shift}</span>
-                    </div>
-                    <div class="time-section">
-                        <div class="time-block">
-                            <div class="time-label">เวลาเข้างาน</div>
-                            <div class="time-value in">
-                                <i class="far fa-clock me-1"></i>
-                                ${formatTime(record.start_time)}
-                            </div>
-                        </div>
-                        <div class="time-block">
-                            <div class="time-label">เวลาออกงาน</div>
-                            <div class="time-value out">
-                                <i class="far fa-clock me-1"></i>
-                                ${record.end_time.split(',')[1].substring(0, 5)}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="record-row">
-                        <span>OT</span>
-                        <span class="badge-ot">${record.ot} ชั่วโมง</span>
+function updateUI(records) {
+    const recordsList = document.getElementById('recordsList');
+    recordsList.innerHTML = records.map(record => `
+        <div class="record-item">
+            <div class="record-date">
+                <i class="far fa-calendar-alt me-2 text-primary"></i>
+                ${formatDate(record.start_time)}
+            </div>
+            <div class="record-row">
+                <span>ประเภทวัน</span>
+                <span class="badge-type">${record.day_type}</span>
+            </div>
+            <div class="record-row">
+                <span>กะ</span>
+                <span class="badge-shift">กะ ${record.shift}</span>
+            </div>
+            <div class="time-section">
+                <div class="time-block">
+                    <div class="time-label">เวลาเข้างาน</div>
+                    <div class="time-value in">
+                        <i class="far fa-clock me-1"></i>
+                        ${formatTime(record.start_time)}
                     </div>
                 </div>
-            `).join('');
-        }
+                <div class="time-block">
+                    <div class="time-label">เวลาออกงาน</div>
+                    <div class="time-value out">
+                        <i class="far fa-clock me-1"></i>
+                        ${record.end_time ? record.end_time.split(',')[1].substring(0, 5) : '-'}
+                    </div>
+                </div>
+            </div>
+            <div class="record-row">
+                <span>OT</span>
+                <span class="badge-ot">${record.ot} ชั่วโมง</span>
+            </div>
+        </div>
+    `).join('');
+}
 
         document.getElementById('monthSelect').addEventListener('change', function(e) {
             const [year, month] = e.target.value.split('-');
