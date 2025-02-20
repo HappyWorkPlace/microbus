@@ -87,32 +87,32 @@
         .history-header i {
             margin-right: 10px;
         }
-.record-item {
-    background: white;
-    margin-bottom: 15px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease;
-}
-.record-header {
-    padding: 15px 20px;
-    cursor: pointer;
-    border-radius: 12px;
-    transition: background-color 0.2s ease;
-}
-.record-header:hover {
-    background-color: #f8f9fa;
-}
-.record-content {
-    padding: 0 20px 20px 20px;
-    border-top: 1px solid #eee;
-}
-.fa-chevron-down {
-    transition: transform 0.2s ease;
-}
-.collapsed .fa-chevron-down {
-    transform: rotate(-90deg);
-}
+        .record-item {
+            background: white;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+        }
+        .record-header {
+            padding: 15px 20px;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: background-color 0.2s ease;
+        }
+        .record-header:hover {
+            background-color: #f8f9fa;
+        }
+        .record-content {
+            padding: 0 20px 20px 20px;
+            border-top: 1px solid #eee;
+        }
+        .fa-chevron-down {
+            transition: transform 0.2s ease;
+        }
+        .collapsed .fa-chevron-down {
+            transform: rotate(-90deg);
+        }
         .record-item:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
@@ -202,7 +202,7 @@
             <span class="visually-hidden">Loading...</span>
         </div>
     </div>
-    <div class="ot">จำนวน OT เป็นเพียงการประมาณการเท่านั้น จากเวลาการเข้างาน</div>
+    <div class="ot">จำนวน OT เป็นเพียงการประมาณการจากเวลาการเข้างานเท่านั้น </div>
     <div class="container">
         <!-- ข้อมูลผู้ใช้ -->
         <div class="user-info">
@@ -403,7 +403,6 @@ function updateUI(records) {
                 <div class="collapse" id="record-${dateId}">
                     <div class="record-content pt-3">
                         <div class="record-row">
-                            <span>กะ</span>
                             <span class="badge-shift">กะ ${record.shift}</span>
                         </div>
                         <div class="time-section">
@@ -423,8 +422,7 @@ function updateUI(records) {
                             </div>
                         </div>
                         <div class="record-row">
-                            <span>OT</span>
-                            <span class="badge-ot">${record.ot} ชั่วโมง</span>
+                            <span class="badge-ot">OT ${record.ot} ชั่วโมง</span>
                         </div>
                     </div>
                 </div>
