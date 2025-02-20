@@ -8,472 +8,335 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
-            min-height: 100vh;
-            font-size: 14px;
+            background-color: #f4f6f9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
         .container {
-            padding-top: 1rem;
-            padding-bottom: 1rem;
             max-width: 100%;
+            padding: 0;
         }
-        .employee-info {
-            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            border: 1px solid rgba(255,255,255,0.3);
+        .user-info {
+            background: white;
+            padding: 20px;
+            margin-bottom: 10px;
         }
-        .info-label {
-            color: #6c757d;
-            font-size: 0.85rem;
-            margin-bottom: 2px;
-            font-weight: 500;
+        .user-info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
         }
-        .info-value {
-            font-weight: 600;
-            font-size: 1.1rem;
-            color: #2c3e50;
-        }
-        .info-icon {
-            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
-            color: white;
-            width: 35px;
-            height: 35px;
-            border-radius: 8px;
+        .user-info-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #4a90e2;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 8px;
+            margin-right: 15px;
+        }
+        .user-info-icon i {
+            color: white;
+            font-size: 1.2rem;
+        }
+        .info-label {
+            color: #666;
             font-size: 0.9rem;
+            margin-bottom: 2px;
+        }
+        .info-value {
+            color: #333;
+            font-size: 1.1rem;
+            font-weight: 600;
         }
         .month-select {
-            width: 100%;
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 1rem;
-            border: 2px solid #e9ecef;
-            transition: all 0.3s ease;
-            margin-bottom: 15px;
-        }
-        .month-select:focus {
-            border-color: #4e73df;
-            box-shadow: 0 0 0 0.2rem rgba(78,115,223,0.25);
-        }
-        .card {
-            border-radius: 12px;
-            border: none;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 60px; /* เพิ่ม margin ด้านล่างเผื่อ bottom navigation */
-        }
-        .card-header {
-            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
-            color: white;
-            border-bottom: none;
-            padding: 15px;
-            font-size: 1rem;
-        }
-        .card-body {
-            padding: 0;
-        }
-        .mobile-table {
-            width: 100%;
-        }
-        .mobile-record {
             background: white;
             padding: 15px;
             margin-bottom: 10px;
-            border-bottom: 1px solid #eee;
+            border: none;
+            width: 100%;
+            font-size: 1rem;
+            color: #333;
         }
-        .mobile-record:last-child {
-            margin-bottom: 0;
-            border-bottom: none;
+        .history-header {
+            background: #4a90e2;
+            color: white;
+            padding: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        .history-header i {
+            margin-right: 10px;
+        }
+        .record-item {
+            background: white;
+            padding: 20px;
+            margin-bottom: 1px;
         }
         .record-date {
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 10px;
+            color: #333;
+            margin-bottom: 15px;
         }
-        .record-detail {
+        .record-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+        }
+        .badge-type {
+            background: #4a90e2;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
             font-size: 0.9rem;
         }
         .badge-shift {
-            background: linear-gradient(135deg, #36b9cc 0%, #1a8a9c 100%);
+            background: #36b9cc;
             color: white;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-weight: 500;
-            font-size: 0.8rem;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
         }
-        .badge-ot {
-            background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-weight: 500;
-            font-size: 0.8rem;
+        .time-section {
+            display: flex;
+            justify-content: space-between;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .time-block {
+            text-align: center;
         }
         .time-label {
-            color: #6c757d;
-            font-size: 0.85rem;
+            color: #666;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
         }
         .time-value {
-            font-weight: 500;
-            color: #2c3e50;
+            color: #333;
+            font-weight: 600;
         }
-        
-        /* Hide desktop table on mobile */
-        @media (max-width: 768px) {
-            .desktop-table {
-                display: none;
-            }
+        .time-value.in {
+            color: #28a745;
         }
-        
-        /* Hide mobile cards on desktop */
-        @media (min-width: 769px) {
-            .mobile-table {
-                display: none;
-            }
-            .container {
-                max-width: 960px;
-            }
-            .month-select {
-                width: 300px;
-            }
+        .time-value.out {
+            color: #dc3545;
+        }
+        .badge-ot {
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
         }
     </style>
 </head>
 <body>
+    <div id="loading" class="loading" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
     <div class="container">
-        <!-- ส่วนข้อมูลพนักงาน -->
-        <div class="employee-info">
-            <div class="d-flex align-items-center mb-3">
-                <div class="info-icon me-3">
+        <!-- ข้อมูลผู้ใช้ -->
+        <div class="user-info">
+            <div class="user-info-item">
+                <div class="user-info-icon">
                     <i class="fas fa-user"></i>
                 </div>
                 <div>
                     <div class="info-label">ชื่อ-นามสกุล</div>
-                    <div class="info-value">กอไก่ แซ่ตั้ง</div>
+                    <div class="info-value" id="employeeName">กำลังโหลด...</div>
                 </div>
             </div>
-            <div class="d-flex align-items-center">
-                <div class="info-icon me-3">
+            <div class="user-info-item">
+                <div class="user-info-icon">
                     <i class="fas fa-id-card"></i>
                 </div>
                 <div>
                     <div class="info-label">รหัสพนักงาน</div>
-                    <div class="info-value">T7054</div>
+                    <div class="info-value" id="employeeId">กำลังโหลด...</div>
                 </div>
             </div>
         </div>
 
-        <!-- ส่วนเลือกเดือน -->
-        <div class="d-flex align-items-center">
-            <i class="fas fa-calendar-alt me-2 text-primary"></i>
-            <select class="form-select month-select" id="monthSelect">
-                <option value="">เลือกเดือน</option>
-            </select>
+        <!-- เลือกเดือน -->
+        <select class="month-select" id="monthSelect">
+            <option value="">เลือกเดือน</option>
+        </select>
+
+        <!-- ประวัติการทำงาน -->
+        <div class="history-header">
+            <i class="fas fa-history"></i>
+            ประวัติการทำงาน
         </div>
-
-        <!-- ตารางแสดงข้อมูล -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-history me-2"></i>
-                    ประวัติการทำงาน
-                </h5>
-            </div>
-            <div class="card-body">
-                <!-- Mobile view -->
-                <div class="mobile-table">
-                    <div class="mobile-record">
-                        <div class="record-date">
-                            <i class="far fa-calendar-alt me-2 text-primary"></i>
-                            3 กุมภาพันธ์ 2025
-                        </div>
-                        <div class="record-detail">
-                            <span>ประเภทวัน</span>
-                            <span class="badge bg-primary">WD</span>
-                        </div>
-                        <div class="record-detail">
-                            <span>กะ</span>
-                            <span class="badge-shift">กะ D</span>
-                        </div>
-                        <div class="record-detail">
-                            <div>
-                                <div class="time-label">เวลาเข้างาน</div>
-                                <div class="time-value">
-                                    <i class="far fa-clock me-1 text-success"></i>
-                                    05:12:10
-                                </div>
-                            </div>
-                            <div class="text-end">
-                                <div class="time-label">เวลาออกงาน</div>
-                                <div class="time-value">
-                                    <i class="far fa-clock me-1 text-danger"></i>
-                                    21:32:32
-                                </div>
-                            </div>
-                        </div>
-                        <div class="record-detail">
-                            <span>OT</span>
-                            <span class="badge-ot">4.50 ชั่วโมง</span>
-                        </div>
-                    </div>
-
-                    <div class="mobile-record">
-                        <div class="record-date">
-                            <i class="far fa-calendar-alt me-2 text-primary"></i>
-                            4 กุมภาพันธ์ 2025
-                        </div>
-                        <div class="record-detail">
-                            <span>ประเภทวัน</span>
-                            <span class="badge bg-primary">WD</span>
-                        </div>
-                        <div class="record-detail">
-                            <span>กะ</span>
-                            <span class="badge-shift">กะ D</span>
-                        </div>
-                        <div class="record-detail">
-                            <div>
-                                <div class="time-label">เวลาเข้างาน</div>
-                                <div class="time-value">
-                                    <i class="far fa-clock me-1 text-success"></i>
-                                    05:23:35
-                                </div>
-                            </div>
-                            <div class="text-end">
-                                <div class="time-label">เวลาออกงาน</div>
-                                <div class="time-value">
-                                    <i class="far fa-clock me-1 text-danger"></i>
-                                    20:41:35
-                                </div>
-                            </div>
-                        </div>
-                        <div class="record-detail">
-                            <span>OT</span>
-                            <span class="badge-ot">3.50 ชั่วโมง</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Desktop view -->
-                <div class="table-responsive desktop-table">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>วันที่</th>
-                                <th>ประเภทวัน</th>
-                                <th>กะ</th>
-                                <th>เวลาเข้างาน</th>
-                                <th>เวลาออกงาน</th>
-                                <th>OT (ชั่วโมง)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recordsTableBody">
-                            <tr>
-                                <td>
-                                    <i class="far fa-calendar-alt me-2 text-primary"></i>
-                                    2025-02-03
-                                </td>
-                                <td>
-                                    <span class="badge bg-primary">WD</span>
-                                </td>
-                                <td>
-                                    <span class="badge-shift">กะ D</span>
-                                </td>
-                                <td>
-                                    <i class="far fa-clock me-2 text-success"></i>
-                                    05:12:10
-                                </td>
-                                <td>
-                                    <i class="far fa-clock me-2 text-danger"></i>
-                                    21:32:32
-                                </td>
-                                <td>
-                                    <span class="badge-ot">4.50</span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <i class="far fa-calendar-alt me-2 text-primary"></i>
-                                    2025-02-04
-                                </td>
-                                <td>
-                                    <span class="badge bg-primary">WD</span>
-                                </td>
-                                <td>
-                                    <span class="badge-shift">กะ D</span>
-                                </td>
-                                <td>
-                                    <i class="far fa-clock me-2 text-success"></i>
-                                    05:23:35
-                                </td>
-                                <td>
-                                    <i class="far fa-clock me-2 text-danger"></i>
-                                    20:41:35
-                                </td>
-                                <td>
-                                    <span class="badge-ot">3.50</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        
+        <div id="recordsList">
+            <!-- Records will be inserted here -->
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-// เพิ่ม LIFF SDK และกำหนด URL ของ Google Apps Script
-<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-<script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpZT-A8mlg5E0IgQkmvdkzqBm8TEqw0NQw0n4dK9FkpvDQlakCLISxc1TCyWzGo006/exec";
-    let uid = '';
-    let profile = null;
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpZT-A8mlg5E0IgQkmvdkzqBm8TEqw0NQw0n4dK9FkpvDQlakCLISxc1TCyWzGo006/exec";
+        let uid = '';
+        let profile = null;
 
-    // ฟังก์ชันเริ่มต้น LIFF
-    async function initializeLiff() {
-        try {
-            await liff.init({ liffId: "2006809014-1lg84AKk" });
-            
-            // ตรวจสอบว่า login แล้วหรือยัง
-            if (!liff.isLoggedIn()) {
-                liff.login();
-                return;
-            }
-
-            // ดึงข้อมูล profile
-            profile = await liff.getProfile();
-            uid = profile.userId;
-            
-            // เรียกข้อมูลเริ่มต้น
-            await fetchInitialData();
-
-        } catch (error) {
-            console.error("LIFF initialization failed", error);
-            alert("เกิดข้อผิดพลาดในการเชื่อมต่อ LIFF");
+        function showLoading() {
+            document.getElementById('loading').style.display = 'flex';
         }
-    }
 
-    // ฟังก์ชันดึงข้อมูลเริ่มต้น
-    async function fetchInitialData() {
-        try {
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // ฟังก์ชันเริ่มต้น LIFF
+        async function initializeLiff() {
+            try {
+                showLoading();
+                await liff.init({ liffId: "2006809014-1lg84AKk" });
+                
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+
+                profile = await liff.getProfile();
+                uid = profile.userId;
+                
+                await fetchInitialData();
+                hideLoading();
+
+            } catch (error) {
+                console.error("LIFF initialization failed", error);
+                alert("เกิดข้อผิดพลาดในการเชื่อมต่อ LIFF");
+                hideLoading();
+            }
+        }
+
+        function generateMonthOptions() {
+            const monthSelect = document.getElementById('monthSelect');
             const currentDate = new Date();
-            const currentMonth = currentDate.getMonth() + 1;
-            const currentYear = currentDate.getFullYear();
             
-            await fetchMonthlyRecords(currentMonth, currentYear);
-            
-        } catch (error) {
-            console.error("Error fetching initial data:", error);
-        }
-    }
-
-    // ฟังก์ชันดึงข้อมูลตามเดือน
-    async function fetchMonthlyRecords(month, year) {
-        try {
-            const url = `${SCRIPT_URL}?action=get_records&uid=${uid}&month=${month}&year=${year}`;
-            const response = await fetch(url);
-            const data = await response.json();
-
-            if (data.success) {
-                updateUI(data.data);
-            } else {
-                console.error("Error fetching records:", data.error);
+            for (let i = 0; i < 12; i++) {
+                const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+                const option = document.createElement('option');
+                option.value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                option.textContent = date.toLocaleString('th-TH', { month: 'long', year: 'numeric' });
+                if (i === 0) option.selected = true;
+                monthSelect.appendChild(option);
             }
-        } catch (error) {
-            console.error("Error fetching monthly records:", error);
         }
-    }
 
-    // ฟังก์ชันอัพเดท UI
-    function updateUI(records) {
-        // อัพเดทตาราง Mobile view
-        const mobileTable = document.querySelector('.mobile-table');
-        mobileTable.innerHTML = records.map(record => `
-            <div class="mobile-record">
-                <div class="record-date">
-                    <i class="far fa-calendar-alt me-2 text-primary"></i>
-                    ${new Date(record.start_time).toLocaleDateString('th-TH')}
-                </div>
-                <div class="record-detail">
-                    <span>ประเภทวัน</span>
-                    <span class="badge bg-primary">${record.day_type}</span>
-                </div>
-                <div class="record-detail">
-                    <span>กะ</span>
-                    <span class="badge-shift">กะ ${record.shift}</span>
-                </div>
-                <div class="record-detail">
-                    <div>
-                        <div class="time-label">เวลาเข้างาน</div>
-                        <div class="time-value">
-                            <i class="far fa-clock me-1 text-success"></i>
-                            ${new Date(record.start_time).toLocaleTimeString('th-TH')}
+        async function fetchInitialData() {
+            try {
+                const currentDate = new Date();
+                const currentMonth = currentDate.getMonth() + 1;
+                const currentYear = currentDate.getFullYear();
+                
+                await fetchMonthlyRecords(currentMonth, currentYear);
+                
+            } catch (error) {
+                console.error("Error fetching initial data:", error);
+            }
+        }
+
+        async function fetchMonthlyRecords(month, year) {
+            try {
+                showLoading();
+                const url = `${SCRIPT_URL}?action=get_records&uid=${uid}&month=${month}&year=${year}`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.success) {
+                    updateUI(data.data);
+                } else {
+                    console.error("Error fetching records:", data.error);
+                }
+                hideLoading();
+            } catch (error) {
+                console.error("Error fetching monthly records:", error);
+                hideLoading();
+            }
+        }
+
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false });
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+
+        function updateUI(records) {
+            const recordsList = document.getElementById('recordsList');
+            recordsList.innerHTML = records.map(record => `
+                <div class="record-item">
+                    <div class="record-date">
+                        <i class="far fa-calendar-alt me-2 text-primary"></i>
+                        ${formatDate(record.start_time)}
+                    </div>
+                    <div class="record-row">
+                        <span>ประเภทวัน</span>
+                        <span class="badge-type">${record.day_type}</span>
+                    </div>
+                    <div class="record-row">
+                        <span>กะ</span>
+                        <span class="badge-shift">กะ ${record.shift}</span>
+                    </div>
+                    <div class="time-section">
+                        <div class="time-block">
+                            <div class="time-label">เวลาเข้างาน</div>
+                            <div class="time-value in">
+                                <i class="far fa-clock me-1"></i>
+                                ${formatTime(record.start_time)}
+                            </div>
+                        </div>
+                        <div class="time-block">
+                            <div class="time-label">เวลาออกงาน</div>
+                            <div class="time-value out">
+                                <i class="far fa-clock me-1"></i>
+                                ${formatTime(record.end_time)}
+                            </div>
                         </div>
                     </div>
-                    <div class="text-end">
-                        <div class="time-label">เวลาออกงาน</div>
-                        <div class="time-value">
-                            <i class="far fa-clock me-1 text-danger"></i>
-                            ${new Date(record.end_time).toLocaleTimeString('th-TH')}
-                        </div>
+                    <div class="record-row">
+                        <span>OT</span>
+                        <span class="badge-ot">${record.ot} ชั่วโมง</span>
                     </div>
                 </div>
-                <div class="record-detail">
-                    <span>OT</span>
-                    <span class="badge-ot">${record.ot} ชั่วโมง</span>
-                </div>
-            </div>
-        `).join('');
+            `).join('');
+        }
 
-        // อัพเดทตาราง Desktop view
-        const desktopTableBody = document.getElementById('recordsTableBody');
-        desktopTableBody.innerHTML = records.map(record => `
-            <tr>
-                <td>
-                    <i class="far fa-calendar-alt me-2 text-primary"></i>
-                    ${new Date(record.start_time).toLocaleDateString('th-TH')}
-                </td>
-                <td>
-                    <span class="badge bg-primary">${record.day_type}</span>
-                </td>
-                <td>
-                    <span class="badge-shift">กะ ${record.shift}</span>
-                </td>
-                <td>
-                    <i class="far fa-clock me-2 text-success"></i>
-                    ${new Date(record.start_time).toLocaleTimeString('th-TH')}
-                </td>
-                <td>
-                    <i class="far fa-clock me-2 text-danger"></i>
-                    ${new Date(record.end_time).toLocaleTimeString('th-TH')}
-                </td>
-                <td>
-                    <span class="badge-ot">${record.ot}</span>
-                </td>
-            </tr>
-        `).join('');
-    }
+        document.getElementById('monthSelect').addEventListener('change', function(e) {
+            const [year, month] = e.target.value.split('-');
+            fetchMonthlyRecords(parseInt(month), parseInt(year));
+        });
 
-    // อัพเดท event listener สำหรับ dropdown เดือน
-    document.getElementById('monthSelect').addEventListener('change', function(e) {
-        const [year, month] = e.target.value.split('-');
-        fetchMonthlyRecords(parseInt(month), parseInt(year));
-    });
-
-    // เริ่มต้น LIFF เมื่อโหลดหน้า
-    document.addEventListener('DOMContentLoaded', function() {
-        generateMonthOptions();
-        initializeLiff();
-    });
-</script>
+        document.addEventListener('DOMContentLoaded', function() {
+            generateMonthOptions();
+            initializeLiff();
+        });
+    </script>
 </body>
 </html>
