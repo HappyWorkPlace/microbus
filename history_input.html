@@ -324,8 +324,15 @@
 
 function formatTime(dateString) {
     if (!dateString) return '-';
-    const time = dateString.split(',')[1].trim();  // แยกเอาส่วนเวลา
-    return time.substring(0, 5) + ' น.';  // ตัดเอาแค่ ชม:นาที และเติม น.
+    
+    // ถ้ามี , ให้ split แล้วเอาส่วนที่เป็นเวลา
+    if (dateString.includes(',')) {
+        const time = dateString.split(',')[1].trim();
+        return time.substring(0, 5) + ' น.';
+    }
+    
+    // ถ้าไม่มี , ให้เอาตัวเลขมาแสดงเลย
+    return dateString + ' น.';
 }
 
         function formatDate(dateString) {
@@ -365,17 +372,16 @@ function updateUI(records) {
                     <div class="time-label">เวลาเข้างาน</div>
                     <div class="time-value in">
                         <i class="far fa-clock me-1"></i>
-                        ${formatTime(record.start_time)}
+                        ${record.start_time + ' น.'}
                     </div>
                 </div>
-                <div class="time-block">
-                    <div class="time-label">เวลาออกงาน</div>
-                    <div class="time-value out">
-                        <i class="far fa-clock me-1"></i>
-                        ${formatTime(record.end_time)}
-                    </div>
-                </div>
+         <div class="time-block">
+            <div class="time-label">เวลาออกงาน</div>
+            <div class="time-value out">
+                <i class="far fa-clock me-1"></i>
+                ${record.end_time + ' น.'}
             </div>
+        </div>
             <div class="record-row">
                 <span>OT</span>
                 <span class="badge-ot">${record.ot} ชั่วโมง</span>
