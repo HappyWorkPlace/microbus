@@ -340,23 +340,26 @@
             if (!timeString) return '-';
             
             try {
-                // ถ้าเป็นตัวเลข (เช่น 100.6)
-                if (typeof timeString === 'number' || !isNaN(timeString)) {
-                    const timeNum = parseFloat(timeString);
-                    const hours = Math.floor(timeNum / 100);
-                    const minutes = Math.floor((timeNum % 100) * 0.6); // แปลงจากระบบฐาน 100 เป็นนาที
-                    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} น.`;
+                // กรณีที่เป็น ISO datetime string (เช่น "2025-02-03,04:56:38")
+                if (timeString.includes(',')) {
+                    const time = timeString.split(',')[1].trim();
+                    return time.substring(0, 5) + ' น.';
                 }
                 
-                // กรณีที่เป็นรูปแบบเวลาปกติ (HH:MM)
-                if (timeString.includes(':')) {
-                    return timeString + ' น.';
+                // กรณีที่เป็น ISO datetime string (เช่น "2025-02-03T04:56:38")
+                if (timeString.includes('T')) {
+                    const date = new Date(timeString);
+                    return date.toLocaleTimeString('th-TH', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    }) + ' น.';
                 }
                 
-                // กรณีอื่นๆ
-                return timeString;
+                // กรณีที่เป็นเวลาในรูปแบบอื่นๆ
+                return timeString.substring(0, 5) + ' น.';
             } catch (e) {
-                console.error('Error formatting time:', e, timeString);
+                console.error('Error formatting time:', e);
                 return timeString;
             }
         }
