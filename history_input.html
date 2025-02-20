@@ -197,7 +197,6 @@
                     <div class="info-value" id="employeeId">กำลังโหลด...</div>
                 </div>
             </div>
-            </div>
                 <div class="user-info-item">
                 <div class="user-info-icon">
                     <i class="fas fa-user"></i>
@@ -323,22 +322,11 @@
             }
         }
 
-        function formatTime(dateString) {
-            if (!dateString) return '-';
-            
-            try {
-                const date = new Date(dateString);
-                if (isNaN(date.getTime())) return '-';
-                
-                return date.toLocaleTimeString('th-TH', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false
-                });
-            } catch (e) {
-                return '-';
-            }
-        }
+function formatTime(dateString) {
+    if (!dateString) return '-';
+    const time = dateString.split(',')[1].trim();  // แยกเอาส่วนเวลา
+    return time.substring(0, 5) + ' น.';  // ตัดเอาแค่ ชม:นาที และเติม น.
+}
 
         function formatDate(dateString) {
             const datePart = dateString.split(',')[0];
@@ -384,7 +372,7 @@ function updateUI(records) {
                     <div class="time-label">เวลาออกงาน</div>
                     <div class="time-value out">
                         <i class="far fa-clock me-1"></i>
-                        ${record.end_time ? record.end_time.split(',')[1].substring(0, 5) : '-'}
+                        ${formatTime(record.end_time)}
                     </div>
                 </div>
             </div>
