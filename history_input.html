@@ -290,49 +290,54 @@
             }
         }
 
-async function fetchMonthlyRecords(month, year) {
-    try {
-        showLoading();
-        const url = `${SCRIPT_URL}?action=get_records&uid=${uid}&month=${month}&year=${year}`;
-        const response = await fetch(url);
-        const data = await response.json();
+        async function fetchMonthlyRecords(month, year) {
+            try {
+                showLoading();
+                const url = `${SCRIPT_URL}?action=get_records&uid=${uid}&month=${month}&year=${year}`;
+                const response = await fetch(url);
+                const data = await response.json();
 
-        if (data.success) {
-            // อัพเดทข้อมูลพนักงาน
-            if (data.employeeInfo) {
-                document.getElementById('employeeName').textContent = data.employeeInfo.name;
-                document.getElementById('employeeId').textContent = data.employeeInfo.empId;
-            } else {
-                document.getElementById('employeeName').textContent = 'ไม่พบข้อมูล';
-                document.getElementById('employeeId').textContent = 'ไม่พบข้อมูล';
+                if (data.success) {
+                    // อัพเดทข้อมูลพนักงาน
+                    if (data.employeeInfo) {
+                        document.getElementById('employeeName').textContent = data.employeeInfo.name;
+                        document.getElementById('employeeId').textContent = data.employeeInfo.empId;
+                    } else {
+                        document.getElementById('employeeName').textContent = 'ไม่พบข้อมูล';
+                        document.getElementById('employeeId').textContent = 'ไม่พบข้อมูล';
+                    }
+                    
+                    // อัพเดทข้อมูลการทำงาน
+                    updateUI(data.data);
+                } else {
+                    console.error("Error fetching records:", data.error);
+                    document.getElementById('employeeName').textContent = 'เกิดข้อผิดพลาด';
+                    document.getElementById('employeeId').textContent = 'เกิดข้อผิดพลาด';
+                }
+                hideLoading();
+            } catch (error) {
+                console.error("Error fetching monthly records:", error);
+                document.getElementById('employeeName').textContent = 'เกิดข้อผิดพลาด';
+                document.getElementById('employeeId').textContent = 'เกิดข้อผิดพลาด';
+                hideLoading();
             }
-            
-            // อัพเดทข้อมูลการทำงาน
-            updateUI(data.data);
-        } else {
-            console.error("Error fetching records:", data.error);
-            document.getElementById('employeeName').textContent = 'เกิดข้อผิดพลาด';
-            document.getElementById('employeeId').textContent = 'เกิดข้อผิดพลาด';
         }
-        hideLoading();
-    } catch (error) {
-        console.error("Error fetching monthly records:", error);
-        document.getElementById('employeeName').textContent = 'เกิดข้อผิดพลาด';
-        document.getElementById('employeeId').textContent = 'เกิดข้อผิดพลาด';
-        hideLoading();
-    }
-}
 
         function formatTime(dateString) {
-            // ถ้าเป็น Invalid Date หรือไม่มีค่า ให้ตัดเอาแค่เวลามาแสดง
             if (!dateString) return '-';
             
-            // แยกเอาส่วนเวลาออกมา (หลังเครื่องหมาย ,)
-            const timePart = dateString.split(',')[1];
-            if (!timePart) return '-';
-            
-            // ตัดวินาทีออก เอาแค่ชั่วโมงและนาที
-            return timePart.substring(0, 5);
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return '-';
+                
+                return date.toLocaleTimeString('th-TH', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+            } catch (e) {
+                return '-';
+            }
         }
 
         function formatDate(dateString) {
@@ -350,7 +355,8 @@ async function fetchMonthlyRecords(month, year) {
                 return '-';
             }
         }
-          function updateUI(records) {
+
+        function updateUI(records) {
             const recordsList = document.getElementById('recordsList');
             recordsList.innerHTML = records.map(record => `
                 <div class="record-item">
@@ -389,6 +395,7 @@ async function fetchMonthlyRecords(month, year) {
                 </div>
             `).join('');
         }
+
         document.getElementById('monthSelect').addEventListener('change', function(e) {
             const [year, month] = e.target.value.split('-');
             fetchMonthlyRecords(parseInt(month), parseInt(year));
