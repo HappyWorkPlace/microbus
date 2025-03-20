@@ -3,271 +3,560 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Check-In Layout</title>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
-  <style>
-    /* Reset & Base */
-    * {
-      margin: 0; padding: 0; box-sizing: border-box;
-      font-family: 'Prompt', sans-serif;
-    }
-    body {
-      background: #F7F9FC;
-      color: #333;
-      padding: 20px;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-    }
-    
-    .current-datetime {
-      text-align: center;
-      margin-bottom: 0px;
-      color: #666;
-      font-size: 0.9rem;
-    }
-
-    /* Loading overlay styles */
-    .loading-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: white;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-
-    .loading-overlay.hidden {
-      display: none;
-    }
-
-    .vehicle-image {
-      width: 100px;
-      margin-bottom: 20px;
-    }
-
-    .spinner {
-      display: flex;
-      gap: 8px;
-    }
-
-    .dot {
-      width: 10px;
-      height: 10px;
-      background: var(--primary-color);
-      border-radius: 50%;
-      animation: bounce 0.5s ease-in-out infinite;
-    }
-
-    .dot:nth-child(2) {
-      animation-delay: 0.1s;
-    }
-
-    .dot:nth-child(3) {
-      animation-delay: 0.2s;
-    }
-
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-5px); }
-    }
-
-    /* ตัวอย่างสีหลัก (Primary Color) และสีรอง (Secondary/Accent) */
-    :root {
-      --primary-color: #00B8D9;
-      --secondary-color: #005571;
-      --card-bg: #FFFFFF;
-      --border-radius: 12px;
-    }
-
-    /* Wrapper หลัก */
-    .container {
-      width: 100%;
-      max-width: 400px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    /* Card ทั่วไป */
-    .card {
-      background: var(--card-bg);
-      border-radius: var(--border-radius);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-      padding: 5px;
-    }
-
-    /* Profile Card */
-    .profile-card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      text-align: center;
-      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-      color: white;
-      padding: 24px 16px;
-    }
-
-    .profile-card .avatar {
-      width: 80px; height: 80px;
-      border-radius: 50%;
-      overflow: hidden;
-      border: 3px solid white;
-    }
-
-    .profile-card .avatar img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-    }
-
-    .profile-card .user-info {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .profile-card .user-info .user-id {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: white;
-    }
-
-    .profile-card .location .position {
-      font-size: 0.5rem;
-      color: rgba(255, 255, 255, 0.9);
-    }
-
-    /* Date Time Display */
-    .datetime {
-      text-align: center;
-      margin: 10px 0;
-    }
-
-    .datetime .date {
-      font-size: 0.9rem;
-      color: #666;
-    }
-
-    .datetime .time {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: var(--primary-color);
-    }
-
-    /* Shift Selector */
-    .shift-wrapper {
-      margin-top: 8px;
-      text-align: center;
-    }
-    
-    .shift-wrapper label {
-      font-size: 0.85rem;
-      color: rgba(255, 255, 255, 0.9);
-    }
-    
-    .shift-wrapper select {
-      margin-left: 8px;
-      padding: 6px;
-      border-radius: 6px;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      font-size: 0.85rem;
-      background: transparent;
-      color: white;
-    }
-
-    .shift-wrapper select option {
-      background: var(--primary-color);
-      color: white;
-    }
-
-    /* Map Card */
-    .map-card {
-      position: relative;
-    }
-
-    .map-container {
-      width: 100%;
-      height: 180px;
-      border-radius: var(--border-radius);
-      overflow: hidden;
-      border: 1px solid #ccc;
-      margin-top: 10px;
-    }
-
-    #map {
-      width: 100%;
-      height: 100%;
-    }
-
-    .location-details {
-      margin-top: 8px;
-      color: #555;
-      font-size: 0.85rem;
-      text-align: center;
-    }
-
-    /* Time Card */
-    .info {
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-    }
-
-    .info-item {
-      text-align: center;
-    }
-
-    .info-item span {
-      font-size: 0.8rem;
-      color: #666;
-    }
-
-    .info-item .value {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #333;
-      margin-top: 4px;
-    }
-
-    /* ปุ่มหลัก */
-    .checkin-button {
-      display: block;
-      width: 100%;
-      text-align: center;
-      background: var(--primary-color);
-      color: #fff;
-      font-size: 1rem;
-      font-weight: 600;
-      padding: 12px;
-      border: none;
-      border-radius: var(--border-radius);
-      cursor: pointer;
-      transition: background 0.3s ease;
-      text-decoration: none;
-    }
-
-    .checkin-button:hover {
-      background: var(--secondary-color);
-    }
-      .checkout-button {
-      background: #FF6B00;  /* สีส้ม */
-    }
-
-    .checkout-button:hover {
-      background: #E65100;  /* สีส้มเข้มเมื่อ hover */
-    }
-  </style>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0sUp9IJILTAV4Qx7AHK6dugESDF5NWHA&libraries=places" async defer></script>
+  <title>NMB Driver Attendance Record</title>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+  <script src="checkin_out.js"></script>
+  <style>
+/* Reset & Base */
+* {
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box;
+  font-family: 'Prompt', sans-serif;
+}
+
+:root {
+  --primary-color: #3B82F6;
+  --primary-dark: #2563EB;
+  --primary-light: #EFF6FF;
+  --secondary-color: #F59E0B;
+  --secondary-dark: #D97706;
+  --secondary-light: #FEF3C7;
+  --success-color: #10B981;
+  --success-dark: #059669;
+  --text-primary: #1F2937;
+  --text-secondary: #4B5563;
+  --text-light: #9CA3AF;
+  --background: #F9FAFB;
+  --card-bg: #FFFFFF;
+  --border-radius-sm: 8px;
+  --border-radius: 12px;
+  --border-radius-lg: 16px;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --transition: all 0.3s ease;
+}
+
+body {
+  background: var(--background);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+}
+
+#main-page {
+  width: 100%;
+  max-width: 480px;
+  min-height: 90vh;
+  background: var(--card-bg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.app-header {
+  padding: 16px;
+  text-align: center;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.app-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.current-datetime {
+  color: var(--text-light);
+  font-size: 0.85rem;
+}
+
+.app-content {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+/* Loading overlay styles */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--card-bg);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loading-overlay.hidden {
+  display: none;
+}
+
+.vehicle-image {
+  width: 120px;
+  margin-bottom: 24px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.spinner {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  animation: bounce 0.5s ease-in-out infinite;
+}
+
+.dot:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.dot:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* Profile Card */
+.profile-card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+.profile-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+}
+
+.avatar {
+  width: 64px; 
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 3px solid var(--primary-light);
+}
+
+.avatar img {
+  width: 100%; 
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-info {
+  flex: 1;
+}
+
+.user-id {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.position, .location {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* Shift Selector */
+.shift-container {
+  background: var(--primary-light);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.shift-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.shift-wrapper label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.shift-wrapper select {
+  padding: 6px 12px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  font-size: 0.9rem;
+  background: white;
+  color: var(--text-primary);
+  transition: var(--transition);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23546E7A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 28px;
+}
+
+.shift-wrapper select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0, 134, 195, 0.1);
+}
+
+/* Map Card */
+.map-card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+.map-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.map-title {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.refresh-btn {
+  background: var(--primary-light);
+  color: var(--primary-color);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition);
+}
+
+.refresh-btn:hover {
+  background: var(--primary-color);
+  color: white;
+}
+
+.map-container {
+  width: 100%;
+  height: 240px;
+  overflow: hidden;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+.location-details {
+  padding: 16px;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.location-details::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background-color: var(--primary-color);
+  border-radius: 50%;
+  margin-top: -1px;
+}
+
+/* Time Card */
+.time-card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  padding: 16px;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+.time-title {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.info {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.info-item {
+  text-align: center;
+  flex: 1;
+  position: relative;
+}
+
+/* Removed border divider since we only have one time item now */
+
+.info-item span {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.info-item .value {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Action Button */
+.action-button-container {
+  margin-top: 8px;
+}
+
+.checkin-button {
+  display: flex;
+  width: 100%;
+  background: var(--primary-color);
+  color: white;
+  padding: 16px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.checkin-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.1);
+  transform: translateX(-100%);
+  transition: transform 0.4s ease;
+  z-index: -1;
+}
+
+.checkin-button:hover, .checkin-button:focus {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+
+.checkin-button:hover::before {
+  transform: translateX(0);
+}
+
+.checkin-button:active {
+  transform: translateY(0);
+}
+
+.checkout-button {
+  background: var(--secondary-color);
+}
+
+.checkout-button:hover, .checkout-button:focus {
+  background: var(--secondary-dark);
+}
+
+/* Checkout page styles */
+.checkout-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--card-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 9999;
+}
+
+.checkout-header {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.checkout-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.checkout-subtitle {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.checkout-card {
+  background: var(--primary-light);
+  border-radius: var(--border-radius);
+  padding: 24px;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: var(--shadow);
+  text-align: center;
+  margin: 24px 0;
+}
+
+.checkout-info {
+  margin: 16px 0;
+}
+
+.checkout-info .label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.checkout-info .value {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.special-checkout-button {
+  background: var(--secondary-color);
+  color: white;
+  padding: 16px 40px;
+  border-radius: var(--border-radius);
+  border: none;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.special-checkout-button:hover {
+  background: var(--secondary-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.special-checkout-button:active {
+  transform: translateY(0);
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .app-content {
+    padding: 16px;
+    gap: 16px;
+  }
+  
+  .profile-content {
+    padding: 16px;
+  }
+  
+  .map-container {
+    height: 200px;
+  }
+}
+
+/* Custom Animate Icon */
+.refresh-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  transition: transform 0.3s ease;
+}
+
+.refresh-btn:hover .refresh-icon {
+  transform: rotate(180deg);
+}
+
+/* Add utility for status indicators */
+.status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.status-active {
+  background-color: var(--success-color);
+}
+
+.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+</style>
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpZT-A8mlg5E0IgQkmvdkzqBm8TEqw0NQw0n4dK9FkpvDQlakCLISxc1TCyWzGo006/exec";
 
@@ -283,75 +572,144 @@
       document.querySelector('.loading-overlay').classList.add('hidden');
     }
 
-    async function initializeLiff() {
-      try {
-        await liff.init({ liffId: "2006809014-elbWam3R" });
-        if (liff.isLoggedIn()) {
-          const profile = await liff.getProfile();
-          const uid = liff.getContext().userId;
+async function initializeLiff() {
+  try {
+    await liff.init({ liffId: "2006809014-elbWam3R" });
 
-          const isRegistered = await checkRegistration(uid, profile);
+    if (liff.isLoggedIn()) {
+      const profile = await liff.getProfile();
+      const uid = liff.getContext().userId;
+      const isRegistered = await checkRegistration(uid, profile);
 
-          if (isRegistered) {
-            hideLoading();
-            setDefaultDateTime();
-            startRealTimeClock();
-            initMap();
-            updateLocation();
+      if (isRegistered.registered) {
+        setDefaultDateTime();
+        startRealTimeClock();
+        initMap();
+        updateLocation();
 
-            const checkInButton = document.querySelector('.checkin-button');
-            checkInButton.addEventListener('click', checkIn);
-          } else {
-            alert("UID not registered. Please register.");
-            hideLoading();
+        // ตรวจสอบสถานะการทำงานก่อน
+        const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
+        const workingResult = await workingResponse.json();
+        
+        const checkInButton = document.querySelector('.checkin-button');
+        
+        // ตั้งค่าปุ่มตามสถานะการทำงาน
+        if (workingResult.isWorking) {
+          document.getElementById('special-checkout').style.display = 'flex';
+          document.getElementById('main-page').style.display = 'none';
+          
+          checkInButton.textContent = 'Check Out';
+          checkInButton.classList.add('checkout-button');
+
+          if (workingResult.jobNo) {
+            checkInButton.dataset.jobNo = workingResult.jobNo;
           }
-        } else {
-          liff.login();
-        }
-      } catch (error) {
-        console.error("LIFF initialization failed", error);
-        alert("Error initializing LIFF.");
-        hideLoading();
-      }
-    }
-
-    async function checkRegistration(uid, profile) {
-      try {
-        const regResponse = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
-        const regResult = await regResponse.json();
-
-        if (regResult.registered) {
-          const workingResponse = await fetch(`${SCRIPT_URL}?action=check_working_status&uid=${uid}`);
-          const workingResult = await workingResponse.json();
-
-          document.querySelector('.user-id').textContent = `${regResult.employee_no} ${regResult.name}`;
-          document.querySelector('.location').textContent = `${regResult.factory}`;
-          document.querySelector('.position').textContent = `${regResult.position}`;
-
-          if (profile && profile.pictureUrl) {
-            document.querySelector('.avatar img').src = profile.pictureUrl;
-          }
-
-          if (workingResult.isWorking) {
-            document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime;
-            const checkButton = document.querySelector('.checkin-button');
-            checkButton.textContent = 'Check Out';
-            checkButton.classList.add('checkout-button');
+          if (workingResult.shift) {
             document.getElementById('shift').value = workingResult.shift;
             document.getElementById('shift').disabled = true;
           }
-
-          return true;
+          if (workingResult.startTime) {
+            document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime;
+            const location = workingResult.location || workingResult.nearPlace;
+            if (location) {
+              document.getElementById('checkout-time-value').textContent = workingResult.startTime;
+              document.getElementById('checkout-place-value').textContent = location;
+            }
+          }
         } else {
-          window.location.href = "https://liff.line.me/2006809014-zqJWBVbA";
-          return false;
+          document.getElementById('special-checkout').style.display = 'none';
+          document.getElementById('main-page').style.display = 'block';
+          
+          checkInButton.textContent = 'Check In';
+          checkInButton.classList.remove('checkout-button');
+          document.getElementById('shift').disabled = false;
         }
-      } catch (error) {
-        console.error("Error checking registration:", error);
-        window.location.href = "https://liff.line.me/2006809014-zqJWBVbA";
-        return false;
+
+        // ผูก event listener เพียงครั้งเดียว
+        checkInButton.addEventListener('click', checkIn);
+        document.getElementById('refresh-location').addEventListener('click', updateLocation);
+      } else {
+        Swal.fire({
+          title: 'ไม่พบข้อมูลลงทะเบียน',
+          text: 'กรุณาลงทะเบียนก่อนใช้งาน',
+          icon: 'warning',
+          confirmButtonText: 'ไปหน้าลงทะเบียน'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.href = "https://liff.line.me/2006809014-zqJWBVbA";
+          }
+        });
       }
+    } else {
+      liff.login();
     }
+  } catch (error) {
+    console.error("LIFF initialization failed", error);
+    await Swal.fire({
+      title: 'เกิดข้อผิดพลาด',
+      text: 'ไม่สามารถเริ่มต้นระบบได้ กรุณาลองใหม่อีกครั้ง',
+      icon: 'error',
+      confirmButtonText: 'ตกลง'
+    });
+  } finally {
+    hideLoading();
+  }
+}
+
+async function checkRegistration(uid, profile) {
+  try {
+    const regResponse = await fetch(`${SCRIPT_URL}?action=check_registration&uid=${uid}`);
+    const regResult = await regResponse.json();
+
+    if (regResult.registered) {
+      // Update user info
+      document.querySelector('.user-id').textContent = `${regResult.employee_no} ${regResult.name}`;
+      document.querySelector('.location').textContent = `${regResult.factory}`;
+      document.querySelector('.position').textContent = `${regResult.position}`;
+
+      if (profile && profile.pictureUrl) {
+        document.querySelector('.avatar img').src = profile.pictureUrl;
+      }
+
+      return regResult;
+    } else {
+      window.location.href = "https://liff.line.me/2006809014-zqJWBVbA";
+      return false;
+    }
+  } catch (error) {
+    console.error("Error checking registration:", error);
+    alert("เกิดข้อผิดพลาดในการตรวจสอบการลงทะเบียน กรุณาลองใหม่อีกครั้ง");
+    return false;
+  }
+}
+
+function showSpecialCheckout(startTime, nearPlace) {
+  console.log('Showing special checkout with:', { startTime, nearPlace }); // Debug log
+  
+  if (startTime && nearPlace) {
+    document.getElementById('checkout-time-value').textContent = startTime;
+    document.getElementById('checkout-place-value').textContent = nearPlace;
+    document.getElementById('special-checkout').style.display = 'flex';
+    document.getElementById('main-page').style.display = 'none';
+  }
+}
+
+// ฟังก์ชันสำหรับสลับไปหน้าปกติ
+function switchToNormalPage() {
+    document.getElementById('special-checkout').style.display = 'none';
+    document.getElementById('main-page').style.display = 'block';
+    
+    // เพิ่มการผูก event listener ใหม่
+    const checkInButton = document.querySelector('.checkin-button');
+    if (checkInButton) {
+        checkInButton.removeEventListener('click', checkIn);
+        checkInButton.addEventListener('click', checkIn);
+        
+        // ตั้งค่าปุ่มให้เป็น Check Out
+        checkInButton.textContent = 'Check Out';
+        checkInButton.classList.add('checkout-button');
+    }
+}
 
     let map;
     let marker;
@@ -365,107 +723,104 @@
       }).addTo(map);
     }
 
-    function updateLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async position => {
-          userLocation.lat = position.coords.latitude;
-          userLocation.lng = position.coords.longitude;
+async function getLocationDetails(lat, lng) {
+  try {
+    const response = await fetch(`${SCRIPT_URL}?action=getPlace&lat=${lat}&lng=${lng}`);
+    const result = await response.json();
+    
+    if (result.error) {
+      console.error('Error from API:', result.error);
+      return 'พิกัดปัจจุบัน';
+    }
+    
+    return result.displayText;
+  } catch (error) {
+    console.error('Error getting location details:', error);
+    return 'พิกัดปัจจุบัน';
+  }
+}
 
-          map.setView([userLocation.lat, userLocation.lng], 15);
+function updateLocation() {
+  // ปิดปุ่ม Check-in/Check-out ระหว่างโหลดข้อมูล
+  const checkButton = document.querySelector('.checkin-button');
+  const refreshButton = document.getElementById('refresh-location');
+  
+  checkButton.disabled = true;
+  checkButton.classList.add('disabled');
+  refreshButton.disabled = true;
+  refreshButton.classList.add('disabled');
+  
+  document.querySelector('.location-details').textContent = 'กำลังโหลดข้อมูลตำแหน่ง...';
 
-          if (marker) {
-            marker.setLatLng([userLocation.lat, userLocation.lng]);
-          } else {
-            marker = L.marker([userLocation.lat, userLocation.lng]).addTo(map);
-          }
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(async position => {
+      userLocation.lat = position.coords.latitude;
+      userLocation.lng = position.coords.longitude;
 
-          const locationInfo = await getGoogleLocationDetails(userLocation.lat, userLocation.lng);
-          document.querySelector('.location-details').textContent = locationInfo;
-        }, error => {
-          console.error('Error getting location:', error);
-          alert('ไม่สามารถดึงตำแหน่งได้');
-        });
+      // อัพเดทแผนที่ Leaflet
+      map.setView([userLocation.lat, userLocation.lng], 15);
+
+      if (marker) {
+        marker.setLatLng([userLocation.lat, userLocation.lng]);
       } else {
-        alert('Browser ของคุณไม่รองรับ Geolocation');
+        marker = L.marker([userLocation.lat, userLocation.lng]).addTo(map);
       }
-    }
 
-    async function getGoogleLocationDetails(lat, lng) {
       try {
-        const geocoder = new google.maps.Geocoder();
-        const latlng = { lat: parseFloat(lat), lng: parseFloat(lng) };
+        // เรียกใช้ API getPlace
+        const locationInfo = await getLocationDetails(userLocation.lat, userLocation.lng);
+        document.querySelector('.location-details').textContent = locationInfo;
         
-        const response = await new Promise((resolve, reject) => {
-          geocoder.geocode({ location: latlng, language: 'th' }, (results, status) => {
-            if (status === 'OK') {
-              resolve(results);
-            } else {
-              reject(new Error('Geocoder failed: ' + status));
-            }
-          });
-        });
-
-        const result = response[0];
-        const addressComponents = {};
-
-        result.address_components.forEach(component => {
-          const types = component.types;
-          if (types.includes('sublocality_level_1') || types.includes('sublocality')) {
-            addressComponents.subdistrict = component.long_name;
-          }
-          if (types.includes('administrative_area_level_2') || types.includes('district')) {
-            addressComponents.district = component.long_name;
-          }
-          if (types.includes('administrative_area_level_1') || types.includes('province')) {
-            addressComponents.province = component.long_name;
-          }
-        });
-
-        const nearbyPlace = await getNearbyPlaces(lat, lng);
-
-        let displayText = `ใกล้กับ ${nearbyPlace}`;
-
-        if (addressComponents.subdistrict) {
-          displayText += `, ตำบล${addressComponents.subdistrict}`;
-        }
-        if (addressComponents.district) {
-          displayText += `, อำเภอ${addressComponents.district}`;
-        }
-        if (addressComponents.province) {
-          displayText += `, จังหวัด${addressComponents.province}`;
-        }
-
-        return displayText;
-
+        // เปิดปุ่มหลังจากโหลดข้อมูลสำเร็จ
+        checkButton.disabled = false;
+        checkButton.classList.remove('disabled');
+        refreshButton.disabled = false;
+        refreshButton.classList.remove('disabled');
       } catch (error) {
-        console.error('Error getting Google location details:', error);
-        return 'ไม่พบข้อมูล';
+        console.error('Error getting location details:', error);
+        document.querySelector('.location-details').textContent = 'ไม่สามารถโหลดข้อมูลสถานที่ได้ กรุณาลองใหม่';
+        
+        // กรณีเกิดข้อผิดพลาด เปิดปุ่ม refresh แต่ยังปิดปุ่ม check
+        checkButton.disabled = true;
+        checkButton.classList.add('disabled');
+        refreshButton.disabled = false;
+        refreshButton.classList.remove('disabled');
       }
-    }
-
-    async function getNearbyPlaces(lat, lng) {
-      const service = new google.maps.places.PlacesService(document.createElement('div'));
-      const request = {
-        location: new google.maps.LatLng(lat, lng),
-        radius: 500,
-        type: ['point_of_interest', 'establishment']
-      };
-
-      return new Promise((resolve, reject) => {
-        service.nearbySearch(request, (results, status) => {
-          if (status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {
-            resolve(results[0].name);
-          } else {
-            resolve('ไม่พบสถานที่สำคัญใกล้เคียง');
-          }
-        });
+    }, error => {
+      console.error('Error getting location:', error);
+      document.querySelector('.location-details').textContent = 'ไม่สามารถระบุตำแหน่งได้ กรุณาอนุญาตการเข้าถึงตำแหน่ง';
+      
+      checkButton.disabled = true;
+      checkButton.classList.add('disabled');
+      refreshButton.disabled = false;
+      refreshButton.classList.remove('disabled');
+      
+      Swal.fire({
+        title: 'ไม่สามารถระบุตำแหน่งได้',
+        text: 'กรุณาอนุญาตการเข้าถึงตำแหน่งของคุณในการตั้งค่าเบราว์เซอร์',
+        icon: 'warning',
+        confirmButtonText: 'ตกลง'
       });
-    }
+    });
+  } else {
+    document.querySelector('.location-details').textContent = 'Browser ของคุณไม่รองรับการระบุตำแหน่ง';
+    
+    checkButton.disabled = true;
+    checkButton.classList.add('disabled');
+    refreshButton.disabled = true;
+    refreshButton.classList.add('disabled');
+    
+    Swal.fire({
+      title: 'ไม่รองรับ',
+      text: 'เบราว์เซอร์ของคุณไม่รองรับการระบุตำแหน่ง กรุณาใช้เบราว์เซอร์อื่น',
+      icon: 'error',
+      confirmButtonText: 'ตกลง'
+    });
+  }
+}
 
     function setDefaultDateTime() {
       const now = new Date();
-      const dateElement = document.querySelector('.datetime .date');
-      const timeElement = document.querySelector('.datetime .time');
       const currentDateTimeElement = document.querySelector('.current-datetime');
 
       const day = String(now.getDate()).padStart(2, '0');
@@ -481,10 +836,6 @@
         'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
       ];
 
-      // Update main datetime display
-      dateElement.textContent = `${day}/${month + 1}/${year}`;
-      timeElement.textContent = `${hours}:${minutes}:${seconds}`;
-
       // Update current datetime in Thai format
       currentDateTimeElement.textContent = `วันที่ ${day} ${thaiMonths[month]} ${year2} เวลา ${hours}:${minutes}:${seconds} น.`;
     }
@@ -492,13 +843,10 @@
     function startRealTimeClock() {
       setInterval(setDefaultDateTime, 1000);
     }
-
-    function checkIn() {
-      alert(`Checked in at location: (${userLocation.lat}, ${userLocation.lng})`);
-    }
   </script>
 </head>
 <body>
+  <!-- Loading Overlay -->
   <div class="loading-overlay">
     <img src="https://happyworkplace.github.io/microbus/picture/microbus.gif" alt="Vehicle" class="vehicle-image">
     <div class="spinner">
@@ -508,51 +856,138 @@
     </div>
   </div>
 
-  <div class="container">
-    <div class="current-datetime"> - -  - -</div>
-    <!-- Profile Card -->
-    <div class="card profile-card">
-      <div class="avatar">
-        <img src="https://via.placeholder.com/80" alt="User Avatar">
-      </div>
-      <div class="user-info">
-        <div class="user-id">กำลังโหลด...</div>
-        <div class="location">กำลังโหลด...</div>
-        <div class="position">กำลังโหลด...</div>
-      </div>
-      <!-- Shift Selector -->
-      <div class="shift-wrapper">
-        <label for="shift">กะการทำงาน:</label>
-        <select id="shift">
-          <option value="">Select</option>
-          <option value="D">D</option>
-          <option value="A">A</option>
-          <option value="B">B</option>
-          <option value="C">C</option>
-        </select>
-      </div>
+  <!-- Special Checkout Page -->
+  <div id="special-checkout" class="checkout-page" style="display: none;">
+    <div class="checkout-header">
+      <div class="checkout-title">ยินดีต้อนรับกลับ</div>
+      <div class="checkout-subtitle">คุณได้ Check-in ไว้แล้ว</div>
     </div>
-    <!-- Map Card -->
-    <div class="card map-card">
-      <div class="map-container">
-        <div id="map"></div>
+    
+    <img src="https://happyworkplace.github.io/microbus/picture/microbus.gif" 
+         alt="Vehicle" class="vehicle-image">
+         
+    <div class="checkout-card">
+      <div class="checkout-info">
+        <div class="label">เวลาที่ Check-in</div>
+        <div class="value" id="checkout-time-value">00:00</div>
       </div>
-      <div class="location-details">กำลังโหลดข้อมูลตำแหน่ง...</div>
-    </div>
-
-    <!-- Time Card -->
-    <div class="card info">
-      <div class="info-item">
-        <span>Time-In</span>
-        <div class="value">00:00</div>
-      </div>
-      <div class="info-item">
-        <span>Time-Out</span>
-        <div class="value">00:00</div>
+      <div class="checkout-info">
+        <div class="label">สถานที่</div>
+        <div class="value" id="checkout-place-value">-</div>
       </div>
     </div>
     
-    <a href="#" class="checkin-button">Check In</a>
+    <button type="button" class="special-checkout-button" onclick="switchToNormalPage()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 10 4 15 9 20"></polyline>
+        <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
+      </svg>
+      Check Out
+    </button>
+  </div>
+
+  <!-- Main Page -->
+  <div id="main-page">
+    <!-- Header -->
+    <div class="app-header">
+      <div class="app-title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+          <path d="M8 14h.01"></path>
+          <path d="M12 14h.01"></path>
+          <path d="M16 14h.01"></path>
+          <path d="M8 18h.01"></path>
+          <path d="M12 18h.01"></path>
+          <path d="M16 18h.01"></path>
+        </svg>
+        NMB Driver Attendance
+      </div>
+      <div class="current-datetime">กำลังโหลด...</div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="app-content">
+      <!-- Profile Card -->
+      <div class="profile-card">
+        <div class="profile-content">
+          <div class="avatar">
+            <img src="https://ui-avatars.com/api/?name=User+Avatar" alt="User Avatar">
+          </div>
+          <div class="user-info">
+            <div class="user-id">กำลังโหลด...</div>
+            <div class="position">กำลังโหลด...</div>
+            <div class="location">กำลังโหลด...</div>
+          </div>
+        </div>
+        
+        <!-- Shift Selector -->
+        <div class="shift-container">
+          <div class="shift-wrapper">
+            <label for="shift">กะการทำงาน:</label>
+            <select id="shift">
+              <option value="">-</option>
+              <option value="D">D</option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
+            </select>
+          </div>
+          <div class="status-indicator">
+            <span class="status-dot status-active"></span>
+            พร้อมใช้งาน
+          </div>
+        </div>
+      </div>
+      
+      <!-- Map Card -->
+      <div class="map-card">
+        <div class="map-header">
+          <div class="map-title">ตำแหน่งปัจจุบัน</div>
+          <button id="refresh-location" class="refresh-btn">
+            <svg class="refresh-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+            </svg>
+            รีเฟรช
+          </button>
+        </div>
+        <div class="map-container">
+          <div id="map"></div>
+        </div>
+        <div class="location-details">กำลังโหลดข้อมูลตำแหน่ง...</div>
+      </div>
+
+      <!-- Time Card -->
+      <div class="time-card">
+        <div class="time-title">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          เวลาการทำงาน
+        </div>
+        <div class="info">
+          <div class="info-item" style="border-right: none;">
+            <span>เวลาเข้างาน</span>
+            <div class="value">00:00</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Action Button -->
+      <div class="action-button-container">
+        <button type="button" class="checkin-button">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+            <polyline points="10 17 15 12 10 7"></polyline>
+            <line x1="15" y1="12" x2="3" y2="12"></line>
+          </svg>
+          Check In
+        </button>
+      </div>
+    </div>
   </div>
 </body>
 </html>
