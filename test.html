@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NMB Driver Attendance Record</title>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
@@ -14,87 +14,37 @@
   <style>
 /* Reset & Base */
 * {
-  margin: 0; 
-  padding: 0; 
-  box-sizing: border-box;
+  margin: 0; padding: 0; box-sizing: border-box;
   font-family: 'Prompt', sans-serif;
 }
-
-:root {
-  --primary-color: #3B82F6;
-  --primary-dark: #2563EB;
-  --primary-light: #EFF6FF;
-  --secondary-color: #F59E0B;
-  --secondary-dark: #D97706;
-  --secondary-light: #FEF3C7;
-  --success-color: #10B981;
-  --success-dark: #059669;
-  --text-primary: #1F2937;
-  --text-secondary: #4B5563;
-  --text-light: #9CA3AF;
-  --background: #F9FAFB;
-  --card-bg: #FFFFFF;
-  --border-radius-sm: 8px;
-  --border-radius: 12px;
-  --border-radius-lg: 16px;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
-  --transition: all 0.3s ease;
-}
-
 body {
-  background: var(--background);
-  color: var(--text-primary);
+  background: #F7F9FC;
+  color: #333;
+  padding: 20px;
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 16px;
 }
-
 #main-page {
-  width: 100%;
-  max-width: 480px;
+  width: 97%;
+  max-width: 800px;
   min-height: 90vh;
-  background: var(--card-bg);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow);
-  overflow: hidden;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  padding: 25px;
   display: flex;
   flex-direction: column;
-  position: relative;
-}
-
-.app-header {
-  padding: 16px;
-  text-align: center;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
-}
-
-.app-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--primary-color);
-  margin-bottom: 4px;
-  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.current-datetime {
-  color: var(--text-light);
-  font-size: 0.85rem;
-}
-
-.app-content {
-  padding: 20px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
   gap: 20px;
   overflow-y: auto;
+}
+.current-datetime {
+  text-align: center;
+  margin-bottom: 0px;
+  color: #666;
+  font-size: 0.85rem;
+  font-weight: 300;
 }
 
 /* Loading overlay styles */
@@ -104,7 +54,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: var(--card-bg);
+  background: white;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -117,28 +67,21 @@ body {
 }
 
 .vehicle-image {
-  width: 120px;
-  margin-bottom: 24px;
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  width: 100px;
+  margin-bottom: 20px;
 }
 
 .spinner {
   display: flex;
   gap: 8px;
-  margin-top: 16px;
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   background: var(--primary-color);
   border-radius: 50%;
-  animation: bounce 0.5s ease-in-out infinite;
+  animation: bounce 0.6s ease-in-out infinite;
 }
 
 .dot:nth-child(2) {
@@ -151,145 +94,166 @@ body {
 
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Color scheme */
+:root {
+  --primary-color: #00B8D9;
+  --primary-light: #E0F7FA;
+  --secondary-color: #005571;
+  --success-color: #4CAF50;
+  --warning-color: #FF6B00;
+  --card-bg: #FFFFFF;
+  --border-radius: 16px;
+}
+
+/* Wrapper */
+.container {
+  width: 100%;
+  max-width: 90vw;
+  min-height: 85vh;
+  margin: 0 auto;
+  padding: 10px;
+}
+
+/* Card */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  padding: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
 /* Profile Card */
 .profile-card {
-  background: var(--card-bg);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  border: 1px solid rgba(0,0,0,0.04);
-}
-
-.profile-content {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 16px;
-  padding: 20px;
+  gap: 12px;
+  text-align: center;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  padding: 25px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
 }
 
-.avatar {
-  width: 64px; 
-  height: 64px;
+.profile-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  transform: rotate(45deg);
+}
+
+.profile-card .avatar {
+  width: 90px; 
+  height: 90px;
   border-radius: 50%;
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  border: 3px solid var(--primary-light);
+  border: 4px solid rgba(255,255,255,0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  z-index: 1;
 }
 
-.avatar img {
+.profile-card .avatar img {
   width: 100%; 
   height: 100%;
   object-fit: cover;
 }
 
-.user-info {
-  flex: 1;
+.profile-card .user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  z-index: 1;
 }
 
-.user-id {
-  font-size: 1.1rem;
+.profile-card .user-info .user-id {
+  font-size: 1.2rem;
   font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4px;
+  color: white;
 }
 
-.position, .location {
-  color: var(--text-secondary);
+.profile-card .position {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 400;
+}
+
+.profile-card .location {
   font-size: 0.85rem;
-  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* Shift Selector */
-.shift-container {
-  background: var(--primary-light);
-  padding: 10px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
 .shift-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  margin-top: 10px;
+  text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
 .shift-wrapper label {
   font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 400;
 }
 
 .shift-wrapper select {
-  padding: 6px 12px;
-  border-radius: var(--border-radius-sm);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  margin-left: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
   font-size: 0.9rem;
-  background: white;
-  color: var(--text-primary);
-  transition: var(--transition);
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23546E7A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  padding-right: 28px;
+  background: rgba(255,255,255,0.2);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.shift-wrapper select:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255,255,255,0.3);
 }
 
 .shift-wrapper select:focus {
   outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(0, 134, 195, 0.1);
+  border-color: rgba(255, 255, 255, 0.7);
 }
 
-/* Map Card */
-.map-card {
-  background: var(--card-bg);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  border: 1px solid rgba(0,0,0,0.04);
-}
-
-.map-header {
-  padding: 16px;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.map-title {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.refresh-btn {
-  background: var(--primary-light);
-  color: var(--primary-color);
-  border: none;
-  border-radius: var(--border-radius-sm);
-  padding: 6px 12px;
-  font-size: 0.85rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: var(--transition);
-}
-
-.refresh-btn:hover {
+.shift-wrapper select option {
   background: var(--primary-color);
   color: white;
 }
 
+/* Map Card */
+.map-card {
+  position: relative;
+  padding: 15px;
+}
+
 .map-container {
   width: 100%;
-  height: 240px;
+  height: 220px;
+  border-radius: 12px;
   overflow: hidden;
+  border: 2px solid #e0e0e0;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 #map {
@@ -297,120 +261,121 @@ body {
   height: 100%;
 }
 
-.location-details {
-  padding: 16px;
-  border-top: 1px solid rgba(0,0,0,0.05);
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-  line-height: 1.4;
+/* Status indicator */
+.status-indicator {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 12px;
+  padding: 15px;
+  background: var(--primary-light);
+  border-radius: 12px;
+  margin-top: 10px;
 }
 
-.location-details::before {
-  content: '';
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  background-color: var(--primary-color);
+.status-icon {
+  width: 28px;
+  height: 28px;
+  background: var(--success-color);
   border-radius: 50%;
-  margin-top: -1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 2s ease-in-out infinite;
 }
 
-/* Time Card */
-.time-card {
-  background: var(--card-bg);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-sm);
-  padding: 16px;
-  border: 1px solid rgba(0,0,0,0.04);
+.status-icon svg {
+  width: 16px;
+  height: 16px;
+  fill: white;
 }
 
-.time-title {
+.status-text {
   font-size: 1rem;
+  color: var(--secondary-color);
   font-weight: 500;
-  color: var(--text-primary);
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
-.info {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+  }
 }
 
-.info-item {
+/* Time Display */
+.time-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  flex: 1;
-  position: relative;
-}
-
-/* Removed border divider since we only have one time item now */
-
-.info-item span {
-  font-size: 0.85rem;
-  color: var(--text-light);
-  display: block;
-  margin-bottom: 6px;
-}
-
-.info-item .value {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-/* Action Button */
-.action-button-container {
-  margin-top: 8px;
-}
-
-.checkin-button {
-  display: flex;
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f5f5 0%, #fafafa 100%);
+  border-radius: 16px;
   width: 100%;
-  background: var(--primary-color);
-  color: white;
-  padding: 16px;
-  font-size: 1.1rem;
+}
+
+.time-label {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 400;
+  margin-bottom: 8px;
+}
+
+.time-value {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  letter-spacing: 2px;
+}
+
+/* Buttons */
+.checkin-button {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: #fff;
+  margin-top: 20px;
+  padding: 18px;
+  font-size: 1.15rem;
   font-weight: 600;
   border: none;
   border-radius: var(--border-radius);
   cursor: pointer;
-  transition: var(--transition);
-  text-align: center;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  box-shadow: 0 4px 15px rgba(0, 184, 217, 0.3);
   position: relative;
   overflow: hidden;
-  z-index: 1;
 }
 
 .checkin-button::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255,255,255,0.1);
-  transform: translateX(-100%);
-  transition: transform 0.4s ease;
-  z-index: -1;
-}
-
-.checkin-button:hover, .checkin-button:focus {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow);
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
 }
 
 .checkin-button:hover::before {
-  transform: translateX(0);
+  width: 300px;
+  height: 300px;
+}
+
+.checkin-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 184, 217, 0.4);
 }
 
 .checkin-button:active {
@@ -418,143 +383,75 @@ body {
 }
 
 .checkout-button {
-  background: var(--secondary-color);
+  background: linear-gradient(135deg, var(--warning-color), #E65100);
+  box-shadow: 0 4px 15px rgba(255, 107, 0, 0.3);
 }
 
-.checkout-button:hover, .checkout-button:focus {
-  background: var(--secondary-dark);
+.checkout-button:hover {
+  box-shadow: 0 6px 20px rgba(255, 107, 0, 0.4);
 }
 
-/* Checkout page styles */
+/* Checkout page */
 .checkout-page {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: var(--card-bg);
+  background: white;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px;
   z-index: 9999;
 }
 
-.checkout-header {
-  margin-bottom: 16px;
-  text-align: center;
-}
-
-.checkout-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-}
-
-.checkout-subtitle {
-  color: var(--text-secondary);
-  font-size: 1rem;
-}
-
-.checkout-card {
-  background: var(--primary-light);
-  border-radius: var(--border-radius);
-  padding: 24px;
-  width: 100%;
-  max-width: 360px;
-  box-shadow: var(--shadow);
-  text-align: center;
-  margin: 24px 0;
-}
-
 .checkout-info {
-  margin: 16px 0;
-}
-
-.checkout-info .label {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  margin-bottom: 4px;
-}
-
-.checkout-info .value {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: var(--text-primary);
+  text-align: center;
+  color: #666;
+  font-size: 1rem;
+  margin: 20px 0;
+  line-height: 1.6;
 }
 
 .special-checkout-button {
-  background: var(--secondary-color);
+  background: linear-gradient(135deg, var(--warning-color), #E65100);
   color: white;
-  padding: 16px 40px;
-  border-radius: var(--border-radius);
+  padding: 16px 50px;
+  border-radius: 16px;
   border: none;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 600;
   cursor: pointer;
-  transition: var(--transition);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(255, 107, 0, 0.3);
 }
 
 .special-checkout-button:hover {
-  background: var(--secondary-dark);
   transform: translateY(-2px);
-  box-shadow: var(--shadow);
+  box-shadow: 0 6px 20px rgba(255, 107, 0, 0.4);
 }
 
-.special-checkout-button:active {
-  transform: translateY(0);
-}
-
-/* Responsive adjustments */
+/* Responsive */
 @media (max-width: 480px) {
-  .app-content {
-    padding: 16px;
-    gap: 16px;
+  #main-page {
+    padding: 20px;
+    gap: 15px;
   }
   
-  .profile-content {
-    padding: 16px;
+  .container {
+    width: 95%;
+    max-width: 95vw;
+    padding: 5px;
   }
   
-  .map-container {
-    height: 200px;
+  .profile-card {
+    padding: 20px;
   }
-}
-
-/* Custom Animate Icon */
-.refresh-icon {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  transition: transform 0.3s ease;
-}
-
-.refresh-btn:hover .refresh-icon {
-  transform: rotate(180deg);
-}
-
-/* Add utility for status indicators */
-.status-dot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-right: 6px;
-}
-
-.status-active {
-  background-color: var(--success-color);
-}
-
-.disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  
+  .time-value {
+    font-size: 2rem;
+  }
 }
 </style>
   <script>
@@ -609,11 +506,11 @@ async function initializeLiff() {
             document.getElementById('shift').disabled = true;
           }
           if (workingResult.startTime) {
-            document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime;
+            document.querySelector('.time-value').textContent = workingResult.startTime;
             const location = workingResult.location || workingResult.nearPlace;
             if (location) {
-              document.getElementById('checkout-time-value').textContent = workingResult.startTime;
-              document.getElementById('checkout-place-value').textContent = location;
+              document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${workingResult.startTime}`;
+              document.getElementById('checkout-place').textContent = location;
             }
           }
         } else {
@@ -627,18 +524,8 @@ async function initializeLiff() {
 
         // ผูก event listener เพียงครั้งเดียว
         checkInButton.addEventListener('click', checkIn);
-        document.getElementById('refresh-location').addEventListener('click', updateLocation);
       } else {
-        Swal.fire({
-          title: 'ไม่พบข้อมูลลงทะเบียน',
-          text: 'กรุณาลงทะเบียนก่อนใช้งาน',
-          icon: 'warning',
-          confirmButtonText: 'ไปหน้าลงทะเบียน'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            window.location.href = "https://liff.line.me/2006809014-zqJWBVbA";
-          }
-        });
+        alert("UID not registered. Please register.");
       }
     } else {
       liff.login();
@@ -655,6 +542,7 @@ async function initializeLiff() {
     hideLoading();
   }
 }
+
 
 async function checkRegistration(uid, profile) {
   try {
@@ -683,12 +571,13 @@ async function checkRegistration(uid, profile) {
   }
 }
 
+
 function showSpecialCheckout(startTime, nearPlace) {
-  console.log('Showing special checkout with:', { startTime, nearPlace }); // Debug log
+  console.log('Showing special checkout with:', { startTime, nearPlace });
   
   if (startTime && nearPlace) {
-    document.getElementById('checkout-time-value').textContent = startTime;
-    document.getElementById('checkout-place-value').textContent = nearPlace;
+    document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${startTime}`;
+    document.getElementById('checkout-place').textContent = nearPlace;
     document.getElementById('special-checkout').style.display = 'flex';
     document.getElementById('main-page').style.display = 'none';
   }
@@ -723,35 +612,11 @@ function switchToNormalPage() {
       }).addTo(map);
     }
 
-async function getLocationDetails(lat, lng) {
-  try {
-    const response = await fetch(`${SCRIPT_URL}?action=getPlace&lat=${lat}&lng=${lng}`);
-    const result = await response.json();
-    
-    if (result.error) {
-      console.error('Error from API:', result.error);
-      return 'พิกัดปัจจุบัน';
-    }
-    
-    return result.displayText;
-  } catch (error) {
-    console.error('Error getting location details:', error);
-    return 'พิกัดปัจจุบัน';
-  }
-}
-
 function updateLocation() {
-  // ปิดปุ่ม Check-in/Check-out ระหว่างโหลดข้อมูล
+  // เปิดปุ่ม Check-in/Check-out และแสดงสถานะพร้อม
   const checkButton = document.querySelector('.checkin-button');
-  const refreshButton = document.getElementById('refresh-location');
+  const statusText = document.querySelector('.status-text');
   
-  checkButton.disabled = true;
-  checkButton.classList.add('disabled');
-  refreshButton.disabled = true;
-  refreshButton.classList.add('disabled');
-  
-  document.querySelector('.location-details').textContent = 'กำลังโหลดข้อมูลตำแหน่ง...';
-
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(async position => {
       userLocation.lat = position.coords.latitude;
@@ -766,61 +631,28 @@ function updateLocation() {
         marker = L.marker([userLocation.lat, userLocation.lng]).addTo(map);
       }
 
-      try {
-        // เรียกใช้ API getPlace
-        const locationInfo = await getLocationDetails(userLocation.lat, userLocation.lng);
-        document.querySelector('.location-details').textContent = locationInfo;
-        
-        // เปิดปุ่มหลังจากโหลดข้อมูลสำเร็จ
-        checkButton.disabled = false;
-        checkButton.classList.remove('disabled');
-        refreshButton.disabled = false;
-        refreshButton.classList.remove('disabled');
-      } catch (error) {
-        console.error('Error getting location details:', error);
-        document.querySelector('.location-details').textContent = 'ไม่สามารถโหลดข้อมูลสถานที่ได้ กรุณาลองใหม่';
-        
-        // กรณีเกิดข้อผิดพลาด เปิดปุ่ม refresh แต่ยังปิดปุ่ม check
-        checkButton.disabled = true;
-        checkButton.classList.add('disabled');
-        refreshButton.disabled = false;
-        refreshButton.classList.remove('disabled');
-      }
+      // แสดงสถานะพร้อมใช้งาน
+      statusText.textContent = 'ระบบพร้อมใช้งาน';
+      checkButton.disabled = false;
+      checkButton.style.opacity = '1';
+      
     }, error => {
       console.error('Error getting location:', error);
-      document.querySelector('.location-details').textContent = 'ไม่สามารถระบุตำแหน่งได้ กรุณาอนุญาตการเข้าถึงตำแหน่ง';
-      
+      statusText.textContent = 'ไม่สามารถระบุตำแหน่งได้';
       checkButton.disabled = true;
-      checkButton.classList.add('disabled');
-      refreshButton.disabled = false;
-      refreshButton.classList.remove('disabled');
-      
-      Swal.fire({
-        title: 'ไม่สามารถระบุตำแหน่งได้',
-        text: 'กรุณาอนุญาตการเข้าถึงตำแหน่งของคุณในการตั้งค่าเบราว์เซอร์',
-        icon: 'warning',
-        confirmButtonText: 'ตกลง'
-      });
+      checkButton.style.opacity = '0.5';
     });
   } else {
-    document.querySelector('.location-details').textContent = 'Browser ของคุณไม่รองรับการระบุตำแหน่ง';
-    
+    statusText.textContent = 'Browser ไม่รองรับการระบุตำแหน่ง';
     checkButton.disabled = true;
-    checkButton.classList.add('disabled');
-    refreshButton.disabled = true;
-    refreshButton.classList.add('disabled');
-    
-    Swal.fire({
-      title: 'ไม่รองรับ',
-      text: 'เบราว์เซอร์ของคุณไม่รองรับการระบุตำแหน่ง กรุณาใช้เบราว์เซอร์อื่น',
-      icon: 'error',
-      confirmButtonText: 'ตกลง'
-    });
+    checkButton.style.opacity = '0.5';
   }
 }
 
     function setDefaultDateTime() {
       const now = new Date();
+      const dateElement = document.querySelector('.datetime .date');
+      const timeElement = document.querySelector('.datetime .time');
       const currentDateTimeElement = document.querySelector('.current-datetime');
 
       const day = String(now.getDate()).padStart(2, '0');
@@ -846,7 +678,21 @@ function updateLocation() {
   </script>
 </head>
 <body>
-  <!-- Loading Overlay -->
+
+    <!-- เพิ่มหน้า Checkout พิเศษ -->
+  <div id="special-checkout" class="checkout-page" style="display: none;">
+    <img src="https://happyworkplace.github.io/microbus/picture/microbus.gif" 
+         alt="Vehicle" class="vehicle-image">
+    <div class="checkout-info">
+      <span id="checkout-time"></span><br>
+      <span id="checkout-place"></span>
+    </div>
+<button type="button" class="special-checkout-button" onclick="switchToNormalPage()">
+  Check Out
+</button>
+  </div>
+<!-- หน้าปกติ -->
+<div id="main-page">
   <div class="loading-overlay">
     <img src="https://happyworkplace.github.io/microbus/picture/microbus.gif" alt="Vehicle" class="vehicle-image">
     <div class="spinner">
@@ -856,138 +702,54 @@ function updateLocation() {
     </div>
   </div>
 
-  <!-- Special Checkout Page -->
-  <div id="special-checkout" class="checkout-page" style="display: none;">
-    <div class="checkout-header">
-      <div class="checkout-title">ยินดีต้อนรับกลับ</div>
-      <div class="checkout-subtitle">คุณได้ Check-in ไว้แล้ว</div>
+  <div class="container">
+    <div class="current-datetime"> - -  - -</div>
+    <!-- Profile Card -->
+    <div class="card profile-card">
+      <div class="avatar">
+        <img src="https://ui-avatars.com/api/?name=User+Avatar" alt="User Avatar">
+      </div>
+      <div class="user-info">
+        <div class="user-id">กำลังโหลด...</div>
+        <div class="position">กำลังโหลด...</div>
+        <div class="location">กำลังโหลด...</div>
+      </div>
+      <!-- Shift Selector -->
+      <div class="shift-wrapper">
+        <label for="shift">กะการทำงาน:</label>
+        <select id="shift">
+          <option value="">-</option>
+          <option value="D">D</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+        </select>
+      </div>
     </div>
-    
-    <img src="https://happyworkplace.github.io/microbus/picture/microbus.gif" 
-         alt="Vehicle" class="vehicle-image">
-         
-    <div class="checkout-card">
-      <div class="checkout-info">
-        <div class="label">เวลาที่ Check-in</div>
-        <div class="value" id="checkout-time-value">00:00</div>
+    <!-- Map Card -->
+    <div class="card map-card">
+      <div class="map-container">
+        <div id="map"></div>
       </div>
-      <div class="checkout-info">
-        <div class="label">สถานที่</div>
-        <div class="value" id="checkout-place-value">-</div>
-      </div>
-    </div>
-    
-    <button type="button" class="special-checkout-button" onclick="switchToNormalPage()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="9 10 4 15 9 20"></polyline>
-        <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
-      </svg>
-      Check Out
-    </button>
-  </div>
-
-  <!-- Main Page -->
-  <div id="main-page">
-    <!-- Header -->
-    <div class="app-header">
-      <div class="app-title">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-          <line x1="16" y1="2" x2="16" y2="6"></line>
-          <line x1="8" y1="2" x2="8" y2="6"></line>
-          <line x1="3" y1="10" x2="21" y2="10"></line>
-          <path d="M8 14h.01"></path>
-          <path d="M12 14h.01"></path>
-          <path d="M16 14h.01"></path>
-          <path d="M8 18h.01"></path>
-          <path d="M12 18h.01"></path>
-          <path d="M16 18h.01"></path>
-        </svg>
-        NMB Driver Attendance
-      </div>
-      <div class="current-datetime">กำลังโหลด...</div>
-    </div>
-    
-    <!-- Main Content -->
-    <div class="app-content">
-      <!-- Profile Card -->
-      <div class="profile-card">
-        <div class="profile-content">
-          <div class="avatar">
-            <img src="https://ui-avatars.com/api/?name=User+Avatar" alt="User Avatar">
-          </div>
-          <div class="user-info">
-            <div class="user-id">กำลังโหลด...</div>
-            <div class="position">กำลังโหลด...</div>
-            <div class="location">กำลังโหลด...</div>
-          </div>
-        </div>
-        
-        <!-- Shift Selector -->
-        <div class="shift-container">
-          <div class="shift-wrapper">
-            <label for="shift">กะการทำงาน:</label>
-            <select id="shift">
-              <option value="">-</option>
-              <option value="D">D</option>
-              <option value="A">A</option>
-              <option value="B">B</option>
-              <option value="C">C</option>
-            </select>
-          </div>
-          <div class="status-indicator">
-            <span class="status-dot status-active"></span>
-            พร้อมใช้งาน
-          </div>
-        </div>
-      </div>
-      
-      <!-- Map Card -->
-      <div class="map-card">
-        <div class="map-header">
-          <div class="map-title">ตำแหน่งปัจจุบัน</div>
-          <button id="refresh-location" class="refresh-btn">
-            <svg class="refresh-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-            </svg>
-            รีเฟรช
-          </button>
-        </div>
-        <div class="map-container">
-          <div id="map"></div>
-        </div>
-        <div class="location-details">กำลังโหลดข้อมูลตำแหน่ง...</div>
-      </div>
-
-      <!-- Time Card -->
-      <div class="time-card">
-        <div class="time-title">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
+      <!-- Status Indicator แทนที่ location details -->
+      <div class="status-indicator">
+        <div class="status-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
           </svg>
-          เวลาการทำงาน
         </div>
-        <div class="info">
-          <div class="info-item" style="border-right: none;">
-            <span>เวลาเข้างาน</span>
-            <div class="value">00:00</div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Action Button -->
-      <div class="action-button-container">
-        <button type="button" class="checkin-button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-            <polyline points="10 17 15 12 10 7"></polyline>
-            <line x1="15" y1="12" x2="3" y2="12"></line>
-          </svg>
-          Check In
-        </button>
+        <span class="status-text">กำลังตรวจสอบตำแหน่ง...</span>
       </div>
     </div>
+
+    <!-- Time Display (เอา Time-Out ออก) -->
+    <div class="card time-display">
+      <div class="time-label">เวลา Check-in</div>
+      <div class="time-value">00:00</div>
+    </div>
+    
+    <button type="button" class="checkin-button">Check In</button>
   </div>
+</div>
 </body>
 </html>
