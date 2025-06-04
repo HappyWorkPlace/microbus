@@ -616,6 +616,7 @@ function updateLocation() {
   // เปิดปุ่ม Check-in/Check-out และแสดงสถานะพร้อม
   const checkButton = document.querySelector('.checkin-button');
   const statusText = document.querySelector('.status-text');
+  const locationDetails = document.querySelector('.location-details');
   
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(async position => {
@@ -633,17 +634,21 @@ function updateLocation() {
 
       // แสดงสถานะพร้อมใช้งาน
       statusText.textContent = 'ระบบพร้อมใช้งาน';
+      // อัพเดท hidden location details ด้วยพิกัด
+      locationDetails.textContent = `พิกัด: ${userLocation.lat.toFixed(6)}, ${userLocation.lng.toFixed(6)}`;
       checkButton.disabled = false;
       checkButton.style.opacity = '1';
       
     }, error => {
       console.error('Error getting location:', error);
       statusText.textContent = 'ไม่สามารถระบุตำแหน่งได้';
+      locationDetails.textContent = 'ไม่สามารถระบุตำแหน่งได้';
       checkButton.disabled = true;
       checkButton.style.opacity = '0.5';
     });
   } else {
     statusText.textContent = 'Browser ไม่รองรับการระบุตำแหน่ง';
+    locationDetails.textContent = 'Browser ไม่รองรับการระบุตำแหน่ง';
     checkButton.disabled = true;
     checkButton.style.opacity = '0.5';
   }
@@ -740,6 +745,8 @@ function updateLocation() {
         </div>
         <span class="status-text">กำลังตรวจสอบตำแหน่ง...</span>
       </div>
+      <!-- Hidden location details for JavaScript compatibility -->
+      <div class="location-details" style="display: none;">พิกัดปัจจุบัน</div>
     </div>
 
     <!-- Time Display (เอา Time-Out ออก) -->
