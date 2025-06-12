@@ -10,6 +10,7 @@
   <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+  <script src="checkin_out.js"></script>
   <style>
 /* Reset & Base */
 * {
@@ -431,62 +432,6 @@ body {
   box-shadow: 0 6px 20px rgba(255, 107, 0, 0.4);
 }
 
-/* Custom styles for improved SweetAlert2 */
-.swal2-popup {
-  font-family: 'Prompt', sans-serif !important;
-  border-radius: 16px !important;
-}
-
-.swal2-title {
-  font-size: 1.5rem !important;
-  font-weight: 600 !important;
-  color: #333 !important;
-}
-
-.swal2-html-container {
-  font-size: 1rem !important;
-  line-height: 1.6 !important;
-}
-
-.checkout-time-info {
-  background: #f5f5f5;
-  padding: 15px;
-  border-radius: 12px;
-  margin: 10px 0;
-}
-
-.checkout-time-info .time-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  font-size: 0.95rem;
-}
-
-.checkout-time-info .time-item:not(:last-child) {
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.checkout-time-info .time-label {
-  color: #666;
-  font-weight: 400;
-}
-
-.checkout-time-info .time-value {
-  color: #333;
-  font-weight: 600;
-}
-
-.checkout-time-info .time-value.primary {
-  color: var(--primary-color);
-  font-size: 1.1rem;
-}
-
-.checkout-time-info .time-value.warning {
-  color: var(--warning-color);
-  font-size: 1.1rem;
-}
-
 /* Responsive */
 @media (max-width: 480px) {
   #main-page {
@@ -523,9 +468,6 @@ body {
     function hideLoading() {
       document.querySelector('.loading-overlay').classList.add('hidden');
     }
-
-    // เก็บเวลา check-in เป็น global variable
-    let checkInTime = null;
 
 async function initializeLiff() {
   try {
@@ -564,8 +506,6 @@ async function initializeLiff() {
             document.getElementById('shift').disabled = true;
           }
           if (workingResult.startTime) {
-            // เก็บเวลา check-in
-            checkInTime = workingResult.startTime;
             document.querySelector('.time-value').textContent = workingResult.startTime;
             const location = workingResult.location || workingResult.nearPlace;
             if (location) {
@@ -636,8 +576,6 @@ function showSpecialCheckout(startTime, nearPlace) {
   console.log('Showing special checkout with:', { startTime, nearPlace });
   
   if (startTime && nearPlace) {
-    // เก็บเวลา check-in
-    checkInTime = startTime;
     document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${startTime}`;
     document.getElementById('checkout-place').textContent = nearPlace;
     document.getElementById('special-checkout').style.display = 'flex';
@@ -741,147 +679,6 @@ function updateLocation() {
 
     function startRealTimeClock() {
       setInterval(setDefaultDateTime, 1000);
-    }
-
-    // ฟังก์ชันคำนวณระยะเวลาการทำงาน
-    function calculateWorkingDuration(startTime, endTime) {
-      // แปลงเวลาจาก string HH:MM เป็นนาที
-      const [startHour, startMin] = startTime.split(':').map(Number);
-      const [endHour, endMin] = endTime.split(':').map(Number);
-      
-      const startTotalMinutes = startHour * 60 + startMin;
-      const endTotalMinutes = endHour * 60 + endMin;
-      
-      let durationMinutes = endTotalMinutes - startTotalMinutes;
-      
-      // ถ้าเวลาสิ้นสุดน้อยกว่าเวลาเริ่มต้น (ข้ามวัน)
-      if (durationMinutes < 0) {
-        durationMinutes += 24 * 60; // เพิ่ม 24 ชั่วโมง
-      }
-      
-      const hours = Math.floor(durationMinutes / 60);
-      const minutes = durationMinutes % 60;
-      
-      return `${hours} ชั่วโมง ${minutes} นาที`;
-    }
-
-    // ฟังก์ชัน checkIn ที่ปรับปรุงใหม่
-    async function checkIn() {
-      const button = document.querySelector('.checkin-button');
-      const isCheckOut = button.classList.contains('checkout-button');
-      
-      if (isCheckOut) {
-        // เป็นการ Check Out
-        const now = new Date();
-        const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-        const workingDuration = checkInTime ? calculateWorkingDuration(checkInTime, currentTime) : 'ไม่สามารถคำนวณได้';
-        
-        // แสดง popup ที่ปรับปรุงใหม่
-        const result = await Swal.fire({
-          title: 'ยืนยันการ Check-out?',
-          html: `
-            <div class="checkout-time-info">
-              <div class="time-item">
-                <span class="time-label">เวลา Check-in:</span>
-                <span class="time-value">${checkInTime || '-'}</span>
-              </div>
-              <div class="time-item">
-                <span class="time-label">เวลา Check-out:</span>
-                <span class="time-value warning">${currentTime}</span>
-              </div>
-              <div class="time-item">
-                <span class="time-label">ระยะเวลาทำงาน:</span>
-                <span class="time-value primary">${workingDuration}</span>
-              </div>
-            </div>
-          `,
-          icon: 'question',
-          showCancelButton: true,
-          confirmButtonText: 'ยืนยัน',
-          cancelButtonText: 'ยกเลิก',
-          confirmButtonColor: '#FF6B00',
-          cancelButtonColor: '#6c757d',
-          reverseButtons: true
-        });
-        
-        if (result.isConfirmed) {
-          // ดำเนินการ check-out ตามปกติ
-          await performCheckOut();
-        }
-      } else {
-        // เป็นการ Check In ตามปกติ
-        await performCheckIn();
-      }
-    }
-    
-    // แยกฟังก์ชันการทำงานจริง
-    async function performCheckIn() {
-      // โค้ด check-in เดิม
-      showLoading();
-      try {
-        const profile = await liff.getProfile();
-        const uid = liff.getContext().userId;
-        const shift = document.getElementById('shift').value;
-        
-        if (!shift) {
-          hideLoading();
-          await Swal.fire({
-            title: 'กรุณาเลือกกะการทำงาน',
-            text: 'โปรดเลือกกะการทำงานก่อน Check-in',
-            icon: 'warning',
-            confirmButtonText: 'ตกลง'
-          });
-          return;
-        }
-        
-        // เก็บเวลา check-in
-        const now = new Date();
-        checkInTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-        
-        // ดำเนินการ check-in ต่อ...
-        // (โค้ดส่วนที่เหลือของ check-in)
-        
-      } catch (error) {
-        console.error('Check-in error:', error);
-        await Swal.fire({
-          title: 'เกิดข้อผิดพลาด',
-          text: 'ไม่สามารถ Check-in ได้ กรุณาลองใหม่อีกครั้ง',
-          icon: 'error',
-          confirmButtonText: 'ตกลง'
-        });
-      } finally {
-        hideLoading();
-      }
-    }
-    
-    async function performCheckOut() {
-      showLoading();
-      try {
-        // โค้ด check-out เดิม
-        const profile = await liff.getProfile();
-        const uid = liff.getContext().userId;
-        const jobNo = document.querySelector('.checkin-button').dataset.jobNo;
-        
-        // ดำเนินการ check-out...
-        // (โค้ดส่วนที่เหลือของ check-out)
-        
-        // รีเซ็ตค่าต่างๆ หลัง check-out สำเร็จ
-        checkInTime = null;
-        document.querySelector('.checkin-button').textContent = 'Check In';
-        document.querySelector('.checkin-button').classList.remove('checkout-button');
-        document.getElementById('shift').disabled = false;
-        
-      } catch (error) {
-        console.error('Check-out error:', error);
-        await Swal.fire({
-          title: 'เกิดข้อผิดพลาด',
-          text: 'ไม่สามารถ Check-out ได้ กรุณาลองใหม่อีกครั้ง',
-          icon: 'error',
-          confirmButtonText: 'ตกลง'
-        });
-      } finally {
-        hideLoading();
-      }
     }
   </script>
 </head>
