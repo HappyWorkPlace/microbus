@@ -28,22 +28,23 @@ body {
 #main-page {
   width: 97%;
   max-width: 800px;
-  min-height: 90vh; /* ปรับให้สูงเกือบเต็มจอ */
+  min-height: 90vh;
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  padding: 25px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px;
+  gap: 20px;
   overflow-y: auto;
 }
 .current-datetime {
   text-align: center;
   margin-bottom: 0px;
   color: #666;
-  font-size: 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 300;
 }
 
 /* Loading overlay styles */
@@ -76,11 +77,11 @@ body {
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   background: var(--primary-color);
   border-radius: 50%;
-  animation: bounce 0.5s ease-in-out infinite;
+  animation: bounce 0.6s ease-in-out infinite;
 }
 
 .dot:nth-child(2) {
@@ -93,32 +94,41 @@ body {
 
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+  50% { transform: translateY(-10px); }
 }
 
-/* ตัวอย่างสีหลัก (Primary Color) และสีรอง (Secondary/Accent) */
+/* Color scheme */
 :root {
   --primary-color: #00B8D9;
+  --primary-light: #E0F7FA;
   --secondary-color: #005571;
+  --success-color: #4CAF50;
+  --warning-color: #FF6B00;
   --card-bg: #FFFFFF;
-  --border-radius: 12px;
+  --border-radius: 16px;
 }
 
-/* Wrapper หลัก - Updated for nearly full screen */
+/* Wrapper */
 .container {
-  width: 90%;
+  width: 100%;
   max-width: 90vw;
-  min-height: 90vh;
+  min-height: 85vh;
   margin: 0 auto;
   padding: 10px;
 }
 
-/* Card ทั่วไป */
+/* Card */
 .card {
   background: var(--card-bg);
   border-radius: var(--border-radius);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-  padding: 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  padding: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
 /* Profile Card */
@@ -126,79 +136,103 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   text-align: center;
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   color: white;
-  padding: 20px;
-  margin-bottom: 15px;
+  padding: 25px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  transform: rotate(45deg);
 }
 
 .profile-card .avatar {
-  width: 80px; height: 80px;
+  width: 90px; 
+  height: 90px;
   border-radius: 50%;
   overflow: hidden;
-  border: 3px solid white;
+  border: 4px solid rgba(255,255,255,0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  z-index: 1;
 }
 
 .profile-card .avatar img {
-  width: 100%; height: 100%;
+  width: 100%; 
+  height: 100%;
   object-fit: cover;
 }
 
 .profile-card .user-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  position: relative;
+  z-index: 1;
 }
 
 .profile-card .user-info .user-id {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 600;
   color: white;
 }
 
-.profile-card .location .position {
-  font-size: 0.2rem;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-/* Date Time Display */
-.datetime {
-  text-align: center;
-  margin: 10px 0;
-}
-
-.datetime .date {
+.profile-card .position {
   font-size: 0.9rem;
-  color: #666;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 400;
 }
 
-.datetime .time {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--primary-color);
+.profile-card .location {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* Shift Selector */
 .shift-wrapper {
-  margin-top: 8px;
+  margin-top: 10px;
   text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
 .shift-wrapper label {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.9);
+  font-weight: 400;
 }
 
 .shift-wrapper select {
-  margin-left: 8px;
-  padding: 6px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  font-size: 0.85rem;
-  background: transparent;
+  margin-left: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  font-size: 0.9rem;
+  background: rgba(255,255,255,0.2);
   color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.shift-wrapper select:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255,255,255,0.3);
+}
+
+.shift-wrapper select:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.7);
 }
 
 .shift-wrapper select option {
@@ -209,15 +243,17 @@ body {
 /* Map Card */
 .map-card {
   position: relative;
+  padding: 15px;
 }
 
 .map-container {
   width: 100%;
-  height: 200px;
-  border-radius: var(--border-radius);
+  height: 220px;
+  border-radius: 12px;
   overflow: hidden;
-  border: 1px solid #ccc;
-  margin: 10px 0;
+  border: 2px solid #e0e0e0;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 #map {
@@ -225,72 +261,137 @@ body {
   height: 100%;
 }
 
-/* Location details adjustments */
-.location-details {
-  margin: 12px 0;
-  color: #555;
-  font-size: 0.9rem;
-  text-align: center;
-  padding: 0 10px;
-  line-height: 1.4;
-}
-
-
-/* Time Card */
-.info {
+/* Status indicator */
+.status-indicator {
   display: flex;
-  justify-content: space-around;
   align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 15px;
+  background: var(--primary-light);
+  border-radius: 12px;
+  margin-top: 10px;
 }
 
-.info-item {
-  text-align: center;
+.status-icon {
+  width: 28px;
+  height: 28px;
+  background: var(--success-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 2s ease-in-out infinite;
 }
 
-.info-item span {
-  font-size: 0.8rem;
-  color: #666;
+.status-icon svg {
+  width: 16px;
+  height: 16px;
+  fill: white;
 }
 
-.info-item .value {
+.status-text {
   font-size: 1rem;
-  font-weight: 600;
-  color: #333;
-  margin-top: 4px;
+  color: var(--secondary-color);
+  font-weight: 500;
 }
 
-/* ปุ่มหลัก */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+  }
+}
+
+/* Time Display */
+.time-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f5f5 0%, #fafafa 100%);
+  border-radius: 16px;
+  width: 100%;
+}
+
+.time-label {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 400;
+  margin-bottom: 8px;
+}
+
+.time-value {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  letter-spacing: 2px;
+}
+
+/* Buttons */
 .checkin-button {
   display: block;
   width: 100%;
   text-align: center;
-  background: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   color: #fff;
-  margin-top: 15px;
-  padding: 15px;
-  font-size: 1.1rem;
+  margin-top: 20px;
+  padding: 18px;
+  font-size: 1.15rem;
   font-weight: 600;
-  padding: 12px;
   border: none;
   border-radius: var(--border-radius);
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
   text-decoration: none;
+  box-shadow: 0 4px 15px rgba(0, 184, 217, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.checkin-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.checkin-button:hover::before {
+  width: 300px;
+  height: 300px;
 }
 
 .checkin-button:hover {
-  background: var(--secondary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 184, 217, 0.4);
+}
+
+.checkin-button:active {
+  transform: translateY(0);
 }
 
 .checkout-button {
-  background: #FF6B00;  /* สีส้ม */
+  background: linear-gradient(135deg, var(--warning-color), #E65100);
+  box-shadow: 0 4px 15px rgba(255, 107, 0, 0.3);
 }
 
 .checkout-button:hover {
-  background: #E65100;  /* สีส้มเข้มเมื่อ hover */
+  box-shadow: 0 6px 20px rgba(255, 107, 0, 0.4);
 }
 
-/* Checkout page styles */
+/* Checkout page */
 .checkout-page {
   position: fixed;
   top: 0;
@@ -308,27 +409,36 @@ body {
 .checkout-info {
   text-align: center;
   color: #666;
-  font-size: 0.7rem;
+  font-size: 1rem;
   margin: 20px 0;
+  line-height: 1.6;
 }
 
 .special-checkout-button {
-  background: #FF6B00;
+  background: linear-gradient(135deg, var(--warning-color), #E65100);
   color: white;
-  padding: 12px 40px;
-  border-radius: 12px;
+  padding: 16px 50px;
+  border-radius: 16px;
   border: none;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(255, 107, 0, 0.3);
 }
 
-.-button:hover {
-  background: #E65100;
+.special-checkout-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 0, 0.4);
 }
-/* Responsive adjustments */
+
+/* Responsive */
 @media (max-width: 480px) {
+  #main-page {
+    padding: 20px;
+    gap: 15px;
+  }
+  
   .container {
     width: 95%;
     max-width: 95vw;
@@ -336,7 +446,11 @@ body {
   }
   
   .profile-card {
-    padding: 15px;
+    padding: 20px;
+  }
+  
+  .time-value {
+    font-size: 2rem;
   }
 }
 </style>
@@ -392,7 +506,7 @@ async function initializeLiff() {
             document.getElementById('shift').disabled = true;
           }
           if (workingResult.startTime) {
-            document.querySelector('.info-item:first-child .value').textContent = workingResult.startTime;
+            document.querySelector('.time-value').textContent = workingResult.startTime;
             const location = workingResult.location || workingResult.nearPlace;
             if (location) {
               document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${workingResult.startTime}`;
@@ -459,7 +573,7 @@ async function checkRegistration(uid, profile) {
 
 
 function showSpecialCheckout(startTime, nearPlace) {
-  console.log('Showing special checkout with:', { startTime, nearPlace }); // Debug log
+  console.log('Showing special checkout with:', { startTime, nearPlace });
   
   if (startTime && nearPlace) {
     document.getElementById('checkout-time').textContent = `คุณได้ Check-in ไว้เมื่อ ${startTime}`;
@@ -497,31 +611,13 @@ function switchToNormalPage() {
         attribution: '© OpenStreetMap contributors'
       }).addTo(map);
     }
-// 2. แก้ไขฟังก์ชัน getGoogleLocationDetails เป็น
-async function getLocationDetails(lat, lng) {
-  try {
-    const response = await fetch(`${SCRIPT_URL}?action=getPlace&lat=${lat}&lng=${lng}`);
-    const result = await response.json();
-    
-    if (result.error) {
-      console.error('Error from API:', result.error);
-      return 'พิกัดปัจจุบัน';
-    }
-    
-    return result.displayText;
-  } catch (error) {
-    console.error('Error getting location details:', error);
-    return 'พิกัดปัจจุบัน';
-  }
-}
 
 function updateLocation() {
-  // ปิดปุ่ม Check-in/Check-out ระหว่างโหลดข้อมูล
+  // เปิดปุ่ม Check-in/Check-out และแสดงสถานะพร้อม
   const checkButton = document.querySelector('.checkin-button');
-  checkButton.disabled = true;
-  checkButton.style.opacity = '0.5';
-  document.querySelector('.location-details').textContent = 'กำลังโหลดข้อมูลตำแหน่ง...';
-
+  const statusText = document.querySelector('.status-text');
+  const locationDetails = document.querySelector('.location-details');
+  
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(async position => {
       userLocation.lat = position.coords.latitude;
@@ -536,33 +632,28 @@ function updateLocation() {
         marker = L.marker([userLocation.lat, userLocation.lng]).addTo(map);
       }
 
-      try {
-        // เรียกใช้ API getPlace
-        const locationInfo = await getLocationDetails(userLocation.lat, userLocation.lng);
-        document.querySelector('.location-details').textContent = locationInfo;
-        
-        // เปิดปุ่มหลังจากโหลดข้อมูลสำเร็จ
-        checkButton.disabled = false;
-        checkButton.style.opacity = '1';
-      } catch (error) {
-        console.error('Error getting location details:', error);
-        document.querySelector('.location-details').textContent = 'ไม่สามารถโหลดข้อมูลสถานที่ได้ กรุณาลองใหม่';
-        // กรณีเกิดข้อผิดพลาด ยังคงปิดปุ่มไว้
-        checkButton.disabled = true;
-        checkButton.style.opacity = '0.5';
-      }
+      // แสดงสถานะพร้อมใช้งาน
+      statusText.textContent = 'ระบบพร้อมใช้งาน';
+      // อัพเดท hidden location details ด้วยพิกัด
+      locationDetails.textContent = `พิกัด: ${userLocation.lat.toFixed(6)}, ${userLocation.lng.toFixed(6)}`;
+      checkButton.disabled = false;
+      checkButton.style.opacity = '1';
+      
     }, error => {
       console.error('Error getting location:', error);
-      document.querySelector('.location-details').textContent = 'ไม่สามารถระบุตำแหน่งได้ กรุณาอนุญาตการเข้าถึงตำแหน่ง';
+      statusText.textContent = 'ไม่สามารถระบุตำแหน่งได้';
+      locationDetails.textContent = 'ไม่สามารถระบุตำแหน่งได้';
       checkButton.disabled = true;
       checkButton.style.opacity = '0.5';
     });
   } else {
-    document.querySelector('.location-details').textContent = 'Browser ของคุณไม่รองรับการระบุตำแหน่ง';
+    statusText.textContent = 'Browser ไม่รองรับการระบุตำแหน่ง';
+    locationDetails.textContent = 'Browser ไม่รองรับการระบุตำแหน่ง';
     checkButton.disabled = true;
     checkButton.style.opacity = '0.5';
   }
 }
+
     function setDefaultDateTime() {
       const now = new Date();
       const dateElement = document.querySelector('.datetime .date');
@@ -581,10 +672,6 @@ function updateLocation() {
         'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
         'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
       ];
-
-      // // Update main datetime display
-      // dateElement.textContent = `${day}/${month + 1}/${year}`;
-      // timeElement.textContent = `${hours}:${minutes}:${seconds}`;
 
       // Update current datetime in Thai format
       currentDateTimeElement.textContent = `วันที่ ${day} ${thaiMonths[month]} ${year2} เวลา ${hours}:${minutes}:${seconds} น.`;
@@ -649,19 +736,23 @@ function updateLocation() {
       <div class="map-container">
         <div id="map"></div>
       </div>
-      <div class="location-details">กำลังโหลดข้อมูลตำแหน่ง...</div>
+      <!-- Status Indicator แทนที่ location details -->
+      <div class="status-indicator">
+        <div class="status-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+          </svg>
+        </div>
+        <span class="status-text">กำลังตรวจสอบตำแหน่ง...</span>
+      </div>
+      <!-- Hidden location details for JavaScript compatibility -->
+      <div class="location-details" style="display: none;">พิกัดปัจจุบัน</div>
     </div>
 
-    <!-- Time Card -->
-    <div class="card info">
-      <div class="info-item">
-        <span>Time-In</span>
-        <div class="value">00:00</div>
-      </div>
-      <div class="info-item">
-        <span>Time-Out</span>
-        <div class="value">00:00</div>
-      </div>
+    <!-- Time Display (เอา Time-Out ออก) -->
+    <div class="card time-display">
+      <div class="time-label">เวลา Check-in</div>
+      <div class="time-value">00:00</div>
     </div>
     
     <button type="button" class="checkin-button">Check In</button>
